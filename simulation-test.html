@@ -55,7 +55,8 @@
 </head>
 <body>
   <h1>🎰 CarloMTG Slot Machine - Aggressive Simulation</h1>
-  <p>Testing 300 spins with 5 players across different configurations</p>
+  <p>Testing 300 spins with varying player counts (3, 5, 10 players) across different configurations</p>
+  <p><strong>NEW:</strong> Adaptive pity cap scenarios that scale with player count!</p>
 
   <button onclick="runAllSimulations()">RUN ALL SIMULATIONS</button>
   <button onclick="clearResults()">CLEAR RESULTS</button>
@@ -149,10 +150,37 @@
       reentryBehavior: "double",
       pityReentryBehavior: "none",
       overflowDivisor: 750
+    },
+    {
+      name: "ADAPTIVE: 5 + playerCount",
+      pityMax: "adaptive_base5",
+      deadSpinBehavior: "double",
+      winSpinBehavior: "double",
+      reentryBehavior: "double",
+      pityReentryBehavior: "none",
+      overflowDivisor: 500
+    },
+    {
+      name: "ADAPTIVE: 7 + floor(playerCount/2)",
+      pityMax: "adaptive_half",
+      deadSpinBehavior: "double",
+      winSpinBehavior: "double",
+      reentryBehavior: "double",
+      pityReentryBehavior: "none",
+      overflowDivisor: 500
+    },
+    {
+      name: "ADAPTIVE: 5 + playerCount + HALVE",
+      pityMax: "adaptive_base5",
+      deadSpinBehavior: "halve",
+      winSpinBehavior: "double",
+      reentryBehavior: "double",
+      pityReentryBehavior: "none",
+      overflowDivisor: 500
     }
   ];
 
-  function doubleTickets(player, config) {
+  function doubleTickets(player, config, actualPityMax) {
     for(let i=0; i<5; i++) {
       const raw = player.tickets[i] * 2;
       if(raw <= TICKET_CAP) {
@@ -160,7 +188,7 @@
       } else {
         const overflow = raw - TICKET_CAP;
         const pityTokens = overflow < config.overflowDivisor ? 1 : Math.floor(overflow / config.overflowDivisor);
-        player.pityTokens = Math.min(config.pityMax, player.pityTokens + pityTokens);
+        player.pityTokens = Math.min(actualPityMax, player.pityTokens + pityTokens);
         let newTickets = overflow % config.overflowDivisor;
         if(newTickets === 0) newTickets = 1;
         player.tickets[i] = newTickets;
@@ -178,9 +206,18 @@
     return player.tickets.reduce((a,b) => a+b, 0);
   }
 
-  function simulateScenario(config, spins = 300) {
+  function calculateAdaptivePityMax(formula, playerCount) {
+    if(formula === "adaptive_base5") {
+      return 5 + playerCount;
+    } else if(formula === "adaptive_half") {
+      return 7 + Math.floor(playerCount / 2);
+    }
+    return formula; // Fixed number
+  }
+
+  function simulateScenario(config, spins = 300, initialPlayerCount = 5) {
     const players = [];
-    for(let i=0; i<5; i++) {
+    for(let i=0; i<initialPlayerCount; i++) {
       players.push({
         name: `Player${i+1}`,
         tickets: [1,1,1,1,1],
@@ -189,6 +226,9 @@
         createdAt: Date.now() + i
       });
     }
+
+    // Calculate actual pity max for this player count
+    const actualPityMax = calculateAdaptivePityMax(config.pityMax, initialPlayerCount);
 
     let totalWins = 0;
     let carloHits = 0;
@@ -214,7 +254,7 @@
       }
 
       // Check pity auto-pick
-      const pityPick = players.find(p => p.pityTokens >= config.pityMax);
+      const pityPick = players.find(p => p.pityTokens >= actualPityMax);
       if(pityPick) {
         pityPick.wins++;
         pityPick.pityTokens = 0;
@@ -226,7 +266,7 @@
         // Pity re-entry behavior (separate from regular wins)
         if(config.pityReentryBehavior === "double") {
           players.forEach(p => {
-            if(p !== pityPick) doubleTickets(p, config);
+            if(p !== pityPick) doubleTickets(p, config, actualPityMax);
           });
         }
         continue;
@@ -291,7 +331,7 @@
               // Re-entry
               if(config.reentryBehavior === "double") {
                 players.forEach(other => {
-                  if(other !== p) doubleTickets(other, config);
+                  if(other !== p) doubleTickets(other, config, actualPityMax);
                 });
               }
               break;
@@ -342,7 +382,7 @@
           } else {
             // Didn't appear
             if(config.winSpinBehavior === "double") {
-              doubleTickets(p, config);
+              doubleTickets(p, config, actualPityMax);
             }
           }
         });
@@ -350,7 +390,7 @@
         // Re-entry
         if(config.reentryBehavior === "double") {
           players.forEach(p => {
-            if(p !== winner) doubleTickets(p, config);
+            if(p !== winner) doubleTickets(p, config, actualPityMax);
           });
         }
       } else {
@@ -370,7 +410,7 @@
           } else {
             // Didn't appear
             if(config.deadSpinBehavior === "double") {
-              doubleTickets(p, config);
+              doubleTickets(p, config, actualPityMax);
             } else if(config.deadSpinBehavior === "halve") {
               halveTickets(p);
             }
@@ -381,7 +421,7 @@
 
     const finalAvgTickets = players.reduce((sum, p) => sum + totalTickets(p), 0) / players.length;
     const finalAvgPity = players.reduce((sum, p) => sum + p.pityTokens, 0) / players.length;
-    const playersAtMaxPity = players.filter(p => p.pityTokens >= config.pityMax).length;
+    const playersAtMaxPity = players.filter(p => p.pityTokens >= actualPityMax).length;
 
     return {
       totalWins,
@@ -397,13 +437,16 @@
       playersAtMaxPity,
       ticketSnapshots,
       pitySnapshots,
-      winDistribution: players.map(p => p.wins)
+      winDistribution: players.map(p => p.wins),
+      actualPityMax: actualPityMax,
+      playerCount: initialPlayerCount
     };
   }
 
   function analyzeResult(result, config, spins) {
     const winRate = (result.totalWins / spins * 100).toFixed(1);
     const pityRate = (result.pityWins / result.totalWins * 100).toFixed(1);
+    const actualPityMax = result.actualPityMax || config.pityMax;
 
     let verdict = "";
     let verdictClass = "";
@@ -414,10 +457,10 @@
     } else if(result.pityWins / result.totalWins > 0.4) {
       verdict = "⚠️ Too many pity wins";
       verdictClass = "warning";
-    } else if(result.finalAvgPity > config.pityMax * 0.7) {
+    } else if(result.finalAvgPity > actualPityMax * 0.7) {
       verdict = "⚠️ Trending toward pity cap";
       verdictClass = "warning";
-    } else if(result.pityWins / result.totalWins < 0.1 && result.finalAvgPity < config.pityMax * 0.3) {
+    } else if(result.pityWins / result.totalWins < 0.1 && result.finalAvgPity < actualPityMax * 0.3) {
       verdict = "✓ GOOD BALANCE";
       verdictClass = "good";
     } else {
@@ -439,12 +482,16 @@
         const result = simulateScenario(config, 300);
         const analysis = analyzeResult(result, config, 300);
 
+        const pityDisplay = result.actualPityMax !== undefined
+          ? `${result.actualPityMax} (for ${result.playerCount} players)`
+          : config.pityMax;
+
         html += `
           <div class="scenario">
             <h2>${config.name}</h2>
             <div class="metric">
               <span class="metric-label">Pity Max:</span>
-              <span class="metric-value">${config.pityMax}</span>
+              <span class="metric-value">${pityDisplay}</span>
             </div>
             <div class="metric">
               <span class="metric-label">Dead Spin:</span>
@@ -502,7 +549,7 @@
             </div>
             <div class="metric">
               <span class="metric-label">Final Avg Pity:</span>
-              <span class="metric-value">${result.finalAvgPity} / ${config.pityMax}</span>
+              <span class="metric-value">${result.finalAvgPity} / ${result.actualPityMax || config.pityMax}</span>
             </div>
             <div class="metric">
               <span class="metric-label">Players at Max Pity:</span>
