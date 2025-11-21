@@ -574,9 +574,17 @@
     }
     @keyframes reelSpin{
       0%{transform:translateY(0);}
-      100%{transform:translateY(-40%);}
+      100%{transform:translateY(-100%);}
     }
-    .reel.spinning .reel-inner{animation:reelSpin .25s linear infinite;}
+    .reel.spinning .reel-inner{
+      animation:reelSpin .15s linear infinite;
+      display:flex;
+      flex-direction:column;
+    }
+    .reel.spinning .reel-symbol{
+      min-height:60px;
+      flex-shrink:0;
+    }
     .slot-controls{
       margin-top:10px;
       display:flex;
@@ -709,9 +717,10 @@
       max-height:260px;
       overflow:auto;
       border-radius:10px;
-      border:1px solid var(--border);
-      background:rgba(15,12,10,.85);
+      border:2px solid var(--theme-color);
+      background:linear-gradient(145deg, var(--theme-color) 0%, rgba(0,0,0,0.2) 5%, rgba(0,0,0,0.85) 100%);
       margin-top:6px;
+      box-shadow:0 0 16px var(--theme-glow),inset 0 0 20px rgba(0,0,0,0.6);
     }
     .leaderboard-table{
       width:100%;
@@ -719,10 +728,18 @@
       font-size:11px;
     }
     .leaderboard-table thead{
-      background:#111827;
+      background:rgba(0,0,0,0.9);
       position:sticky;
       top:0;
       z-index:1;
+      box-shadow:0 2px 8px rgba(0,0,0,0.6);
+    }
+    .leaderboard-table th{
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:0.05em;
+      color:var(--theme-color);
+      text-shadow:0 0 8px var(--theme-glow);
     }
     .leaderboard-table th,
     .leaderboard-table td{
@@ -1254,9 +1271,9 @@
                 <th>Time</th>
                 <th>Player</th>
                 <th>Total</th>
-                <th>Pity</th>
                 <th>Slot W</th>
                 <th>W/L%</th>
+                <th>Pity</th>
                 <th></th>
               </tr>
             </thead>
@@ -1693,10 +1710,43 @@
   }
 
   function spinAnimationStart(){
+    const evt = currentEvent();
     const reelEls = reelsEl.querySelectorAll('.reel');
-    reelEls.forEach(r=>{
+    const letters = ['C','A','R','L','O'];
+    const allPlayers = evt.players.filter(p => p.status === 'active');
+
+    reelEls.forEach((r, idx)=>{
       r.classList.add('spinning');
       r.classList.remove('glow-win','glow-carlo','glow-luna');
+
+      // Populate with scrolling symbols
+      const inner = r.querySelector('.reel-inner');
+      if(inner){
+        inner.innerHTML = '';
+        // Create 6 random symbols for scrolling effect
+        for(let i = 0; i < 6; i++){
+          const div = document.createElement('div');
+          const rand = Math.random();
+          if(rand < 0.3 && allPlayers.length > 0){
+            // Random player
+            const p = allPlayers[Math.floor(Math.random() * allPlayers.length)];
+            div.className = 'reel-symbol player';
+            div.textContent = p.name;
+          }else if(rand < 0.4){
+            // Luna (rare)
+            div.className = 'reel-symbol luna';
+            const img = document.createElement('img');
+            img.src = "https://i.ibb.co/8g6ZQM5C/IMG-2604.png";
+            img.alt = "Luna";
+            div.appendChild(img);
+          }else{
+            // Letter
+            div.className = 'reel-symbol letter';
+            div.textContent = letters[idx];
+          }
+          inner.appendChild(div);
+        }
+      }
     });
     // Don't start bulbs here - will be started in performSpin for proper timing
   }
@@ -2075,9 +2125,9 @@
       tr1.appendChild(tdTime);
       tr1.appendChild(tdName);
       tr1.appendChild(tdTotal);
-      tr1.appendChild(tdPity);
       tr1.appendChild(tdSlotWins);
       tr1.appendChild(tdWL);
+      tr1.appendChild(tdPity);
       tr1.appendChild(tdActions);
 
       leaderboardBody.appendChild(tr1);
