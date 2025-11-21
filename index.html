@@ -214,11 +214,11 @@
       opacity:1;
       box-shadow:0 0 10px rgba(148,163,184,.9);
     }
-    .theme-chip[data-color="W"]{background-image:url("https://i.ibb.co/sJpHH9VZ/W.png");}
-    .theme-chip[data-color="U"]{background-image:url("https://i.ibb.co/0bPLHLk/U.png");}
-    .theme-chip[data-color="B"]{background-image:url("https://i.ibb.co/nM1ZZz3z/B.png");}
-    .theme-chip[data-color="R"]{background-image:url("https://i.ibb.co/NnjxnmZv/R.png");}
-    .theme-chip[data-color="G"]{background-image:url("https://i.ibb.co/tM5Mb1Q0/G.png");}
+    .theme-chip[data-color="W"]{background-image:url('https://i.ibb.co/sJpHH9VZ/W.png');}
+    .theme-chip[data-color="U"]{background-image:url('https://i.ibb.co/0bPLHLk/U.png');}
+    .theme-chip[data-color="B"]{background-image:url('https://i.ibb.co/nM1ZZz3z/B.png');}
+    .theme-chip[data-color="R"]{background-image:url('https://i.ibb.co/NnjxnmZv/R.png');}
+    .theme-chip[data-color="G"]{background-image:url('https://i.ibb.co/tM5Mb1Q0/G.png');}
 
     main{
       flex:1;
@@ -1079,9 +1079,12 @@
     <div class="footer-buttons">
       <button id="helpBtn">Help</button>
       <button id="diagBtn">Hypergeometric Diagnostic</button>
+      <button id="exportBtn">Export Session</button>
+      <button id="importBtn">Import Session</button>
       <button id="resetEventBtn">Factory Reset Event</button>
     </div>
   </div>
+  <input type="file" id="importFileInput" accept=".json" style="display:none;"/>
   <!-- WINNER OVERLAY -->
   <div class="overlay" id="winnerOverlay">
     <div class="winner-card">
@@ -1130,6 +1133,14 @@
           <div class="color-chip" data-color="R">R</div>
           <div class="color-chip" data-color="G">G</div>
           <div class="color-chip" data-color="C">C</div>
+        </div>
+      </div>
+      <div class="finish-field" id="bonusChoiceField" style="display:none;">
+        <div class="finish-label">Bonus Reward (4/5-of-a-kind)</div>
+        <div class="finish-sub" style="margin-top:4px;">Choose your reward for hitting 4 or 5 symbols:</div>
+        <div class="queue-choice" id="bonusChoice">
+          <div class="queue-chip active" data-choice="tickets">Bonus Tickets</div>
+          <div class="queue-chip" data-choice="games">Extra Games</div>
         </div>
       </div>
       <div class="finish-field">
@@ -1279,6 +1290,8 @@
   const matchTypeSelect = document.getElementById('matchType');
   const colorChips = document.getElementById('colorChips');
   const queueChoice = document.getElementById('queueChoice');
+  const bonusChoice = document.getElementById('bonusChoice');
+  const bonusChoiceField = document.getElementById('bonusChoiceField');
   const finishCancelBtn = document.getElementById('finishCancelBtn');
   const finishSaveBtn = document.getElementById('finishSaveBtn');
   const playerOverlay = document.getElementById('playerOverlay');
@@ -1292,6 +1305,9 @@
   const diagOverlay = document.getElementById('diagOverlay');
   const helpBtn = document.getElementById('helpBtn');
   const diagBtn = document.getElementById('diagBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const importBtn = document.getElementById('importBtn');
+  const importFileInput = document.getElementById('importFileInput');
   const resetEventBtn = document.getElementById('resetEventBtn');
   const closeHelpBtn = document.getElementById('closeHelpBtn');
   const closeDiagBtn = document.getElementById('closeDiagBtn');
@@ -1302,6 +1318,7 @@
   const state = {currentEventIndex: 1,events: []};
   let selectedColorSet = new Set();
   let queueReaddChoice = 'yes';
+  let bonusRewardChoice = 'tickets';
   let pendingWinner = null;
   let currentWinnerMeta = null;
   let bulbsTimer = null;
@@ -1959,6 +1976,8 @@
 
   function finishRunPrompt(player){
     const evt = currentEvent();
+    const hits = (currentWinnerMeta && currentWinnerMeta.hits) || 3;
+    const showBonusChoice = hits === 4 || hits === 5;
     evt.currentRun = {
       playerId: player.id,
       bonusPerReel: 0
@@ -1972,6 +1991,11 @@
     Array.from(queueChoice.children).forEach(ch=>{
       ch.classList.toggle('active', ch.dataset.choice === 'yes');
     });
+    bonusRewardChoice = 'tickets';
+    Array.from(bonusChoice.children).forEach(ch=>{
+      ch.classList.toggle('active', ch.dataset.choice === 'tickets');
+    });
+    bonusChoiceField.style.display = showBonusChoice ? 'block' : 'none';
     finishOverlay.classList.add('show');
   }
 
@@ -2018,6 +2042,15 @@
     });
   });
 
+  bonusChoice.addEventListener('click',e=>{
+    const chip = e.target.closest('.queue-chip');
+    if(!chip) return;
+    bonusRewardChoice = chip.dataset.choice;
+    Array.from(bonusChoice.children).forEach(ch=>{
+      ch.classList.toggle('active', ch===chip);
+    });
+  });
+
   finishCancelBtn.addEventListener('click',()=>{
     finishOverlay.classList.remove('show');
   });
@@ -2041,6 +2074,22 @@
     if(colors){
       let deck = player.decks.find(d=>d.color===colors);
       if(!deck){
+        // Check 15 deck limit
+        if(player.decks.length >= 15){
+          // Remove deck with lowest win percentage
+          const sorted = player.decks.slice().sort((a,b)=>{
+            const winRateA = (a.wins+a.losses)>0 ? a.wins/(a.wins+a.losses) : 0;
+            const winRateB = (b.wins+b.losses)>0 ? b.wins/(b.wins+b.losses) : 0;
+            if(winRateA !== winRateB) return winRateA - winRateB;
+            return (a.wins+a.losses) - (b.wins+b.losses);
+          });
+          const toRemove = sorted[0];
+          const idx = player.decks.indexOf(toRemove);
+          if(idx >= 0){
+            player.decks.splice(idx, 1);
+            log(`${player.name} reached 15 deck limit. Removed deck ${toRemove.color} (lowest win rate).`);
+          }
+        }
         deck = {color:colors,wins:0,losses:0,lastBestOf:null};
         player.decks.push(deck);
       }
@@ -2048,9 +2097,36 @@
       deck.losses += losses;
       deck.lastBestOf = matchType;
     }
+    const hits = (currentWinnerMeta && currentWinnerMeta.hits) || 3;
+    const bonus = hits>=5 ? 2 : hits===4 ? 1 : 0;
+
+    // Check if this was a 4/5-of-a-kind and they chose extra games
+    if(bonus > 0 && bonusRewardChoice === 'games' && !player.extraGamesRemaining){
+      player.extraGamesRemaining = bonus;
+      log(`${player.name} chose extra games bonus: ${bonus} additional game(s) remaining`);
+    }
+
+    // Check if player has extra games remaining
+    if(player.extraGamesRemaining && player.extraGamesRemaining > 0){
+      player.extraGamesRemaining--;
+      if(player.extraGamesRemaining > 0){
+        log(`${player.name} finished game. ${player.extraGamesRemaining} extra game(s) remaining.`);
+        evt.currentRun=null;
+        finishOverlay.classList.remove('show');
+        // Show them in the finish prompt again for next game
+        setTimeout(()=> finishRunPrompt(player), 100);
+        renderLeaderboard();
+        saveAll();
+        return;
+      }else{
+        log(`${player.name} finished all extra games. Re-entering queue.`);
+        delete player.extraGamesRemaining;
+      }
+    }
+
     if(queueReaddChoice==='yes'){
-      const bonus = (currentWinnerMeta && currentWinnerMeta.hits>=5) ? 2 : (currentWinnerMeta && currentWinnerMeta.hits===4) ? 1 : 0;
-      const baseTickets = 1 + bonus;
+      const bonusTickets = (bonus > 0 && bonusRewardChoice === 'tickets') ? bonus : 0;
+      const baseTickets = 1 + bonusTickets;
       for(let i=0;i<5;i++){
         let newTickets = baseTickets;
         if(newTickets > TICKET_CAP){
@@ -2063,10 +2139,12 @@
       player.pityTokens = 0;
       player.createdAt = Date.now();
       clampPlayer(player);
+      log(`${player.name} re-added to queue with ${baseTickets} ticket(s) per reel.`);
     }else{
       player.status='afk';
+      log(`${player.name} marked as AFK.`);
     }
-    log(`Reported run for ${player.name}: ${wins}W/${losses}L, colors=${colors||'none'}, type=${matchType}, re-add=${queueReaddChoice}`);
+    log(`Reported run for ${player.name}: ${wins}W/${losses}L, colors=${colors||'none'}, type=${matchType}`);
     evt.currentRun=null;
     finishOverlay.classList.remove('show');
     renderLeaderboard();
@@ -2186,6 +2264,63 @@
   closeHelpBtn.addEventListener('click',()=>helpOverlay.classList.remove('show'));
   diagBtn.addEventListener('click',()=>diagOverlay.classList.add('show'));
   closeDiagBtn.addEventListener('click',()=>diagOverlay.classList.remove('show'));
+  exportBtn.addEventListener('click',()=>{
+    const exportData = {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      state: state,
+      theme: document.body.className
+    };
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `carlo-slot-session-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    log('Session exported successfully.');
+  });
+
+  importBtn.addEventListener('click',()=>{
+    importFileInput.click();
+  });
+
+  importFileInput.addEventListener('change',e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = evt=>{
+      try{
+        const imported = JSON.parse(evt.target.result);
+        if(!imported.state){
+          alert('Invalid import file: missing state data.');
+          return;
+        }
+        if(!confirm('Import will replace ALL current data. Continue?')) return;
+        state.events = imported.state.events || [];
+        state.currentEventIndex = imported.state.currentEventIndex || 1;
+        if(imported.theme){
+          const themeMatch = imported.theme.match(/theme-(white|blue|black|red|green)/);
+          if(themeMatch){
+            const colorMap = {white:'W',blue:'U',black:'B',red:'R',green:'G'};
+            applyTheme(colorMap[themeMatch[1]]);
+          }
+        }
+        log('Session imported successfully.');
+        renderEvents();
+        renderLeaderboard();
+        saveAll();
+      }catch(err){
+        alert('Import failed: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    importFileInput.value = '';
+  });
+
   resetEventBtn.addEventListener('click',()=>{
     if(!confirm("Factory reset this event? All players and stats for this event will be lost."))return;
     state.events[state.currentEventIndex]={
@@ -2209,14 +2344,20 @@
       return;
     }
     const sim = runDiagnosticsSimulation(evt,150);
-    const passWins = sim.wins>=30 && sim.wins<=80;
-    const passCarlo = sim.carlo>=0 && sim.carlo<=5;
-    const passLuna = sim.luna>=1 && sim.luna<=10;
+    const passWins = sim.wins>=50;
+    const passCarlo = sim.carlo>=2;
+    const passLuna = sim.luna>=5;
+    const passFourKind = sim.fourKind>=1;
+    const passFiveKind = sim.fiveKind>=1;
+    const allPass = passWins && passCarlo && passLuna && passFourKind && passFiveKind;
     diagResult.innerHTML = `
-      <div>Simulated spins: 150</div>
-      <div>Slot wins: ${sim.wins} ${passWins?'<span class="pass">(OK)</span>':'<span class="warn">(off target)</span>'}</div>
-      <div>CARLO hits: ${sim.carlo} ${passCarlo?'<span class="pass">(OK)</span>':'<span class="warn">(off target)</span>'}</div>
-      <div>Luna Luck wins: ${sim.luna} ${passLuna?'<span class="pass">(OK)</span>':'<span class="warn">(off target)</span>'}</div>
+      <div><strong>Simulated 150 spins:</strong></div>
+      <div>Total wins: ${sim.wins} ${passWins?'<span class="pass">(≥50 ✓)</span>':'<span class="warn">(Need ≥50)</span>'}</div>
+      <div>CARLO jackpots: ${sim.carlo} ${passCarlo?'<span class="pass">(≥2 ✓)</span>':'<span class="warn">(Need ≥2)</span>'}</div>
+      <div>Luna Luck wins: ${sim.luna} ${passLuna?'<span class="pass">(≥5 ✓)</span>':'<span class="warn">(Need ≥5)</span>'}</div>
+      <div>4-of-a-kind: ${sim.fourKind} ${passFourKind?'<span class="pass">(≥1 ✓)</span>':'<span class="warn">(Need ≥1)</span>'}</div>
+      <div>5-of-a-kind: ${sim.fiveKind} ${passFiveKind?'<span class="pass">(≥1 ✓)</span>':'<span class="warn">(Need ≥1)</span>'}</div>
+      <div style="margin-top:8px;font-weight:700;">${allPass?'<span class="pass">All checks PASSED ✓</span>':'<span class="warn">Some checks FAILED</span>'}</div>
     `;
   });
 
@@ -2247,7 +2388,7 @@
       });
     }
     normTickets();
-    let wins=0, carlo=0, luna=0;
+    let wins=0, carlo=0, luna=0, fourKind=0, fiveKind=0;
     for(let spin=0;spin<spins;spin++){
       const candPity = players.filter(p=>p.pityTokens>=MAX_PITY_TOKENS);
       if(candPity.length>0){
@@ -2307,9 +2448,13 @@
           }
         }
       });
-      if(hitCount>=3) wins++;
+      if(hitCount>=3){
+        wins++;
+        if(hitCount===4) fourKind++;
+        if(hitCount===5) fiveKind++;
+      }
     }
-    return {wins, carlo, luna};
+    return {wins, carlo, luna, fourKind, fiveKind};
   }
 
   function applyTheme(code){
