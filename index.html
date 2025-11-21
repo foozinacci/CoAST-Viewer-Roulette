@@ -2100,7 +2100,7 @@
     }
     const wins = Math.max(0,parseInt(runWinsInput.value,10)||0);
     const losses = Math.max(0,parseInt(runLossesInput.value,10)||0);
-    const colors = Array.from(selectedColorSet).sort().join('');
+    const colors = Array.from(selectedColorSet).join('');  // Keep input order, don't sort
     const matchType = matchTypeSelect.value;
     player.overallWins += wins;
     player.overallLosses += losses;
