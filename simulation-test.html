@@ -75,63 +75,80 @@
       deadSpinBehavior: "double",
       winSpinBehavior: "double",
       reentryBehavior: "double",
+      pityReentryBehavior: "double",
       overflowDivisor: 500
     },
     {
-      name: "PITY 10 ONLY",
+      name: "PITY 10 + NO PITY RE-ENTRY DOUBLE",
       pityMax: 10,
       deadSpinBehavior: "double",
       winSpinBehavior: "double",
       reentryBehavior: "double",
+      pityReentryBehavior: "none",
       overflowDivisor: 500
     },
     {
-      name: "PITY 15 ONLY",
+      name: "PITY 12 + NO PITY RE-ENTRY DOUBLE",
+      pityMax: 12,
+      deadSpinBehavior: "double",
+      winSpinBehavior: "double",
+      reentryBehavior: "double",
+      pityReentryBehavior: "none",
+      overflowDivisor: 500
+    },
+    {
+      name: "PITY 15 + NO PITY RE-ENTRY DOUBLE",
       pityMax: 15,
       deadSpinBehavior: "double",
       winSpinBehavior: "double",
       reentryBehavior: "double",
+      pityReentryBehavior: "none",
       overflowDivisor: 500
     },
     {
-      name: "DEAD SPIN HALVE (BLUEPRINT)",
+      name: "HALVE+1 + PITY 10 + NO PITY DOUBLE",
       pityMax: 10,
       deadSpinBehavior: "halve",
       winSpinBehavior: "double",
       reentryBehavior: "double",
+      pityReentryBehavior: "none",
       overflowDivisor: 500
     },
     {
-      name: "NO RE-ENTRY DOUBLE",
-      pityMax: 10,
-      deadSpinBehavior: "double",
-      winSpinBehavior: "double",
-      reentryBehavior: "none",
-      overflowDivisor: 500
-    },
-    {
-      name: "OVERFLOW 750 DIVISOR",
-      pityMax: 10,
-      deadSpinBehavior: "double",
-      winSpinBehavior: "double",
-      reentryBehavior: "double",
-      overflowDivisor: 750
-    },
-    {
-      name: "AGGRESSIVE NERF",
-      pityMax: 15,
-      deadSpinBehavior: "halve",
-      winSpinBehavior: "double",
-      reentryBehavior: "none",
-      overflowDivisor: 750
-    },
-    {
-      name: "MODERATE BALANCE",
+      name: "HALVE+1 + PITY 12 + NO PITY DOUBLE",
       pityMax: 12,
       deadSpinBehavior: "halve",
       winSpinBehavior: "double",
       reentryBehavior: "double",
+      pityReentryBehavior: "none",
+      overflowDivisor: 500
+    },
+    {
+      name: "HALVE+1 + PITY 15 + NO PITY DOUBLE",
+      pityMax: 15,
+      deadSpinBehavior: "halve",
+      winSpinBehavior: "double",
+      reentryBehavior: "double",
+      pityReentryBehavior: "none",
+      overflowDivisor: 500
+    },
+    {
+      name: "CONSERVATIVE: PITY 10 + OVERFLOW 600",
+      pityMax: 10,
+      deadSpinBehavior: "double",
+      winSpinBehavior: "double",
+      reentryBehavior: "double",
+      pityReentryBehavior: "none",
       overflowDivisor: 600
+    },
+    {
+      name: "AGGRESSIVE: HALVE + PITY 15 + 750",
+      pityMax: 15,
+      deadSpinBehavior: "halve",
+      winSpinBehavior: "double",
+      reentryBehavior: "double",
+      pityReentryBehavior: "none",
+      overflowDivisor: 750
     }
   ];
 
@@ -206,8 +223,8 @@
         pityWins++;
         currentDeadStreak = 0;
 
-        // Re-entry behavior
-        if(config.reentryBehavior === "double") {
+        // Pity re-entry behavior (separate from regular wins)
+        if(config.pityReentryBehavior === "double") {
           players.forEach(p => {
             if(p !== pityPick) doubleTickets(p, config);
           });
@@ -434,8 +451,12 @@
               <span class="metric-value">${config.deadSpinBehavior}</span>
             </div>
             <div class="metric">
-              <span class="metric-label">Re-entry:</span>
+              <span class="metric-label">Win Re-entry:</span>
               <span class="metric-value">${config.reentryBehavior}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Pity Re-entry:</span>
+              <span class="metric-value">${config.pityReentryBehavior}</span>
             </div>
             <div class="metric">
               <span class="metric-label">Overflow Divisor:</span>
