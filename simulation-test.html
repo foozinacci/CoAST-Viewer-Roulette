@@ -253,8 +253,12 @@
         pitySnapshots.push({avg: avgPity.toFixed(1), max: maxPity});
       }
 
-      // Check pity auto-pick
-      const pityPick = players.find(p => p.pityTokens >= actualPityMax);
+      // Recalculate adaptive pity max based on CURRENT player count
+      // (handles case where players left and cap decreased)
+      const currentPityMax = calculateAdaptivePityMax(config.pityMax, players.length);
+
+      // Check pity auto-pick (using current player count's cap)
+      const pityPick = players.find(p => p.pityTokens >= currentPityMax);
       if(pityPick) {
         pityPick.wins++;
         pityPick.pityTokens = 0;
@@ -266,7 +270,7 @@
         // Pity re-entry behavior (separate from regular wins)
         if(config.pityReentryBehavior === "double") {
           players.forEach(p => {
-            if(p !== pityPick) doubleTickets(p, config, actualPityMax);
+            if(p !== pityPick) doubleTickets(p, config, currentPityMax);
           });
         }
         continue;
@@ -328,10 +332,11 @@
               lunaWin = true;
               currentDeadStreak = 0;
 
-              // Re-entry
+              // Re-entry (recalculate cap based on current player count)
+              const updatedPityMax = calculateAdaptivePityMax(config.pityMax, players.length);
               if(config.reentryBehavior === "double") {
                 players.forEach(other => {
-                  if(other !== p) doubleTickets(other, config, actualPityMax);
+                  if(other !== p) doubleTickets(other, config, updatedPityMax);
                 });
               }
               break;
@@ -369,6 +374,9 @@
         if(hitCount === 4) fourKind++;
         if(hitCount === 5) fiveKind++;
 
+        // Recalculate pity cap based on current player count
+        const updatedPityMax = calculateAdaptivePityMax(config.pityMax, players.length);
+
         // Win spin adjustments
         players.forEach(p => {
           if(p === winner) return;
@@ -382,7 +390,7 @@
           } else {
             // Didn't appear
             if(config.winSpinBehavior === "double") {
-              doubleTickets(p, config, actualPityMax);
+              doubleTickets(p, config, updatedPityMax);
             }
           }
         });
@@ -390,7 +398,7 @@
         // Re-entry
         if(config.reentryBehavior === "double") {
           players.forEach(p => {
-            if(p !== winner) doubleTickets(p, config, actualPityMax);
+            if(p !== winner) doubleTickets(p, config, updatedPityMax);
           });
         }
       } else {
@@ -398,6 +406,9 @@
         deadSpins++;
         currentDeadStreak++;
         maxDeadStreak = Math.max(maxDeadStreak, currentDeadStreak);
+
+        // Recalculate pity cap based on current player count
+        const updatedPityMax = calculateAdaptivePityMax(config.pityMax, players.length);
 
         players.forEach(p => {
           if(drawnPlayers.has(p)) {
@@ -410,7 +421,7 @@
           } else {
             // Didn't appear
             if(config.deadSpinBehavior === "double") {
-              doubleTickets(p, config, actualPityMax);
+              doubleTickets(p, config, updatedPityMax);
             } else if(config.deadSpinBehavior === "halve") {
               halveTickets(p);
             }
@@ -419,9 +430,11 @@
       }
     }
 
+    // Final calculations using FINAL player count's adaptive cap
+    const finalPityMax = calculateAdaptivePityMax(config.pityMax, players.length);
     const finalAvgTickets = players.reduce((sum, p) => sum + totalTickets(p), 0) / players.length;
     const finalAvgPity = players.reduce((sum, p) => sum + p.pityTokens, 0) / players.length;
-    const playersAtMaxPity = players.filter(p => p.pityTokens >= actualPityMax).length;
+    const playersAtMaxPity = players.filter(p => p.pityTokens >= finalPityMax).length;
 
     return {
       totalWins,
@@ -438,8 +451,10 @@
       ticketSnapshots,
       pitySnapshots,
       winDistribution: players.map(p => p.wins),
-      actualPityMax: actualPityMax,
-      playerCount: initialPlayerCount
+      actualPityMax: finalPityMax,
+      initialPlayerCount: initialPlayerCount,
+      finalPlayerCount: players.length,
+      playerCount: players.length  // For display
     };
   }
 
@@ -483,15 +498,19 @@
         const analysis = analyzeResult(result, config, 300);
 
         const pityDisplay = result.actualPityMax !== undefined
-          ? `${result.actualPityMax} (for ${result.playerCount} players)`
+          ? `${result.actualPityMax} (${result.finalPlayerCount} players at end)`
           : config.pityMax;
+
+        const playerCountNote = result.initialPlayerCount !== result.finalPlayerCount
+          ? ` (started with ${result.initialPlayerCount})`
+          : '';
 
         html += `
           <div class="scenario">
             <h2>${config.name}</h2>
             <div class="metric">
               <span class="metric-label">Pity Max:</span>
-              <span class="metric-value">${pityDisplay}</span>
+              <span class="metric-value">${pityDisplay}${playerCountNote}</span>
             </div>
             <div class="metric">
               <span class="metric-label">Dead Spin:</span>
