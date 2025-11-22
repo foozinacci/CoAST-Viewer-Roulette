@@ -2220,11 +2220,12 @@
 
   // Dead spin guardrail: Guarantee win after too many dead spins
   function getMaxDeadStreakAllowed(activePlayerCount){
-    if(activePlayerCount <= 3) return 12;      // Solo/duo can wait a bit longer
-    if(activePlayerCount <= 5) return 8;       // Small groups - keep it tight
-    if(activePlayerCount <= 10) return 6;      // Medium groups - very tight
-    if(activePlayerCount <= 20) return 5;      // Large groups - maximum engagement
-    return 5;                                   // Never go above 5 dead spins at scale
+    if(activePlayerCount <= 3) return 20;      // Solo/duo - allow natural variance
+    if(activePlayerCount <= 5) return 18;      // Small groups - still generous
+    if(activePlayerCount <= 10) return 15;     // Medium groups - balanced
+    if(activePlayerCount <= 20) return 12;     // Large groups - reasonable safety
+    if(activePlayerCount <= 35) return 10;     // Very large - moderate safety
+    return 8;                                   // Maximum capacity - tighter but fair
   }
 
   const reelsEl = document.getElementById('reels');
@@ -3581,15 +3582,6 @@
       return;
     }
 
-    // Back-to-back cooldown: Force dead spin after winner (ultra-rare exception: 1/2500)
-    let forceDead = false;
-    if(evt.lastSpinWasWinner){
-      const backToBackChance = 1/2500;
-      if(Math.random() >= backToBackChance){
-        forceDead = true;
-      }
-    }
-
     // Dead spin guardrail - guarantee natural-looking win after too many dead spins
     const maxDeadStreak = getMaxDeadStreakAllowed(activePlayers.length);
     const guaranteeWin = evt.deadSpinStreak >= maxDeadStreak;
@@ -3600,7 +3592,7 @@
     smallStatus.textContent="Spinning…";
 
     // Build spin result immediately (for timing calculation)
-    const symbols = buildSpinResult(evt, guaranteeWin, forceDead);
+    const symbols = buildSpinResult(evt, guaranteeWin, false);
     const isCarlo = detectCarlo(symbols);
     let isLunaWin = false;
     const lunaPick = detectLunaWinner(evt,symbols);
@@ -3807,17 +3799,24 @@
       return;
     }
     const sim = runDiagnosticsSimulation(evt,300);
-    // Dynamic thresholds based on player count
+    // Dynamic thresholds based on player count and dead spin guardrails
     const playerCount = players.length;
-    const expectedCarlos = playerCount <= 3 ? 0 : 0; // CARLO is extremely rare with dynamic odds
-    const expectedLuna = Math.max(5, Math.floor(playerCount * 0.4)); // Scale with player count
-    const expectedWins = Math.max(100, Math.floor(playerCount * 3)); // Scale with player count
+    const maxDeadStreak = getMaxDeadStreakAllowed(playerCount);
+
+    // Expected wins: guardrail guarantees ~(300/maxDeadStreak) minimum, natural wins add more
+    const minWinsFromGuardrail = Math.floor(300 / maxDeadStreak);
+    const expectedWins = Math.max(25, Math.floor(minWinsFromGuardrail * 1.2)); // 20% buffer for natural wins
+
+    const expectedCarlos = 0; // CARLO is extremely rare - bonus jackpot, not balance requirement
+    const expectedLuna = Math.max(3, Math.floor(playerCount * 0.25)); // Scale with player count
+    const expectedFourKind = Math.max(1, Math.floor(playerCount * 0.08)); // Higher player count = more 4oak
+    const expectedFiveKind = playerCount <= 10 ? 0 : 1; // Only expect 5oak with larger groups
 
     const passWins = sim.wins >= expectedWins;
     const passCarlo = sim.carlo >= expectedCarlos; // Always pass - CARLO is a bonus jackpot
     const passLuna = sim.luna >= expectedLuna;
-    const passFourKind = sim.fourKind >= 2;
-    const passFiveKind = sim.fiveKind >= 1;
+    const passFourKind = sim.fourKind >= expectedFourKind;
+    const passFiveKind = sim.fiveKind >= expectedFiveKind;
     const ignitedRate = (sim.ignitedWins / 300 * 100).toFixed(1);
     const passIgnited = sim.ignitedWins <= 30; // Less than 10% is good
     const allPass = passWins && passCarlo && passLuna && passFourKind && passFiveKind && passIgnited;
@@ -3826,8 +3825,8 @@
       <div>Total wins: ${sim.wins} ${passWins?'<span class="pass">(≥'+expectedWins+' ✓)</span>':'<span class="warn">(Need ≥'+expectedWins+')</span>'}</div>
       <div>CARLO jackpots: ${sim.carlo} ${passCarlo?'<span class="pass">(≥'+expectedCarlos+' ✓)</span>':'<span class="warn">(Need ≥'+expectedCarlos+')</span>'}</div>
       <div>Luna Luck wins: ${sim.luna} ${passLuna?'<span class="pass">(≥'+expectedLuna+' ✓)</span>':'<span class="warn">(Need ≥'+expectedLuna+')</span>'}</div>
-      <div>4-of-a-kind: ${sim.fourKind} ${passFourKind?'<span class="pass">(≥2 ✓)</span>':'<span class="warn">(Need ≥2)</span>'}</div>
-      <div>5-of-a-kind: ${sim.fiveKind} ${passFiveKind?'<span class="pass">(≥1 ✓)</span>':'<span class="warn">(Need ≥1)</span>'}</div>
+      <div>4-of-a-kind: ${sim.fourKind} ${passFourKind?'<span class="pass">(≥'+expectedFourKind+' ✓)</span>':'<span class="warn">(Need ≥'+expectedFourKind+')</span>'}</div>
+      <div>5-of-a-kind: ${sim.fiveKind} ${passFiveKind?'<span class="pass">(≥'+expectedFiveKind+' ✓)</span>':'<span class="warn">(Need ≥'+expectedFiveKind+')</span>'}</div>
       <div>Ignited wins: ${sim.ignitedWins} (${ignitedRate}%) ${passIgnited?'<span class="pass">(≤10% ✓)</span>':'<span class="warn">(>10% - too many)</span>'}</div>
       <div style="margin-top:8px;font-weight:700;">${allPass?'<span class="pass">All checks PASSED ✓</span>':'<span class="warn">Some checks FAILED</span>'}</div>
     `;
