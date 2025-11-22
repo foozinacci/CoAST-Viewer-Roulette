@@ -1927,7 +1927,7 @@
 (function(){
   "use strict";
   const MAX_EVENTS = 7;
-  const MAX_PLAYERS = 50;
+  const MAX_PLAYERS = 75;
   const TICKET_CAP = 500;
   const MAX_SPARKS = 12;
   const LUNA_BASE_ODDS = 1/30;
@@ -2980,8 +2980,9 @@
     if(colors){
       let deck = player.decks.find(d=>d.color===colors);
       if(!deck){
-        // Check 15 deck limit
-        if(player.decks.length >= 15){
+        // Check 32 deck limit - supports all MTG color identities:
+        // 5 mono (W,U,B,R,G) + 10 dual + 10 triple + 5 four-color + 1 five-color + 1 colorless
+        if(player.decks.length >= 32){
           // Remove deck with lowest win percentage
           const sorted = player.decks.slice().sort((a,b)=>{
             const winRateA = (a.wins+a.losses)>0 ? a.wins/(a.wins+a.losses) : 0;
@@ -2993,7 +2994,7 @@
           const idx = player.decks.indexOf(toRemove);
           if(idx >= 0){
             player.decks.splice(idx, 1);
-            log(`${player.name} reached 15 deck limit. Removed deck ${toRemove.color} (lowest win rate).`);
+            log(`${player.name} reached 32 deck limit. Removed deck ${toRemove.color} (lowest win rate).`);
           }
         }
         deck = {color:colors,wins:0,losses:0,lastBestOf:null};
@@ -3455,6 +3456,64 @@
     localStorage.setItem('carlo_theme_multi', JSON.stringify(Array.from(selectedColors)));
   }
 
+  // MTG Color Identity Mappings - Proper ordering for all combinations
+  const COLOR_HEX = {
+    'W': '#fefce8',
+    'U': '#38bdf8',
+    'B': '#4b5563',
+    'R': '#fb4b4b',
+    'G': '#22c55e'
+  };
+
+  const MTG_COLOR_ORDERS = {
+    // Mono (5)
+    'W': ['W'],
+    'U': ['U'],
+    'B': ['B'],
+    'R': ['R'],
+    'G': ['G'],
+    // Dual (10) - Allied pairs
+    'WU': ['W','U'], // Azorius
+    'UB': ['U','B'], // Dimir
+    'BR': ['B','R'], // Rakdos
+    'RG': ['R','G'], // Gruul
+    'GW': ['G','W'], // Selesnya
+    // Dual - Enemy pairs
+    'WB': ['W','B'], // Orzhov
+    'UR': ['U','R'], // Izzet
+    'BG': ['B','G'], // Golgari
+    'WR': ['W','R'], // Boros
+    'UG': ['U','G'], // Simic
+    // Triple (10) - Shards
+    'GWU': ['G','W','U'], // Bant
+    'WUB': ['W','U','B'], // Esper
+    'UBR': ['U','B','R'], // Grixis
+    'BRG': ['B','R','G'], // Jund
+    'RGW': ['R','G','W'], // Naya
+    // Triple - Wedges
+    'WBG': ['W','B','G'], // Abzan
+    'URW': ['U','R','W'], // Jeskai
+    'BGU': ['B','G','U'], // Sultai
+    'RWB': ['R','W','B'], // Mardu
+    'GUR': ['G','U','R'], // Temur
+    // Four-color (5)
+    'UBRG': ['U','B','R','G'],
+    'BRGW': ['B','R','G','W'],
+    'RGWU': ['R','G','W','U'],
+    'GWUB': ['G','W','U','B'],
+    'WUBR': ['W','U','B','R'],
+    // Five-color (1)
+    'WUBRG': ['W','U','B','R','G']
+  };
+
+  function getColorIdentityKey(colorSet){
+    const sorted = Array.from(colorSet).sort((a,b)=>{
+      const order = ['W','U','B','R','G'];
+      return order.indexOf(a) - order.indexOf(b);
+    });
+    return sorted.join('');
+  }
+
   function applyGradientGlow(){
     // No colors selected - default to gold
     if(selectedColors.size === 0){
@@ -3466,27 +3525,20 @@
       return;
     }
 
-    const colors = Array.from(selectedColors).map(code=>{
-      if(code==='W') return '#fefce8';
-      if(code==='U') return '#38bdf8';
-      if(code==='B') return '#4b5563';
-      if(code==='R') return '#fb4b4b';
-      if(code==='G') return '#22c55e';
-      return '#fcd34d';
-    });
+    // Get the proper MTG color order for this combination
+    const identityKey = getColorIdentityKey(selectedColors);
+    const colorOrder = MTG_COLOR_ORDERS[identityKey] || Array.from(selectedColors);
+    const colors = colorOrder.map(code => COLOR_HEX[code]);
 
-    // All 5 selected = gold with all colors cycling
+    // All 5 selected = gold with WUBRG order
     if(selectedColors.size === 5){
-      const allColors = '#fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e';
-      const allColorsArray = ['#fefce8', '#38bdf8', '#4b5563', '#fb4b4b', '#22c55e'];
+      const allColors = colors.join(', ');
       document.documentElement.style.setProperty('--multi-theme-gradient', '#fcd34d');
       document.documentElement.style.setProperty('--gradient-border', `linear-gradient(90deg, ${allColors}, ${allColors})`);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
-      // Gold mode: rainbow gradient text for buttons
       document.documentElement.style.setProperty('--button-text-color', `linear-gradient(90deg, ${allColors})`);
       document.documentElement.style.setProperty('--button-text-is-gradient', '1');
-      // Create conic gradient segments for logo ring
-      const segments = allColorsArray.map((c, i) => {
+      const segments = colors.map((c, i) => {
         const start = i * 72;
         const end = start + 36;
         return `${c} ${start}deg ${end}deg, transparent ${end}deg ${(i + 1) * 72}deg`;
@@ -3499,22 +3551,20 @@
     document.documentElement.style.setProperty('--button-text-color', '#ffffff');
     document.documentElement.style.setProperty('--button-text-is-gradient', '0');
 
-    // Create animated gradient for borders/glows
+    // Create animated gradient with proper MTG color order
     if(colors.length > 1){
-      // Multi-color gradient
       const gradient = `linear-gradient(90deg, ${colors.join(', ')}, ${colors.join(', ')})`;
       document.documentElement.style.setProperty('--multi-theme-gradient', gradient);
       document.documentElement.style.setProperty('--gradient-border', gradient);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
     } else {
-      // Single color - create gradient with same color repeated for animation
       const singleColorGradient = `linear-gradient(90deg, ${colors[0]}, ${colors[0]}, ${colors[0]})`;
       document.documentElement.style.setProperty('--multi-theme-gradient', singleColorGradient);
       document.documentElement.style.setProperty('--gradient-border', singleColorGradient);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
     }
 
-    // Create conic gradient for logo ring based on selected colors
+    // Create conic gradient for logo ring
     if(colors.length > 1){
       const segments = colors.map((c, i) => {
         const degreesPerColor = 360 / colors.length;
@@ -3524,7 +3574,6 @@
       }).join(', ');
       document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg, ${segments})`);
     } else {
-      // Single color - use solid segments
       document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg,
         ${colors[0]} 0deg 60deg,
         transparent 60deg 120deg,
