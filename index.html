@@ -291,15 +291,13 @@
       }
       .lever.pull .lever-knob{display:none;}
       .reels-shell{
-        padding:12px 12px 20px 12px;
+        padding:12px;
+      }
+      .reel-charts-wrapper{
+        margin:8px 0;
       }
       .reel-charts{
-        gap:6px;
-        justify-content:flex-start;
-        padding:0;
-        margin:8px 0;
-        overflow-x:auto;
-        -webkit-overflow-scrolling:touch;
+        gap:8px;
       }
       .pie-chart{
         width:48px;
@@ -381,7 +379,7 @@
     }
     .reels-shell{
       position:relative;
-      padding:18px 18px 30px 18px;
+      padding:18px 18px 18px 18px;
     }
     .bulb-row{
       position:absolute;
@@ -393,11 +391,11 @@
       pointer-events:none;
     }
     .bulb-row.top{top:4px;}
-    .bulb-row.bottom{bottom:10px;}
+    .bulb-row.bottom{bottom:4px;}
     .bulb-col{
       position:absolute;
       top:18px;
-      bottom:30px;
+      bottom:18px;
       width:8px;
       display:flex;
       flex-direction:column;
@@ -532,18 +530,16 @@
       box-shadow:0 0 24px rgba(244,114,182,.95),inset 0 0 18px rgba(24,24,27,.9);
       border-color:#f973fa;
     }
-    @keyframes reelSpin{
-      0%{transform:translateY(0);}
-      100%{transform:translateY(-100%);}
-    }
-    .reel.spinning .reel-inner{
-      animation:reelSpin .4s linear infinite;
-      display:flex;
-      flex-direction:column;
+    @keyframes reelCycle{
+      0%, 100%{opacity:1;}
+      50%{opacity:0.3;}
     }
     .reel.spinning .reel-symbol{
-      /* Keep symbols at fixed size during spin - no expansion */
-      flex-shrink:0;
+      animation:reelCycle 0.15s linear infinite;
+    }
+    .reel.spinning .reel-inner{
+      display:flex;
+      flex-direction:column;
     }
     .slot-controls{
       margin-top:40px;
@@ -595,11 +591,13 @@
       align-items:center;
     }
     .side-panel-section-title{
-      font-size:13px;
+      font-size:14px;
+      font-weight:700;
       text-transform:uppercase;
       letter-spacing:.12em;
-      color:var(--muted);
-      margin-bottom:8px;
+      color:var(--gold);
+      text-shadow:0 0 8px rgba(250,204,21,.4);
+      margin-bottom:10px;
       text-align:center;
     }
     .add-player-form{
@@ -698,7 +696,9 @@
     .time-cell{
       font-size:10px;
       color:#10b981;
+      text-shadow:0 0 8px rgba(16,185,129,.6), 0 0 4px rgba(16,185,129,.8);
       white-space:nowrap;
+      font-weight:600;
     }
     .pity-count{font-size:10px;color:var(--muted);}
     .win-rate-good{color:var(--text);font-weight:600;}
@@ -959,14 +959,20 @@
       letter-spacing:.1em;
       cursor:pointer;
     }
+    .reel-charts-wrapper{
+      width:100%;
+      overflow-x:auto;
+      overflow-y:hidden;
+      margin:12px 0;
+      padding:4px 0;
+      -webkit-overflow-scrolling:touch;
+    }
     .reel-charts{
       display:flex;
       gap:12px;
-      justify-content:space-around;
-      margin:12px 0;
+      justify-content:flex-start;
       flex-wrap:nowrap;
-      overflow-x:auto;
-      max-width:100%;
+      min-width:min-content;
     }
     .reel-chart{
       display:flex;
@@ -1302,7 +1308,9 @@
         <button id="closePlayerCardBtn">Close</button>
       </div>
       <div class="help-section-title">Reel Probabilities</div>
-      <div class="reel-charts" id="reelCharts"></div>
+      <div class="reel-charts-wrapper">
+        <div class="reel-charts" id="reelCharts"></div>
+      </div>
       <div class="help-section-title">Decks (by color identity)</div>
       <div class="deck-table-wrapper">
         <table class="deck-table">
@@ -1618,43 +1626,52 @@
     }
   }
 
+  let reelCycleIntervals = [];
+
   function spinAnimationStart(){
     const evt = currentEvent();
     const reelEls = reelsEl.querySelectorAll('.reel');
     const letters = ['C','A','R','L','O'];
     const allPlayers = evt.players.filter(p => p.status === 'active');
 
+    // Clear any existing intervals
+    reelCycleIntervals.forEach(iv => clearInterval(iv));
+    reelCycleIntervals = [];
+
     reelEls.forEach((r, idx)=>{
       r.classList.add('spinning');
       r.classList.remove('glow-win','glow-carlo','glow-luna');
 
-      // Populate with scrolling symbols
+      // Create single symbol that will cycle content
       const inner = r.querySelector('.reel-inner');
       if(inner){
         inner.innerHTML = '';
-        // Create 6 random symbols for scrolling effect
-        for(let i = 0; i < 6; i++){
-          const div = document.createElement('div');
+        const div = document.createElement('div');
+        div.className = 'reel-symbol player';
+        div.textContent = letters[idx];
+        inner.appendChild(div);
+
+        // Cycle the symbol's content rapidly
+        const interval = setInterval(() => {
           const rand = Math.random();
-          if(rand < 0.3 && allPlayers.length > 0){
+          if(rand < 0.4 && allPlayers.length > 0){
             // Random player
             const p = allPlayers[Math.floor(Math.random() * allPlayers.length)];
             div.className = 'reel-symbol player';
             div.textContent = p.name;
-          }else if(rand < 0.4){
+            div.innerHTML = p.name;
+          }else if(rand < 0.5){
             // Luna (rare)
             div.className = 'reel-symbol luna';
-            const img = document.createElement('img');
-            img.src = "https://i.ibb.co/8g6ZQM5C/IMG-2604.png";
-            img.alt = "Luna";
-            div.appendChild(img);
+            div.innerHTML = `<img src="https://i.ibb.co/8g6ZQM5C/IMG-2604.png" alt="Luna">`;
           }else{
             // Letter
             div.className = 'reel-symbol letter';
             div.textContent = letters[idx];
           }
-          inner.appendChild(div);
-        }
+        }, 100); // Change every 100ms
+
+        reelCycleIntervals.push(interval);
       }
     });
     // Don't start bulbs here - will be started in performSpin for proper timing
@@ -1662,6 +1679,9 @@
   function spinAnimationStop(){
     const reelEls = reelsEl.querySelectorAll('.reel');
     reelEls.forEach(r=>r.classList.remove('spinning'));
+    // Clear all cycling intervals
+    reelCycleIntervals.forEach(iv => clearInterval(iv));
+    reelCycleIntervals = [];
     stopBulbsAnimation();
   }
 
@@ -1686,9 +1706,14 @@
     delays.forEach((delay, index) => {
       setTimeout(() => {
         reelEls[index].classList.remove('spinning');
+        // Clear the interval for this specific reel
+        if(reelCycleIntervals[index]){
+          clearInterval(reelCycleIntervals[index]);
+        }
         stoppedCount++;
         if(stoppedCount === 5 && callback){
           // All reels stopped, invoke callback
+          reelCycleIntervals = [];
           callback();
         }
       }, delay);
@@ -2034,7 +2059,9 @@
       tdSlotWins.textContent = `${p.slotWins}`;
       const tdWL = document.createElement('td');
       const winPct = overallWinRate(p);
-      tdWL.textContent = `${p.overallWins}/${p.overallLosses} (${winPct.toFixed(1)}%)`;
+      const winsDisplay = p.overallWins > 0 ? `+${p.overallWins}` : '0';
+      const lossesDisplay = p.overallLosses > 0 ? `-${p.overallLosses}` : '0';
+      tdWL.textContent = `${winsDisplay}/${lossesDisplay} (${winPct.toFixed(1)}%)`;
       if(winPct >= 60) tdWL.className = 'win-rate-good';
       else if(winPct >= 40) tdWL.className = 'win-rate-medium';
       else tdWL.className = 'win-rate-poor';
