@@ -38,7 +38,7 @@ function getLunaBaseOdds(activePlayerCount) {
   return 1/12;                                // 150% more frequent for max capacity (~8.33% per spin)
 }
 
-// Pity timer: Force Luna spawn after too many dead spins to prevent frustration
+// Dead spin guardrail: Guarantee win after too many dead spins
 function getMaxDeadStreakAllowed(activePlayerCount) {
   if (activePlayerCount <= 3) return 50;      // Very generous for small groups
   if (activePlayerCount <= 5) return 35;      // Generous for casual play
@@ -102,7 +102,7 @@ class SimulationEngine {
       ignitionWins: 0,
       deadSpins: 0,
       threeOfKind: 0,
-      pityTimerActivations: 0,
+      guardrailActivations: 0,
 
       // Dead spin tracking
       maxDeadStreak: 0,
@@ -143,7 +143,7 @@ class SimulationEngine {
     return active[active.length - 1];
   }
 
-  buildSpinResult(forceLuna = false) {
+  buildSpinResult(guaranteeWin = false) {
     const symbols = [];
     const letters = ['C', 'A', 'R', 'L', 'O'];
 
@@ -152,8 +152,8 @@ class SimulationEngine {
     const lunaOdds = getLunaBaseOdds(activePlayerCount);
     const carloLetterOdds = getCarloLetterOdds(activePlayerCount);
 
-    // Pity timer: Force Luna if requested
-    const luna = forceLuna || Math.random() < lunaOdds;
+    // Build one spin attempt
+    const luna = Math.random() < lunaOdds;
     const lunaIndex = luna ? Math.floor(Math.random() * 5) : -1;
 
     for (let i = 0; i < 5; i++) {
@@ -172,6 +172,18 @@ class SimulationEngine {
         } else {
           symbols.push({ type: 'letter', letter: letters[i] });
         }
+      }
+    }
+
+    // Guardrail: If we need to guarantee a win, keep trying until we get one
+    if (guaranteeWin) {
+      const isCarlo = this.detectCarlo(symbols);
+      const lunaWin = this.detectLunaWinner(symbols);
+      const hitWin = this.detectHitWinner(symbols);
+
+      if (!isCarlo && !lunaWin && !hitWin) {
+        // No winner, try again (recursive)
+        return this.buildSpinResult(true);
       }
     }
 
@@ -314,16 +326,16 @@ class SimulationEngine {
       }
     }
 
-    // PITY TIMER: Check if we need to force Luna to prevent excessive dead streaks
+    // Dead spin guardrail: Guarantee natural-looking win after too many dead spins
     const activePlayerCount = this.players.filter(p => p.status === 'active').length;
     const maxDeadStreak = getMaxDeadStreakAllowed(activePlayerCount);
-    const forceLuna = this.deadSpinStreak >= maxDeadStreak;
-    if (forceLuna) {
-      this.stats.pityTimerActivations++;
+    const guaranteeWin = this.deadSpinStreak >= maxDeadStreak;
+    if (guaranteeWin) {
+      this.stats.guardrailActivations++;
     }
 
     // Build spin
-    const symbols = this.buildSpinResult(forceLuna);
+    const symbols = this.buildSpinResult(guaranteeWin);
     const isCarlo = this.detectCarlo(symbols);
     const lunaWin = this.detectLunaWinner(symbols);
     const hitWin = this.detectHitWinner(symbols);
@@ -428,7 +440,7 @@ class SimulationEngine {
       fourOfKind: this.stats.fourOfKind,
       fiveOfKind: this.stats.fiveOfKind,
       maxDeadStreak: this.stats.maxDeadStreak,
-      pityTimerActivations: this.stats.pityTimerActivations,
+      guardrailActivations: this.stats.guardrailActivations,
       winsByType: this.stats.winsByType
     };
   }
@@ -485,7 +497,7 @@ function runMegaTest(playerCount = 20) {
   console.log(`Total Wins:         ${report.totalWins.toLocaleString()} (${report.hitRate})`);
   console.log(`Dead Spins:         ${report.deadSpins.toLocaleString()} (${report.deadRate})`);
   console.log(`Max Dead Streak:    ${report.maxDeadStreak}`);
-  console.log(`Pity Timer:         ${report.pityTimerActivations.toLocaleString()} activations`);
+  console.log(`Guardrail:          ${report.guardrailActivations.toLocaleString()} activations`);
   console.log('───────────────────────────────────────────────────────────────');
   console.log(`CARLO Jackpots:     ${report.carloJackpots.toLocaleString()} (${report.carloRate})`);
   console.log(`Luna Wins:          ${report.lunaWins.toLocaleString()} (${report.lunaRate})`);

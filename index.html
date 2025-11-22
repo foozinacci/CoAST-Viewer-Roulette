@@ -2181,7 +2181,7 @@
     return 1/12;                                // 150% more frequent for max capacity (~8.33% per spin)
   }
 
-  // Pity timer: Force Luna spawn after too many dead spins to prevent frustration
+  // Dead spin guardrail: Guarantee win after too many dead spins
   function getMaxDeadStreakAllowed(activePlayerCount){
     if(activePlayerCount <= 3) return 50;      // Very generous for small groups
     if(activePlayerCount <= 5) return 35;      // Generous for casual play
@@ -2809,7 +2809,7 @@
     return processIgnitionQueue(evt);
   }
 
-  function buildSpinResult(evt, forceLuna = false){
+  function buildSpinResult(evt, guaranteeWin = false){
     const symbols = [];
     const letters = ['C','A','R','L','O'];
 
@@ -2818,8 +2818,8 @@
     const lunaOdds = getLunaBaseOdds(activePlayerCount);
     const carloLetterOdds = getCarloLetterOdds(activePlayerCount);
 
-    // Pity timer: Force Luna if requested
-    const luna = forceLuna || Math.random() < lunaOdds;
+    // Build one spin attempt
+    const luna = Math.random() < lunaOdds;
     const lunaIndex = luna ? Math.floor(Math.random()*5) : -1;
 
     for(let i=0;i<5;i++){
@@ -2839,6 +2839,19 @@
         }
       }
     }
+
+    // Guardrail: If we need to guarantee a win, keep trying until we get one
+    if(guaranteeWin){
+      const isCarlo = detectCarlo(symbols);
+      const lunaWin = detectLunaWinner(evt, symbols);
+      const hitWin = detectHitWinner(evt, symbols);
+
+      if(!isCarlo && !lunaWin && !hitWin){
+        // No winner, try again (recursive)
+        return buildSpinResult(evt, true);
+      }
+    }
+
     return symbols;
   }
 
@@ -3489,9 +3502,9 @@
       return;
     }
 
-    // Dead spin guardrail
+    // Dead spin guardrail - guarantee natural-looking win after too many dead spins
     const maxDeadStreak = getMaxDeadStreakAllowed(activePlayers.length);
-    const forceLuna = evt.deadSpinStreak >= maxDeadStreak;
+    const guaranteeWin = evt.deadSpinStreak >= maxDeadStreak;
 
     spinBtn.disabled=true;
     leverEl.classList.add('pull');
@@ -3499,7 +3512,7 @@
     smallStatus.textContent="Spinning…";
 
     // Build spin result immediately (for timing calculation)
-    const symbols = buildSpinResult(evt, forceLuna);
+    const symbols = buildSpinResult(evt, guaranteeWin);
     const isCarlo = detectCarlo(symbols);
     let isLunaWin = false;
     const lunaPick = detectLunaWinner(evt,symbols);
