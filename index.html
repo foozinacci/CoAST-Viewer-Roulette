@@ -1187,6 +1187,7 @@
     .finish-card{
       width:calc(100% - 20px);
       max-width:460px;
+      max-height:calc(100vh - 40px);
       margin:0 auto;
       border-radius:18px;
       border:3px solid transparent;
@@ -1197,7 +1198,8 @@
       font-size:12px;
       text-align:center;
       position:relative;
-      overflow:hidden;
+      overflow-y:auto;
+      overflow-x:hidden;
     }
     .finish-card::before{
       content:'';
@@ -1468,6 +1470,7 @@
     .player-card{
       width:calc(100% - 20px);
       max-width:640px;
+      max-height:calc(100vh - 40px);
       margin:0 auto;
       border-radius:16px;
       border:3px solid transparent;
@@ -1477,7 +1480,8 @@
       box-shadow:0 0 30px rgba(0,0,0,.9);
       font-size:12px;
       position:relative;
-      overflow:hidden;
+      overflow-y:auto;
+      overflow-x:hidden;
     }
     .player-card::before{
       content:'';
@@ -3631,15 +3635,19 @@
         // Collect all match history across all opponents
         const allMatches = [];
         for(const [oppColors, stats] of Object.entries(d.matchups)){
-          if(stats.history && stats.history.length > 0){
+          if(!stats || typeof stats !== 'object') continue; // Skip invalid stats
+          if(stats.history && Array.isArray(stats.history) && stats.history.length > 0){
             stats.history.forEach(match => {
+              // Validate match data
+              if(!match || !match.id || !match.timestamp) return;
+              if(!match.opponentColors) match.opponentColors = oppColors; // Fallback
               allMatches.push({...match, oppColors: oppColors});
             });
           }
         }
 
         // Sort by timestamp descending (most recent first)
-        allMatches.sort((a, b) => b.timestamp - a.timestamp);
+        allMatches.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
         // Group by opponent color and render
         const groupedByOpponent = {};
@@ -3674,36 +3682,68 @@
           groupHeader.innerHTML = `vs. ${colorPips}: ${stats.wins}-${stats.losses} (${matchupWinRate}%)`;
           detailDiv.appendChild(groupHeader);
 
-          // Individual matches
-          oppMatches.forEach(m => {
-            const matchDiv = document.createElement('div');
-            matchDiv.style.cssText = 'padding:4px 8px;margin:2px 0;background:rgba(255,255,255,0.02);border-radius:3px;font-size:9px;display:flex;justify-content:space-between;align-items:center;';
-            matchDiv.dataset.matchId = m.id;
-            matchDiv.dataset.deckColor = d.color;
+          // Individual matches - limit initial render for performance
+          const INITIAL_MATCH_LIMIT = 10;
+          const matchContainer = document.createElement('div');
+          matchContainer.className = 'match-history-container';
 
-            const matchInfo = document.createElement('span');
-            const date = new Date(m.timestamp);
-            const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+          const renderMatches = (matches, container, start = 0, limit = INITIAL_MATCH_LIMIT) => {
+            const end = Math.min(start + limit, matches.length);
+            for(let idx = start; idx < end; idx++){
+              const m = matches[idx];
+              const matchDiv = document.createElement('div');
+              matchDiv.style.cssText = 'padding:4px 8px;margin:2px 0;background:rgba(255,255,255,0.02);border-radius:3px;font-size:9px;display:flex;justify-content:space-between;align-items:center;';
+              matchDiv.dataset.matchId = m.id;
+              matchDiv.dataset.deckColor = d.color;
 
-            if(m.matchType === 'BO1'){
-              const resultColor = m.result === 'win' ? 'var(--theme-color)' : 'var(--muted)';
-              matchInfo.innerHTML = `<span style="color:${resultColor};font-weight:600;">${m.result.toUpperCase()}</span> - ${m.matchType} - ${dateStr}`;
-            } else {
-              matchInfo.innerHTML = `${m.wins}W-${m.losses}L - ${m.matchType} - ${dateStr}`;
+              const matchInfo = document.createElement('span');
+              const date = new Date(m.timestamp || Date.now());
+              const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+
+              if(m.matchType === 'BO1'){
+                const result = m.result || 'unknown';
+                const resultColor = result === 'win' ? 'var(--theme-color)' : 'var(--muted)';
+                matchInfo.innerHTML = `<span style="color:${resultColor};font-weight:600;">${result.toUpperCase()}</span> - ${m.matchType || 'BO1'} - ${dateStr}`;
+              } else {
+                const wins = m.wins || 0;
+                const losses = m.losses || 0;
+                matchInfo.innerHTML = `${wins}W-${losses}L - ${m.matchType || 'BO3'} - ${dateStr}`;
+              }
+
+              const editBtn = document.createElement('button');
+              editBtn.textContent = 'Edit';
+              editBtn.style.cssText = 'font-size:9px;padding:2px 6px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;';
+              editBtn.onclick = (e) => {
+                e.stopPropagation();
+                openMatchEditDialog(currentPlayer, d, m);
+              };
+
+              matchDiv.appendChild(matchInfo);
+              matchDiv.appendChild(editBtn);
+              container.appendChild(matchDiv);
             }
+            return end;
+          };
 
-            const editBtn = document.createElement('button');
-            editBtn.textContent = 'Edit';
-            editBtn.style.cssText = 'font-size:9px;padding:2px 6px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;';
-            editBtn.onclick = (e) => {
+          let currentRenderedCount = renderMatches(oppMatches, matchContainer);
+          detailDiv.appendChild(matchContainer);
+
+          // Show "Load More" button if there are more matches
+          if(currentRenderedCount < oppMatches.length){
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.textContent = `Show ${Math.min(10, oppMatches.length - currentRenderedCount)} More (${oppMatches.length - currentRenderedCount} remaining)`;
+            loadMoreBtn.style.cssText = 'font-size:9px;padding:4px 10px;background:rgba(255,255,255,0.1);border:1px solid var(--theme-color);border-radius:3px;color:var(--theme-color);cursor:pointer;margin:4px 0;width:100%;';
+            loadMoreBtn.onclick = (e) => {
               e.stopPropagation();
-              openMatchEditDialog(currentPlayer, d, m);
+              currentRenderedCount = renderMatches(oppMatches, matchContainer, currentRenderedCount, 10);
+              if(currentRenderedCount >= oppMatches.length){
+                loadMoreBtn.remove();
+              } else {
+                loadMoreBtn.textContent = `Show ${Math.min(10, oppMatches.length - currentRenderedCount)} More (${oppMatches.length - currentRenderedCount} remaining)`;
+              }
             };
-
-            matchDiv.appendChild(matchInfo);
-            matchDiv.appendChild(editBtn);
-            detailDiv.appendChild(matchDiv);
-          });
+            detailDiv.appendChild(loadMoreBtn);
+          }
 
           // Add spacing between groups
           const spacer = document.createElement('div');
@@ -4278,17 +4318,32 @@
         return;
       }
 
-      opponentColorsContainer.innerHTML = '<div class="finish-label">Opponent Colors (Optional - one per game)</div>';
+      // Limit to prevent DOM overflow (max 20 games per BO1 run)
+      const MAX_BO1_GAMES = 20;
+      if(totalGames > MAX_BO1_GAMES){
+        opponentColorsContainer.innerHTML = `<div class="finish-label" style="color:var(--muted);font-size:11px;">Max ${MAX_BO1_GAMES} games per BO1 run. Please adjust wins/losses.</div>`;
+        return;
+      }
+
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'finish-label';
+      labelDiv.textContent = 'Opponent Colors (Optional - one per game)';
+      opponentColorsContainer.appendChild(labelDiv);
+
+      // Create scrollable container for opponent groups
+      const scrollContainer = document.createElement('div');
+      scrollContainer.style.cssText = 'max-height:300px;overflow-y:auto;overflow-x:hidden;margin-top:8px;padding-right:4px;';
+      scrollContainer.className = 'opponent-scroll-container';
 
       for(let i = 0; i < totalGames; i++){
         const gameLabel = i < wins ? `Win ${i + 1}` : `Loss ${i - wins + 1}`;
         const gameDiv = document.createElement('div');
         gameDiv.className = 'opponent-game-group';
-        gameDiv.style.cssText = 'margin-top:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:4px;';
+        gameDiv.style.cssText = 'margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:4px;';
 
-        const labelDiv = document.createElement('div');
-        labelDiv.textContent = gameLabel;
-        labelDiv.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:4px;';
+        const gameLabelDiv = document.createElement('div');
+        gameLabelDiv.textContent = gameLabel;
+        gameLabelDiv.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:4px;';
 
         const chipsDiv = document.createElement('div');
         chipsDiv.className = 'opponent-color-chips';
@@ -4304,10 +4359,12 @@
           chipsDiv.appendChild(chip);
         });
 
-        gameDiv.appendChild(labelDiv);
+        gameDiv.appendChild(gameLabelDiv);
         gameDiv.appendChild(chipsDiv);
-        opponentColorsContainer.appendChild(gameDiv);
+        scrollContainer.appendChild(gameDiv);
       }
+
+      opponentColorsContainer.appendChild(scrollContainer);
     } else {
       // BO3/BO5: Single opponent color selector for the entire match
       opponentColorsContainer.innerHTML = '<div class="finish-label">Opponent Colors (Optional)</div>';
