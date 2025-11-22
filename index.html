@@ -3866,10 +3866,12 @@
   }
 
   // MTG Color Identity Mappings - Proper ordering for all combinations
+  // Moving shadow colors for gradient animations
+  // Note: B uses BLACK for shadow, but PURPLE for glow (defined in CSS theme variables)
   const COLOR_HEX = {
     'W': '#fefce8',
     'U': '#38bdf8',
-    'B': '#4b5563',
+    'B': '#1a1a1a',  // Black shadow (glow is purple in CSS)
     'R': '#fb4b4b',
     'G': '#22c55e'
   };
