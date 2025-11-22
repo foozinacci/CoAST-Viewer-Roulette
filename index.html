@@ -20,10 +20,11 @@
       --muted:#d1bfa1;
       --danger:#f97373;
       --ok:#4ade80;
-      --theme-color:#fefce8;
-      --theme-glow:rgba(254,252,232,0.6);
-      --gradient-border:#fefce8;
+      --theme-color:#ffffff;
+      --theme-glow:rgba(255,255,255,0.4);
+      --gradient-border:linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff);
       --gradient-border-size:200%;
+      --logo-ring-gradient:conic-gradient(from 0deg, #ffffff 0deg 60deg, transparent 60deg 120deg, #ffffff 120deg 180deg, transparent 180deg 240deg, #ffffff 240deg 300deg, transparent 300deg 360deg);
     }
     body.theme-white{
       --bg:#1f2937;
@@ -344,6 +345,8 @@
       .history-panel,.leaderboard-panel{
         flex:1 1 auto;
         min-height:200px;
+        max-width:100%;
+        width:100%;
       }
       .slot-panel,.leaderboard-panel{
         padding:8px;
@@ -949,6 +952,35 @@
       background:var(--theme-color);
       box-shadow:0 0 8px var(--theme-glow);
     }
+    .help-body::-webkit-scrollbar,
+    .help-card::-webkit-scrollbar,
+    .deck-table-wrapper::-webkit-scrollbar,
+    .reel-charts-wrapper::-webkit-scrollbar{
+      width:8px;
+      height:8px;
+    }
+    .help-body::-webkit-scrollbar-track,
+    .help-card::-webkit-scrollbar-track,
+    .deck-table-wrapper::-webkit-scrollbar-track,
+    .reel-charts-wrapper::-webkit-scrollbar-track{
+      background:rgba(0,0,0,0.3);
+      border-radius:4px;
+    }
+    .help-body::-webkit-scrollbar-thumb,
+    .help-card::-webkit-scrollbar-thumb,
+    .deck-table-wrapper::-webkit-scrollbar-thumb,
+    .reel-charts-wrapper::-webkit-scrollbar-thumb{
+      background:var(--gradient-border);
+      border-radius:4px;
+      border:1px solid var(--border);
+    }
+    .help-body::-webkit-scrollbar-thumb:hover,
+    .help-card::-webkit-scrollbar-thumb:hover,
+    .deck-table-wrapper::-webkit-scrollbar-thumb:hover,
+    .reel-charts-wrapper::-webkit-scrollbar-thumb:hover{
+      background:var(--theme-color);
+      box-shadow:0 0 8px var(--theme-glow);
+    }
     .log-timestamp{
       color:var(--gold);
       font-weight:600;
@@ -1360,13 +1392,16 @@
     }
     .player-card-header{
       display:flex;
-      justify-content:space-between;
+      flex-direction:column;
+      justify-content:center;
       align-items:center;
       margin-bottom:6px;
+      gap:4px;
     }
     .player-card-name{
       font-weight:700;
       font-size:14px;
+      text-align:center;
     }
     .player-card-status{
       font-size:11px;
@@ -1374,6 +1409,7 @@
     }
     .player-card-actions{
       display:flex;
+      justify-content:center;
       gap:6px;
       margin:6px 0;
       flex-wrap:wrap;
@@ -1451,12 +1487,13 @@
       border:3px solid transparent;
       background:conic-gradient(var(--theme-color) 0% var(--percentage), rgba(0,0,0,.3) var(--percentage) 100%);
       background-clip:padding-box;
-      box-shadow:0 0 12px var(--theme-glow);
+      box-shadow:0 0 20px var(--theme-glow),0 0 40px var(--theme-glow);
       display:flex;
       align-items:center;
       justify-content:center;
-      filter:brightness(var(--chart-brightness, 1));
+      filter:brightness(1.3);
       overflow:hidden;
+      transition:all .15s ease-out;
     }
     .pie-chart::after{
       content:'';
@@ -1666,6 +1703,95 @@
       margin-top:8px;
       margin-bottom:2px;
     }
+    .spark-progression{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      margin:12px 0;
+      padding:12px;
+      background:rgba(0,0,0,0.3);
+      border-radius:8px;
+      border:1px solid rgba(148,116,72,.3);
+    }
+    .spark-bulbs-row{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+    }
+    .spark-bulb{
+      width:16px;
+      height:16px;
+      border-radius:50%;
+      background:rgba(0,0,0,0.5);
+      border:2px solid rgba(148,116,72,.5);
+      transition:all .3s ease;
+      position:relative;
+    }
+    .spark-bulb.lit{
+      background:var(--theme-color);
+      border-color:var(--theme-color);
+      box-shadow:0 0 10px var(--theme-glow),0 0 20px var(--theme-glow),inset 0 0 8px var(--theme-glow);
+      animation:sparkPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes sparkPulse{
+      0%, 100%{opacity:1;transform:scale(1);}
+      50%{opacity:0.7;transform:scale(1.1);}
+    }
+    .spark-overflow-bulb{
+      width:80px;
+      height:24px;
+      border-radius:12px;
+      background:rgba(0,0,0,0.5);
+      border:2px solid rgba(148,116,72,.5);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:all .3s ease;
+      position:relative;
+    }
+    .spark-overflow-bulb.ready.lit{
+      background:#fcd34d;
+      border-color:#fcd34d;
+      box-shadow:0 0 12px rgba(252,211,77,0.6),0 0 24px rgba(252,211,77,0.4);
+    }
+    .spark-overflow-bulb.ignition.lit{
+      background:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% 100%;
+      border:2px solid transparent;
+      background-clip:padding-box;
+      box-shadow:0 0 12px rgba(252,211,77,0.6),0 0 24px rgba(56,189,248,0.4),0 0 12px rgba(239,68,68,0.4);
+      animation:ignitionPulse 1s ease-in-out infinite, rainbowShift 3s linear infinite;
+      position:relative;
+    }
+    .spark-overflow-bulb.ignition.lit::before{
+      content:'';
+      position:absolute;
+      inset:-2px;
+      border-radius:12px;
+      background:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% 100%;
+      z-index:-1;
+      animation:rainbowShift 3s linear infinite;
+    }
+    @keyframes rainbowShift{
+      0%{background-position:0% 50%;}
+      100%{background-position:200% 50%;}
+    }
+    @keyframes ignitionPulse{
+      0%, 100%{box-shadow:0 0 12px rgba(252,211,77,0.6),0 0 24px rgba(56,189,248,0.4),0 0 12px rgba(239,68,68,0.4);}
+      50%{box-shadow:0 0 20px rgba(252,211,77,0.8),0 0 40px rgba(56,189,248,0.6),0 0 20px rgba(239,68,68,0.6);}
+    }
+    .spark-overflow-label{
+      font-size:9px;
+      font-weight:800;
+      letter-spacing:.1em;
+      color:rgba(255,255,255,0.4);
+      text-transform:uppercase;
+    }
+    .spark-overflow-bulb.lit .spark-overflow-label{
+      color:#000;
+    }
     .help-body{
       font-size:11px;
       color:var(--muted);
@@ -1835,7 +1961,7 @@
       </div>
       <div class="finish-actions">
         <button type="button" id="finishCancelBtn">Cancel</button>
-        <button type="button" class="primary" id="finishSaveBtn" style="pointer-events:auto!important;z-index:9999;position:relative;">Save & Re-Queue</button>
+        <button type="button" class="primary" id="finishSaveBtn" style="pointer-events:auto!important;z-index:9999;position:relative;">Save Results</button>
       </div>
     </div>
   </div>
@@ -1854,6 +1980,29 @@
       <div class="help-section-title">Reel Probabilities</div>
       <div class="reel-charts-wrapper">
         <div class="reel-charts" id="reelCharts"></div>
+      </div>
+      <div class="help-section-title">Spark Progression (<span id="playerSparkCount">0</span>/12)</div>
+      <div class="spark-progression">
+        <div class="spark-bulbs-row">
+          <div class="spark-bulb" data-spark="1"></div>
+          <div class="spark-bulb" data-spark="2"></div>
+          <div class="spark-bulb" data-spark="3"></div>
+          <div class="spark-bulb" data-spark="4"></div>
+          <div class="spark-bulb" data-spark="5"></div>
+        </div>
+        <div class="spark-overflow-bulb ready" data-spark="6">
+          <div class="spark-overflow-label">READY</div>
+        </div>
+        <div class="spark-bulbs-row">
+          <div class="spark-bulb" data-spark="7"></div>
+          <div class="spark-bulb" data-spark="8"></div>
+          <div class="spark-bulb" data-spark="9"></div>
+          <div class="spark-bulb" data-spark="10"></div>
+          <div class="spark-bulb" data-spark="11"></div>
+        </div>
+        <div class="spark-overflow-bulb ignition" data-spark="12">
+          <div class="spark-overflow-label">IGNITED</div>
+        </div>
       </div>
       <div class="help-section-title">Decks (by color identity)</div>
       <div class="deck-table-wrapper">
@@ -1877,39 +2026,17 @@
     <div class="help-card">
       <div class="help-title">How It Works</div>
       <div class="help-body">
-        <div class="help-section-title">The Basics</div>
-        <p>
-          Join the queue and earn tickets on each of 5 reels. Each spin reveals 5 results.
-          <strong>3+ matches = you win the slot.</strong> Your deck gets played until it loses.
-        </p>
+        <div class="help-section-title">Basics</div>
+        <p><strong>3+ matches = win.</strong> Each of 5 reels weighted by your tickets. Winner's deck plays until loss.</p>
 
-        <div class="help-section-title">Your Odds</div>
-        <p>
-          <strong>Tickets = your weight per reel.</strong> More tickets on a reel = higher chance to appear there.
-          Everyone starts with 1 ticket per reel. Cap: 500 tickets per reel.
-        </p>
-        <p>
-          <strong>Patience rewards:</strong> Miss a spin? Your tickets double (up to cap). Appear but don't win?
-          Spend 1 ticket on reels you appeared on. Dead spin? Tickets adjusted based on group size (smaller groups penalized, larger groups rewarded).
-        </p>
+        <div class="help-section-title">Tickets & Odds</div>
+        <p><strong>Tickets = weight per reel.</strong> Start: 1/reel. Cap: 500/reel. <strong>Miss spin:</strong> tickets double (to cap). <strong>Appear, don't win:</strong> -1 ticket on reels shown. <strong>Dead spin:</strong> small groups penalized, large groups rewarded.</p>
 
-        <div class="help-section-title">Overflow & Sparks</div>
-        <p>
-          <strong>When tickets exceed 500,</strong> overflow converts to sparks. Each 500 overflow = 1 spark (max 12).
-          <strong>At 12 sparks,</strong> you're auto-picked before the next spin and Ignited. Guaranteed win for waiting.
-        </p>
+        <div class="help-section-title">Sparks & Ignition</div>
+        <p><strong>Overflow past 500 → sparks.</strong> 500 overflow = 1 spark (max 12). <strong>12 sparks = Ignited:</strong> queued for guaranteed win. <strong>Cooldown:</strong> 1 ignition per 0-4 spins (scales with player count). Multiple players queue in FIFO order.</p>
 
-        <div class="help-section-title">Luna Luck</div>
-        <p>
-          <strong>Luna = wild symbol.</strong> Rarely appears (1 per spin max). Completes 3-in-a-row matches only.
-          Luna Luck wins trigger special animations. She's your lucky break.
-        </p>
-
-        <div class="help-section-title">CARLO Jackpot</div>
-        <p>
-          <strong>All 5 letters (C-A-R-L-O) at once = CARLO jackpot.</strong> Rare event. Streamer plays their deck instead of a viewer.
-          Individual letters don't affect your odds—only the full jackpot matters.
-        </p>
+        <div class="help-section-title">Luna & CARLO</div>
+        <p><strong>Luna:</strong> rare wild (1/spin max), completes 3-in-a-row. <strong>CARLO:</strong> all 5 letters at once = jackpot, streamer plays their deck.</p>
       </div>
       <div class="finish-actions">
         <button id="closeHelpBtn">Close</button>
@@ -2000,7 +2127,7 @@
   const currentResults = document.getElementById('currentResults');
 
   const state = {currentEventIndex: 1,events: []};
-  let selectedColors = new Set(['W']); // Multi-select theme colors
+  let selectedColors = new Set(); // Multi-select theme colors (empty = white glow default)
   let selectedColorSet = new Set();
   let queueReaddChoice = 'yes';
   let bonusRewardChoice = 'tickets';
@@ -2009,6 +2136,19 @@
   let bulbsTimer = null;
   let timeTimer = null;
   let currentPlayerCardId = null;
+
+  // Ignition Queue System - FIFO with scaling cooldowns
+  let ignitedQueue = []; // Array of player IDs ready for ignition
+  let lastIgnitionSpin = -1; // Spin count when last ignition occurred
+
+  // Ignition cooldown configuration (spins between ignitions)
+  function getIgnitionCooldown(activePlayerCount){
+    if(activePlayerCount <= 3) return 0; // No cooldown with few players
+    if(activePlayerCount <= 5) return 1; // 1 spin cooldown
+    if(activePlayerCount <= 10) return 2; // 2 spin cooldown
+    if(activePlayerCount <= 20) return 3; // 3 spin cooldown
+    return 4; // 4 spin cooldown for large queues
+  }
 
   // Handle +1 Win and -1 Loss buttons
   function updateResultsDisplay(){
@@ -2361,13 +2501,11 @@
 
   function applyOverflowToSparks(player, overflow){
     if(overflow <= 0) return;
-    let tokens;
-    if(overflow < TICKET_CAP){
-      tokens = 1;
-    } else {
-      tokens = Math.floor(overflow / TICKET_CAP);
+    // Every 500 overflow = 1 spark
+    const tokens = Math.floor(overflow / TICKET_CAP);
+    if(tokens > 0){
+      player.sparks = Math.min(MAX_SPARKS, (player.sparks || 0) + tokens);
     }
-    player.sparks = Math.min(MAX_SPARKS, (player.sparks || 0) + tokens);
   }
 
   function doubleTicketsAllReels(player){
@@ -2382,9 +2520,11 @@
         // Overflow: raw exceeds 500 cap
         const overflow = raw - TICKET_CAP;
 
-        // Calculate sparks from overflow
-        const sparks = overflow < TICKET_CAP ? 1 : Math.floor(overflow / TICKET_CAP);
-        player.sparks = Math.min(MAX_SPARKS, (player.sparks || 0) + sparksFromOverflow);
+        // Calculate sparks from overflow (every 500 overflow = 1 spark)
+        const sparksFromOverflow = Math.floor(overflow / TICKET_CAP);
+        if(sparksFromOverflow > 0){
+          player.sparks = Math.min(MAX_SPARKS, (player.sparks || 0) + sparksFromOverflow);
+        }
 
         // Calculate remaining tickets after overflow
         let newTickets = overflow % TICKET_CAP;
@@ -2483,6 +2623,52 @@
       return a.name.localeCompare(b.name);
     });
     return candidates[0];
+  }
+
+  // Update ignition queue with all players at 12 sparks
+  function updateIgnitionQueue(evt){
+    const readyPlayers = evt.players.filter(p => p.status === 'active' && p.sparks >= MAX_SPARKS);
+
+    // Add new ignited players to queue (FIFO order)
+    for(const p of readyPlayers){
+      if(!ignitedQueue.includes(p.id)){
+        ignitedQueue.push(p.id);
+        log(`<span style="color:#fcd34d;font-weight:600;">${p.name} has reached 12 sparks and is queued for ignition!</span>`);
+      }
+    }
+
+    // Remove players who are no longer eligible (left queue, lost sparks, etc.)
+    ignitedQueue = ignitedQueue.filter(id => {
+      const p = evt.players.find(pl => pl.id === id);
+      return p && p.status === 'active' && p.sparks >= MAX_SPARKS;
+    });
+  }
+
+  // Check if ignition can trigger this spin (cooldown check)
+  function canTriggerIgnition(evt){
+    const activePlayerCount = evt.players.filter(p => p.status === 'active').length;
+    const cooldown = getIgnitionCooldown(activePlayerCount);
+    const spinsSinceLastIgnition = evt.spinCount - lastIgnitionSpin;
+
+    return ignitedQueue.length > 0 && spinsSinceLastIgnition >= cooldown;
+  }
+
+  // Get next ignited player from queue
+  function processIgnitionQueue(evt){
+    if(ignitedQueue.length === 0) return null;
+
+    const playerId = ignitedQueue[0]; // FIFO: take first in queue
+    const player = evt.players.find(p => p.id === playerId);
+
+    if(player && player.status === 'active' && player.sparks >= MAX_SPARKS){
+      ignitedQueue.shift(); // Remove from queue
+      lastIgnitionSpin = evt.spinCount; // Update last ignition spin
+      return player;
+    }
+
+    // Player no longer valid, remove and try next
+    ignitedQueue.shift();
+    return processIgnitionQueue(evt);
   }
 
   function buildSpinResult(evt){
@@ -2763,6 +2949,35 @@
       reelChartsEl.appendChild(chartDiv);
     }
 
+    // Render spark progression bulbs
+    const playerSparks = p.sparks || 0;
+    document.getElementById('playerSparkCount').textContent = playerSparks;
+
+    // Light up bulbs based on spark count
+    const sparkBulbs = document.querySelectorAll('.spark-bulb');
+    sparkBulbs.forEach(bulb => {
+      const sparkNum = parseInt(bulb.dataset.spark);
+      if(playerSparks >= sparkNum){
+        bulb.classList.add('lit');
+      } else {
+        bulb.classList.remove('lit');
+      }
+    });
+
+    // Light up overflow bulbs
+    const readyBulb = document.querySelector('.spark-overflow-bulb.ready');
+    const ignitionBulb = document.querySelector('.spark-overflow-bulb.ignition');
+    if(playerSparks >= 6){
+      readyBulb.classList.add('lit');
+    } else {
+      readyBulb.classList.remove('lit');
+    }
+    if(playerSparks >= 12){
+      ignitionBulb.classList.add('lit');
+    } else {
+      ignitionBulb.classList.remove('lit');
+    }
+
     deckTableBody.innerHTML = '';
     const rows = [];
     p.decks.forEach(d=>{
@@ -2911,6 +3126,7 @@
       ch.classList.toggle('active', ch.dataset.choice === 'tickets');
     });
     bonusChoiceField.style.display = showBonusChoice ? 'block' : 'none';
+    finishSaveBtn.disabled = false;
     finishOverlay.classList.add('show');
   }
 
@@ -2973,11 +3189,17 @@
   finishSaveBtn.addEventListener('click',()=>{
     const evt = currentEvent();
     if(!evt.currentRun) return;
+
+    // Prevent double-click by disabling button immediately
+    if(finishSaveBtn.disabled) return;
+    finishSaveBtn.disabled = true;
+
     const run = evt.currentRun;
     const player = evt.players.find(p=>p.id===run.playerId);
     if(!player){
       evt.currentRun=null;
       finishOverlay.classList.remove('show');
+      finishSaveBtn.disabled = false;
       return;
     }
     const wins = Math.max(0,parseInt(runWinsInput.value,10)||0);
@@ -3029,6 +3251,7 @@
         log(`${player.name} finished game. ${player.extraGamesRemaining} extra game(s) remaining.`);
         evt.currentRun=null;
         finishOverlay.classList.remove('show');
+        finishSaveBtn.disabled = false;
         // Show them in the finish prompt again for next game
         setTimeout(()=> finishRunPrompt(player), 100);
         renderLeaderboard();
@@ -3077,6 +3300,7 @@
     log(`Reported run for ${player.name}: ${wins}W/${losses}L, colors=${colors||'none'}, type=${matchType}`);
     evt.currentRun=null;
     finishOverlay.classList.remove('show');
+    finishSaveBtn.disabled = false;
     renderLeaderboard();
     saveAll();
   });
@@ -3088,19 +3312,30 @@
       finishOverlay.classList.add('show');
       return;
     }
-    const ignitedPlayer = findIgnitedPlayer(evt);
-    if(ignitedPlayer){
-      log(`<span style="color:#06d6a0;font-weight:600;">${ignitedPlayer.sparks} sparks & has been Ignited</span>`);
-      // Start bulb celebration for ignited player
-      startBulbsAnimation(false);
-      setTimeout(()=>{
-        stopBulbsAnimation();
-        handleWinnerBanner(ignitedPlayer,'ignited',3,false);
-      },1200);
-      renderLeaderboard();
-      saveAll();
-      return;
+
+    // Update ignition queue with any players at 12 sparks
+    updateIgnitionQueue(evt);
+
+    // Check if we can process an ignition this spin (cooldown check)
+    if(canTriggerIgnition(evt)){
+      const ignitedPlayer = processIgnitionQueue(evt);
+      if(ignitedPlayer){
+        const activeCount = evt.players.filter(p=>p.status==='active').length;
+        const cooldown = getIgnitionCooldown(activeCount);
+        const queueLength = ignitedQueue.length;
+        log(`<span style="color:#fcd34d;font-weight:600;">${ignitedPlayer.name} has been Ignited! (${ignitedPlayer.sparks} sparks, ${queueLength} in queue, cooldown: ${cooldown} spins)</span>`);
+        // Start bulb celebration for ignited player
+        startBulbsAnimation(false);
+        setTimeout(()=>{
+          stopBulbsAnimation();
+          handleWinnerBanner(ignitedPlayer,'ignited',3,false);
+        },1200);
+        renderLeaderboard();
+        saveAll();
+        return;
+      }
     }
+
     const activePlayers = evt.players.filter(p=>p.status==='active');
     if(activePlayers.length===0){
       smallStatus.textContent="No active players. Add someone first.";
@@ -3532,13 +3767,14 @@
   }
 
   function applyGradientGlow(){
-    // No colors selected - default to gold
+    // No colors selected - default to white glow
     if(selectedColors.size === 0){
-      const goldGradient = 'linear-gradient(90deg, #fcd34d, #f59e0b, #d97706, #fcd34d)';
-      document.documentElement.style.setProperty('--gradient-border', goldGradient);
+      const whiteGradient = 'linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff)';
+      document.documentElement.style.setProperty('--gradient-border', whiteGradient);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
-      document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg, #fcd34d 0deg 60deg, transparent 60deg 120deg, #fcd34d 120deg 180deg, transparent 180deg 240deg, #fcd34d 240deg 300deg, transparent 300deg 360deg)`);
-      document.documentElement.style.setProperty('--theme-glow', 'rgba(250,204,21,0.4)');
+      document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg, #ffffff 0deg 60deg, transparent 60deg 120deg, #ffffff 120deg 180deg, transparent 180deg 240deg, #ffffff 240deg 300deg, transparent 300deg 360deg)`);
+      document.documentElement.style.setProperty('--theme-glow', 'rgba(255,255,255,0.4)');
+      document.documentElement.style.setProperty('--theme-color', '#ffffff');
       return;
     }
 
@@ -3611,7 +3847,7 @@
       try{
         selectedColors = new Set(JSON.parse(saved));
       }catch(e){
-        selectedColors = new Set(['W']);
+        selectedColors = new Set(); // Empty = white glow default
       }
     }else{
       // Migrate old single-color theme
@@ -3619,8 +3855,8 @@
       if(oldSaved){
         selectedColors = new Set([oldSaved]);
       }else{
-        // Default to white theme on first load
-        selectedColors = new Set(['W']);
+        // Default to white glow (no theme selected)
+        selectedColors = new Set();
       }
     }
     applyMultiTheme();
