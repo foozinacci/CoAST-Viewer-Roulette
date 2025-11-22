@@ -1481,9 +1481,9 @@
       </div>
       <div class="finish-field">
         <div class="finish-label">Adjust Results (Base 0)</div>
-        <div class="finish-input-row" style="justify-content:center;">
-          <button type="button" class="adjust-btn" id="addWinBtn" style="pointer-events:auto;">+1 Win</button>
-          <button type="button" class="adjust-btn" id="addLossBtn" style="pointer-events:auto;">-1 Loss</button>
+        <div class="finish-input-row" style="justify-content:center;position:relative;z-index:100;">
+          <button type="button" class="adjust-btn" id="addWinBtn" style="pointer-events:auto!important;position:relative;z-index:100;">+1 Win</button>
+          <button type="button" class="adjust-btn" id="addLossBtn" style="pointer-events:auto!important;position:relative;z-index:100;">-1 Loss</button>
         </div>
         <div style="margin-top:8px;font-size:11px;color:var(--muted);">
           Current: <span id="currentResults">0 wins, 0 losses</span>
@@ -1491,35 +1491,35 @@
         <input type="hidden" id="runWins" value="0"/>
         <input type="hidden" id="runLosses" value="0"/>
       </div>
-      <div class="finish-field">
+      <div class="finish-field" style="position:relative;z-index:100;">
         <div class="finish-label">Deck Color Identity</div>
-        <div class="color-chips" id="colorChips">
-          <div class="color-chip" data-color="W">W</div>
-          <div class="color-chip" data-color="U">U</div>
-          <div class="color-chip" data-color="B">B</div>
-          <div class="color-chip" data-color="R">R</div>
-          <div class="color-chip" data-color="G">G</div>
-          <div class="color-chip" data-color="C">C</div>
+        <div class="color-chips" id="colorChips" style="position:relative;z-index:100;">
+          <div class="color-chip" data-color="W" style="position:relative;z-index:100;cursor:pointer!important;">W</div>
+          <div class="color-chip" data-color="U" style="position:relative;z-index:100;cursor:pointer!important;">U</div>
+          <div class="color-chip" data-color="B" style="position:relative;z-index:100;cursor:pointer!important;">B</div>
+          <div class="color-chip" data-color="R" style="position:relative;z-index:100;cursor:pointer!important;">R</div>
+          <div class="color-chip" data-color="G" style="position:relative;z-index:100;cursor:pointer!important;">G</div>
+          <div class="color-chip" data-color="C" style="position:relative;z-index:100;cursor:pointer!important;">C</div>
         </div>
       </div>
-      <div class="finish-field" id="bonusChoiceField" style="display:none;">
+      <div class="finish-field" id="bonusChoiceField" style="display:none;position:relative;z-index:100;">
         <div class="finish-label">Bonus Reward (4/5-of-a-kind)</div>
         <div class="finish-sub" style="margin-top:4px;">Choose your reward for hitting 4 or 5 symbols:</div>
-        <div class="queue-choice" id="bonusChoice">
-          <div class="queue-chip active" data-choice="tickets">Bonus Tickets</div>
-          <div class="queue-chip" data-choice="games">Extra Games</div>
+        <div class="queue-choice" id="bonusChoice" style="position:relative;z-index:100;">
+          <div class="queue-chip active" data-choice="tickets" style="position:relative;z-index:100;cursor:pointer!important;">Bonus Tickets</div>
+          <div class="queue-chip" data-choice="games" style="position:relative;z-index:100;cursor:pointer!important;">Extra Games</div>
         </div>
       </div>
-      <div class="finish-field">
+      <div class="finish-field" style="position:relative;z-index:100;">
         <div class="finish-label">Re-add player to queue?</div>
-        <div class="queue-choice" id="queueChoice">
-          <div class="queue-chip active" data-choice="yes">Yes</div>
-          <div class="queue-chip" data-choice="no">No</div>
+        <div class="queue-choice" id="queueChoice" style="position:relative;z-index:100;">
+          <div class="queue-chip active" data-choice="yes" style="position:relative;z-index:100;cursor:pointer!important;">Yes</div>
+          <div class="queue-chip" data-choice="no" style="position:relative;z-index:100;cursor:pointer!important;">No</div>
         </div>
       </div>
-      <div class="finish-actions">
-        <button type="button" id="finishCancelBtn" style="pointer-events:auto;">Cancel</button>
-        <button type="button" class="primary" id="finishSaveBtn" style="pointer-events:auto;">Save & Re-Queue</button>
+      <div class="finish-actions" style="position:relative;z-index:100;">
+        <button type="button" id="finishCancelBtn" style="pointer-events:auto!important;position:relative;z-index:100;">Cancel</button>
+        <button type="button" class="primary" id="finishSaveBtn" style="pointer-events:auto!important;position:relative;z-index:100;">Save & Re-Queue</button>
       </div>
     </div>
   </div>
