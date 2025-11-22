@@ -644,12 +644,16 @@
       cursor:pointer;
       background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
       background-clip:padding-box;
-      color:var(--theme-color);
+      color:#ffffff;
       text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
       box-shadow:0 0 16px var(--theme-glow),inset 0 0 12px var(--theme-glow);
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       overflow:hidden;
+    }
+    body.theme-gold .spin-button{
+      color:var(--gold);
+      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
     }
     .spin-button::after{
       content:'';
@@ -698,9 +702,13 @@
       gap:6px;
       margin-bottom:8px;
       flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
     }
     .add-player-form input{
       flex:1;
+      min-width:150px;
+      max-width:100%;
       border-radius:999px;
       border:1px solid var(--border);
       background:var(--panel);
@@ -715,7 +723,7 @@
       background-clip:padding-box;
       font-size:12px;
       padding:6px 12px;
-      color:var(--theme-color);
+      color:#ffffff;
       font-weight:900;
       text-transform:uppercase;
       letter-spacing:.12em;
@@ -724,6 +732,10 @@
       box-shadow:0 0 16px var(--theme-glow),inset 0 0 12px var(--theme-glow);
       position:relative;
       overflow:hidden;
+    }
+    body.theme-gold .add-player-form button{
+      color:var(--gold);
+      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
     }
     .add-player-form button::after{
       content:'';
@@ -771,6 +783,23 @@
       background:linear-gradient(145deg, rgba(30,30,30,0.95) 0%, rgba(0,0,0,0.9) 100%);
       margin-top:6px;
       box-shadow:0 0 16px rgba(0,0,0,0.5),inset 0 0 20px rgba(0,0,0,0.6);
+    }
+    .leaderboard-wrapper::-webkit-scrollbar{
+      width:8px;
+      height:8px;
+    }
+    .leaderboard-wrapper::-webkit-scrollbar-track{
+      background:rgba(0,0,0,0.3);
+      border-radius:4px;
+    }
+    .leaderboard-wrapper::-webkit-scrollbar-thumb{
+      background:var(--gradient-border);
+      border-radius:4px;
+      border:1px solid var(--border);
+    }
+    .leaderboard-wrapper::-webkit-scrollbar-thumb:hover{
+      background:var(--theme-color);
+      box-shadow:0 0 8px var(--theme-glow);
     }
     .leaderboard-table{
       width:100%;
@@ -834,6 +863,23 @@
       overflow-y:auto;
       color:var(--muted);
       text-align:center;
+      padding-right:4px;
+    }
+    .log::-webkit-scrollbar{
+      width:8px;
+    }
+    .log::-webkit-scrollbar-track{
+      background:rgba(0,0,0,0.3);
+      border-radius:4px;
+    }
+    .log::-webkit-scrollbar-thumb{
+      background:var(--gradient-border);
+      border-radius:4px;
+      border:1px solid var(--border);
+    }
+    .log::-webkit-scrollbar-thumb:hover{
+      background:var(--theme-color);
+      box-shadow:0 0 8px var(--theme-glow);
     }
     .log-timestamp{
       color:var(--gold);
@@ -851,8 +897,9 @@
     }
     .overlay.show{display:flex;}
     .winner-card{
-      width:100%;
+      width:calc(100% - 20px);
       max-width:420px;
+      margin:0 auto;
       border-radius:18px;
       border:3px solid transparent;
       background:radial-gradient(circle at top,#1e293b 0,#020617 50%,#000 100%);
@@ -907,7 +954,7 @@
       border:3px solid transparent;
       background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
       background-clip:padding-box;
-      color:var(--theme-color);
+      color:#ffffff;
       font-size:11px;
       font-weight:700;
       padding:6px 10px;
@@ -919,6 +966,10 @@
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       overflow:hidden;
+    }
+    body.theme-gold .winner-actions button{
+      color:var(--gold);
+      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
     }
     .winner-actions button::after{
       content:'';
@@ -953,8 +1004,9 @@
       object-fit:contain;
     }
     .finish-card{
-      width:100%;
+      width:calc(100% - 20px);
       max-width:460px;
+      margin:0 auto;
       border-radius:18px;
       border:3px solid transparent;
       background:var(--panel);
@@ -1015,13 +1067,14 @@
       position:relative;
       z-index:10;
       justify-content:center;
+      max-width:100%;
     }
     .adjust-btn{
       border-radius:999px;
       border:3px solid transparent;
       background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
       background-clip:padding-box;
-      color:var(--theme-color);
+      color:#ffffff;
       font-size:13px;
       font-weight:700;
       padding:8px 16px;
@@ -1034,6 +1087,10 @@
       position:relative;
       z-index:10;
       overflow:hidden;
+    }
+    body.theme-gold .adjust-btn{
+      color:var(--gold);
+      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
     }
     .adjust-btn::after{
       content:'';
@@ -1137,18 +1194,20 @@
     }
     .finish-actions{
       display:flex;
-      justify-content:flex-end;
+      justify-content:center;
       gap:6px;
       margin-top:8px;
       position:relative;
       z-index:10;
+      flex-wrap:wrap;
+      max-width:100%;
     }
     .finish-actions button{
       border-radius:999px;
       border:3px solid transparent;
       background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
       background-clip:padding-box;
-      color:var(--theme-color);
+      color:#ffffff;
       font-size:11px;
       font-weight:700;
       padding:6px 10px;
@@ -1161,6 +1220,10 @@
       position:relative;
       z-index:10;
       overflow:hidden;
+    }
+    body.theme-gold .finish-actions button{
+      color:var(--gold);
+      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
     }
     .finish-actions button::after{
       content:'';
@@ -1185,8 +1248,9 @@
       font-weight:900;
     }
     .player-card{
-      width:100%;
+      width:calc(100% - 20px);
       max-width:640px;
+      margin:0 auto;
       border-radius:16px;
       border:3px solid transparent;
       background:var(--panel);
@@ -1237,7 +1301,7 @@
       border:3px solid transparent;
       background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
       background-clip:padding-box;
-      color:var(--theme-color);
+      color:#ffffff;
       font-size:11px;
       font-weight:700;
       padding:4px 8px;
@@ -1249,6 +1313,10 @@
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       overflow:hidden;
+    }
+    body.theme-gold .player-card-actions button{
+      color:var(--gold);
+      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
     }
     .player-card-actions button::after{
       content:'';
@@ -1280,8 +1348,8 @@
     .reel-charts{
       display:flex;
       gap:12px;
-      justify-content:flex-start;
-      flex-wrap:nowrap;
+      justify-content:center;
+      flex-wrap:wrap;
       min-width:min-content;
     }
     .reel-chart{
@@ -1406,7 +1474,7 @@
       border:3px solid transparent;
       background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
       background-clip:padding-box;
-      color:var(--theme-color);
+      color:#ffffff;
       font-size:10px;
       font-weight:700;
       padding:4px 8px;
@@ -1418,6 +1486,10 @@
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       overflow:hidden;
+    }
+    body.theme-gold .footer-buttons button{
+      color:var(--gold);
+      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
     }
     .footer-buttons button::after{
       content:'';
@@ -1549,7 +1621,7 @@
           <div class="side-panel-section-title">Leaderboard Odds</div>
         </div>
         <form class="add-player-form" id="addPlayerForm" autocomplete="off">
-          <input id="playerNameInput" placeholder="Add viewer (name / handle)" autocomplete="off" />
+          <input type="text" id="playerNameInput" name="player-name-input" placeholder="Add viewer (name / handle)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
           <button type="submit">Add</button>
         </form>
         <div class="leaderboard-wrapper">
@@ -1578,7 +1650,7 @@
       <button id="diagBtn">Hypergeometric Diagnostic</button>
       <button id="exportBtn">Export Session</button>
       <button id="importBtn">Import Session</button>
-      <button id="resetEventBtn">Factory Reset Event</button>
+      <button id="resetEventBtn">Factory Reset Session</button>
     </div>
   </div>
   <input type="file" id="importFileInput" accept=".json" style="display:none;"/>
@@ -2430,9 +2502,8 @@
       const tdTotal = document.createElement('td');
       tdTotal.textContent = totalTickets(p);
       const tdPity = document.createElement('td');
-      const pityIcon = p.pityTokens > 0 ? '🥣' : '';
       const pityText = p.pityTokens > 0 ? `${p.pityTokens} / ${MAX_PITY_TOKENS}` : '';
-      tdPity.innerHTML = `${pityIcon} <span class="pity-count">${pityText}</span>`;
+      tdPity.innerHTML = `<span class="pity-count">${pityText}</span>`;
       const tdSlotWins = document.createElement('td');
       tdSlotWins.textContent = `${p.slotWins}`;
       const tdWL = document.createElement('td');
@@ -2971,7 +3042,7 @@
       }else{
         // Dead spin: No bulb celebration
         evt.deadSpinStreak++;
-        log(`Dead spin (#${evt.deadSpinStreak}).`);
+        log(`<span style="color:var(--red);">Dead spin (#${evt.deadSpinStreak}).</span>`);
         handleDeadSpinTickets(evt,symbols,reelPlayers);
         spinBtn.disabled=false;
         smallStatus.textContent="Ready.";
@@ -2991,13 +3062,11 @@
     if(nameToAdd){
       addPlayer(nameToAdd);
     }
-    // Always clear input after submission
-    playerNameInput.value='';
-    // Use setTimeout to ensure clear happens after any browser auto-fill
-    setTimeout(() => {
-      playerNameInput.value='';
-      playerNameInput.focus();
-    }, 0);
+    // Clear and reset the entire form
+    addPlayerForm.reset();
+    playerNameInput.value = '';
+    playerNameInput.focus();
+    return false;
   });
   // Event chip switching removed - using single event model
 
@@ -3063,7 +3132,7 @@
   });
 
   resetEventBtn.addEventListener('click',()=>{
-    if(!confirm("Factory reset this event? All players and stats for this event will be lost."))return;
+    if(!confirm("Factory reset this session? All players and stats will be lost."))return;
     state.events[state.currentEventIndex]={
       players:[],
       spinCount:0,
@@ -3072,7 +3141,7 @@
       carloHits:0,
       lunaHits:0
     };
-    log(`Event #${state.currentEventIndex} reset.`);
+    log('Session reset.');
     renderLeaderboard();
     saveAll();
   });
@@ -3261,7 +3330,11 @@
       const allColors = '#fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e';
       const allColorsArray = ['#fefce8', '#38bdf8', '#4b5563', '#fb4b4b', '#22c55e'];
       document.documentElement.style.setProperty('--multi-theme-gradient', '#fcd34d');
-      document.documentElement.style.setProperty('--gradient-border', `linear-gradient(90deg, ${allColors})`);
+      document.documentElement.style.setProperty('--gradient-border', `linear-gradient(90deg, ${allColors}, ${allColors})`);
+      document.documentElement.style.setProperty('--gradient-border-size', '200%');
+      // Gold mode: rainbow gradient text for buttons
+      document.documentElement.style.setProperty('--button-text-color', `linear-gradient(90deg, ${allColors})`);
+      document.documentElement.style.setProperty('--button-text-is-gradient', '1');
       // Create conic gradient segments for logo ring
       const segments = allColorsArray.map((c, i) => {
         const start = i * 72;
@@ -3272,13 +3345,24 @@
       return;
     }
 
-    // Create animated gradient for borders/glows
-    const gradient = colors.length > 1
-      ? `linear-gradient(90deg, ${colors.join(', ')})`
-      : colors[0];
+    // Non-gold mode: white text for buttons
+    document.documentElement.style.setProperty('--button-text-color', '#ffffff');
+    document.documentElement.style.setProperty('--button-text-is-gradient', '0');
 
-    document.documentElement.style.setProperty('--multi-theme-gradient', gradient);
-    document.documentElement.style.setProperty('--gradient-border', gradient);
+    // Create animated gradient for borders/glows
+    if(colors.length > 1){
+      // Multi-color gradient
+      const gradient = `linear-gradient(90deg, ${colors.join(', ')}, ${colors.join(', ')})`;
+      document.documentElement.style.setProperty('--multi-theme-gradient', gradient);
+      document.documentElement.style.setProperty('--gradient-border', gradient);
+      document.documentElement.style.setProperty('--gradient-border-size', '200%');
+    } else {
+      // Single color - create gradient with same color repeated for animation
+      const singleColorGradient = `linear-gradient(90deg, ${colors[0]}, ${colors[0]}, ${colors[0]})`;
+      document.documentElement.style.setProperty('--multi-theme-gradient', singleColorGradient);
+      document.documentElement.style.setProperty('--gradient-border', singleColorGradient);
+      document.documentElement.style.setProperty('--gradient-border-size', '200%');
+    }
 
     // Create conic gradient for logo ring based on selected colors
     if(colors.length > 1){
