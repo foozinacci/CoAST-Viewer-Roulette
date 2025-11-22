@@ -2147,7 +2147,7 @@
 
   const BULB_COLORS = ['#fefce8','#38bdf8','#020617','#ef4444','#22c55e'];
   const BULB_LUNA_COLORS = ['#fdf2ff','#fb7185','#a855f7','#f973fa'];
-  function startBulbsAnimation(isLuna){
+  function startBulbsAnimation(isLunaWin){
     stopBulbsAnimation();
     const top = bulbRowTop.querySelectorAll('.bulb');
     const bottom = bulbRowBottom.querySelectorAll('.bulb');
@@ -2164,7 +2164,8 @@
     let t = 0;
     const trailLength = 8; // Number of bulbs to light up in the trail
     bulbsTimer = setInterval(()=>{
-      const colors = isLuna ? BULB_LUNA_COLORS : BULB_COLORS;
+      // For Luna wins: use pink colors. For others: randomly cycle all non-pink colors
+      const availableColors = isLunaWin ? BULB_LUNA_COLORS : BULB_COLORS;
 
       // Turn off all bulbs first
       all.forEach(b => {
@@ -2173,12 +2174,12 @@
         b.style.color = '#4b5563';
       });
 
-      // Light up trailing bulbs with gradient effect
+      // Light up trailing bulbs with random color cycling
       for(let i = 0; i < trailLength; i++){
         const idx = (t - i + all.length) % all.length;
         const bulb = all[idx];
-        const colorIdx = Math.floor(i / 2) % colors.length;
-        const c = colors[colorIdx];
+        // Random color from available palette
+        const c = availableColors[Math.floor(Math.random() * availableColors.length)];
         const opacity = 1 - (i / trailLength) * 0.7; // Fade trail
         bulb.style.color = c;
         bulb.style.background = c;
@@ -3127,6 +3128,14 @@
     spinAnimationStopCascade(() => {
       leverEl.classList.remove('pull');
       renderSpinResult(symbols);
+
+      // Log Luna appearances (regardless of win/loss)
+      const lunaCount = symbols.filter(s => s.type === 'luna').length;
+      if(lunaCount > 0){
+        const appearanceText = lunaCount === 1 ? 'appearance' : 'appearances';
+        log(`<span style="color:#f973fa;font-weight:600;">Luna made ${lunaCount} ${appearanceText}</span>`);
+      }
+
       const reelPlayers=[];
       symbols.forEach((s,idx)=>{
         if(s.type==='player') reelPlayers.push({index:idx,playerId:s.playerId});
