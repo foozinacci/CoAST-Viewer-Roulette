@@ -3607,7 +3607,10 @@
     }
 
     // Dead spin guardrail - guarantee natural-looking win after too many dead spins
-    const maxDeadStreak = getMaxDeadStreakAllowed(activePlayers.length);
+    // Add variance (±1-2 spins) to prevent predictable patterns
+    const baseMaxDeadStreak = getMaxDeadStreakAllowed(activePlayers.length);
+    const variance = activePlayers.length <= 15 ? 1 : 2; // Larger groups get more variance
+    const maxDeadStreak = baseMaxDeadStreak + Math.floor(Math.random() * (variance * 2 + 1)) - variance;
     const guaranteeWin = evt.deadSpinStreak >= maxDeadStreak;
 
     spinBtn.disabled=true;
