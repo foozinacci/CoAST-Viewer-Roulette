@@ -117,6 +117,12 @@
       100%{background-position:0% 50%;}
     }
 
+    @keyframes blackLayerShift{
+      0%{background-position:100% 50%;}
+      50%{background-position:0% 50%;}
+      100%{background-position:100% 50%;}
+    }
+
     @keyframes rotate{
       0%{transform:rotate(0deg);}
       100%{transform:rotate(360deg);}
@@ -314,6 +320,22 @@
       display:flex;
       flex-direction:column;
     }
+    .history-panel::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
+    }
     .history-panel::after{
       content:'';
       position:absolute;
@@ -357,6 +379,22 @@
       order:-1;
       max-width:calc(60% - 8px);
     }
+    .slot-panel::before,.leaderboard-panel::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
+    }
     .slot-panel::after,.leaderboard-panel::after{
       content:'';
       position:absolute;
@@ -372,14 +410,6 @@
       animation:gradientShift 4s ease infinite;
       z-index:100;
       filter:drop-shadow(0 0 12px var(--theme-glow)) drop-shadow(0 0 6px var(--theme-glow));
-    }
-    .slot-panel::before{
-      content:"";
-      position:absolute;
-      inset:-40%;
-      background:radial-gradient(circle at top,rgba(250,250,250,.04) 0,transparent 55%),radial-gradient(circle at center,rgba(56,189,248,.05) 0,transparent 55%),radial-gradient(circle at bottom,rgba(236,72,153,.07) 0,transparent 60%);
-      opacity:.5;
-      pointer-events:none;
     }
     .slot-header{
       display:none;
@@ -1023,6 +1053,22 @@
       position:relative;
       overflow:hidden;
     }
+    .winner-card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
+    }
     .winner-card::after{
       content:'';
       position:absolute;
@@ -1128,6 +1174,22 @@
       text-align:center;
       position:relative;
       overflow:hidden;
+    }
+    .finish-card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
     }
     .finish-card::after{
       content:'';
@@ -1389,6 +1451,22 @@
       font-size:12px;
       position:relative;
       overflow:hidden;
+    }
+    .player-card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
     }
     .player-card::after{
       content:'';
@@ -1689,6 +1767,22 @@
       overflow-y:auto;
       max-height:90vh;
       margin:0 10px;
+    }
+    .help-card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
     }
     .help-card::after{
       content:'';
@@ -3866,14 +3960,22 @@
   }
 
   // MTG Color Identity Mappings - Proper ordering for all combinations
-  // Moving shadow colors for gradient animations
-  // Note: B uses BLACK for shadow, but PURPLE for glow (defined in CSS theme variables)
+  // Theme gradient colors for animated borders (visible colors)
   const COLOR_HEX = {
-    'W': '#fefce8',
-    'U': '#38bdf8',
-    'B': '#1a1a1a',  // Black shadow (glow is purple in CSS)
-    'R': '#fb4b4b',
-    'G': '#22c55e'
+    'W': '#fefce8',  // White/cream
+    'U': '#38bdf8',  // Blue
+    'B': '#c084fc',  // Purple (B theme color)
+    'R': '#fb4b4b',  // Red
+    'G': '#22c55e'   // Green
+  };
+
+  // Shadow colors for independent moving shadow animation layer
+  const SHADOW_HEX = {
+    'W': '#ffffff',  // White shadow
+    'U': '#0ea5e9',  // Blue shadow (darker)
+    'B': '#000000',  // Black shadow
+    'R': '#dc2626',  // Red shadow (darker)
+    'G': '#16a34a'   // Green shadow (darker)
   };
 
   const MTG_COLOR_ORDERS = {
@@ -3929,7 +4031,9 @@
     // No colors selected - default to white glow
     if(selectedColors.size === 0){
       const whiteGradient = 'linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff)';
+      const whiteShadow = 'linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff)';
       document.documentElement.style.setProperty('--gradient-border', whiteGradient);
+      document.documentElement.style.setProperty('--gradient-shadow', whiteShadow);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
       document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg, #ffffff 0deg 60deg, transparent 60deg 120deg, #ffffff 120deg 180deg, transparent 180deg 240deg, #ffffff 240deg 300deg, transparent 300deg 360deg)`);
       document.documentElement.style.setProperty('--theme-glow', 'rgba(255,255,255,0.4)');
@@ -3941,12 +4045,15 @@
     const identityKey = getColorIdentityKey(selectedColors);
     const colorOrder = MTG_COLOR_ORDERS[identityKey] || Array.from(selectedColors);
     const colors = colorOrder.map(code => COLOR_HEX[code]);
+    const shadows = colorOrder.map(code => SHADOW_HEX[code]);
 
     // All 5 selected = gold with WUBRG order
     if(selectedColors.size === 5){
       const allColors = colors.join(', ');
+      const allShadows = shadows.join(', ');
       document.documentElement.style.setProperty('--multi-theme-gradient', '#fcd34d');
       document.documentElement.style.setProperty('--gradient-border', `linear-gradient(90deg, ${allColors}, ${allColors})`);
+      document.documentElement.style.setProperty('--gradient-shadow', `linear-gradient(90deg, ${allShadows}, ${allShadows})`);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
       document.documentElement.style.setProperty('--button-text-color', `linear-gradient(90deg, ${allColors})`);
       document.documentElement.style.setProperty('--button-text-is-gradient', '1');
@@ -3966,13 +4073,17 @@
     // Create animated gradient with proper MTG color order
     if(colors.length > 1){
       const gradient = `linear-gradient(90deg, ${colors.join(', ')}, ${colors.join(', ')})`;
+      const shadowGradient = `linear-gradient(90deg, ${shadows.join(', ')}, ${shadows.join(', ')})`;
       document.documentElement.style.setProperty('--multi-theme-gradient', gradient);
       document.documentElement.style.setProperty('--gradient-border', gradient);
+      document.documentElement.style.setProperty('--gradient-shadow', shadowGradient);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
     } else {
       const singleColorGradient = `linear-gradient(90deg, ${colors[0]}, ${colors[0]}, ${colors[0]})`;
+      const singleShadowGradient = `linear-gradient(90deg, ${shadows[0]}, ${shadows[0]}, ${shadows[0]})`;
       document.documentElement.style.setProperty('--multi-theme-gradient', singleColorGradient);
       document.documentElement.style.setProperty('--gradient-border', singleColorGradient);
+      document.documentElement.style.setProperty('--gradient-shadow', singleShadowGradient);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
     }
 
