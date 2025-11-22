@@ -2265,12 +2265,12 @@
         <table class="deck-table">
           <thead>
             <tr>
-              <th>Colors</th>
-              <th>Matches</th>
-              <th>W/L</th>
-              <th>Win%</th>
-              <th>Matchups</th>
-              <th>Last</th>
+              <th class="sortable-header" data-deck-sort="colors">Colors <span class="sort-indicator"></span></th>
+              <th class="sortable-header" data-deck-sort="matches">Matches <span class="sort-indicator"></span></th>
+              <th class="sortable-header" data-deck-sort="wl">W/L <span class="sort-indicator"></span></th>
+              <th class="sortable-header" data-deck-sort="winRate">Win% <span class="sort-indicator"></span></th>
+              <th style="cursor:default;">Matchups</th>
+              <th class="sortable-header" data-deck-sort="last">Last <span class="sort-indicator"></span></th>
             </tr>
           </thead>
           <tbody id="deckTableBody"></tbody>
@@ -2509,6 +2509,8 @@
   let currentEditingDeck = null; // Track which deck is being edited
   let currentSortColumn = 'total'; // Default sort by total tickets (probability)
   let currentSortDirection = 'desc'; // desc = highest first, asc = lowest first
+  let currentDeckSortColumn = 'winRate'; // Default deck sort by win rate
+  let currentDeckSortDirection = 'desc'; // desc = highest first
   let queueReaddChoice = 'yes';
   let bonusRewardChoice = 'tickets';
   let pendingWinner = null;
@@ -3616,9 +3618,63 @@
       tr.style.cursor = 'pointer';
       tr.addEventListener('click', () => openDeckEditor(p, d));
 
-      rows.push({winRate, tr});
+      rows.push({
+        deck: d,
+        winRate,
+        total,
+        wins: d.wins,
+        losses: d.losses,
+        color: d.color || '',
+        last: d.lastBestOf || '',
+        tr
+      });
     });
-    rows.sort((a,b)=>b.winRate-a.winRate);
+
+    // Sort decks based on current sort column and direction
+    rows.sort((a,b)=>{
+      let aVal, bVal;
+      switch(currentDeckSortColumn){
+        case 'colors':
+          aVal = a.color;
+          bVal = b.color;
+          // String comparison
+          return currentDeckSortDirection === 'desc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+        case 'matches':
+          aVal = a.total;
+          bVal = b.total;
+          break;
+        case 'wl':
+          // Sort by wins, then losses
+          aVal = a.wins;
+          bVal = b.wins;
+          if(aVal !== bVal){
+            return currentDeckSortDirection === 'desc' ? bVal - aVal : aVal - bVal;
+          }
+          // Tiebreaker: losses (fewer is better)
+          aVal = a.losses;
+          bVal = b.losses;
+          return currentDeckSortDirection === 'desc' ? aVal - bVal : bVal - aVal;
+        case 'winRate':
+          aVal = a.winRate;
+          bVal = b.winRate;
+          break;
+        case 'last':
+          aVal = a.last;
+          bVal = b.last;
+          // String comparison for match type
+          return currentDeckSortDirection === 'desc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+        default:
+          aVal = a.winRate;
+          bVal = b.winRate;
+      }
+
+      // Apply numeric sort direction
+      const diff = currentDeckSortDirection === 'desc' ? bVal - aVal : aVal - bVal;
+      if(diff !== 0) return diff;
+
+      // Tiebreaker: total matches
+      return b.total - a.total;
+    });
 
     // By default, show only the first (most recent/highest win rate) deck
     // Mark additional rows as collapsible
@@ -3639,6 +3695,19 @@
       deckExpandIcon.style.display = 'inline';
       deckExpandIcon.textContent = '▼';
     }
+
+    // Update deck table sort indicators
+    const deckHeaders = deckTableWrapper.querySelectorAll('.sortable-header[data-deck-sort]');
+    deckHeaders.forEach(th => {
+      const indicator = th.querySelector('.sort-indicator');
+      if(th.dataset.deckSort === currentDeckSortColumn){
+        th.classList.add('active');
+        indicator.textContent = currentDeckSortDirection === 'desc' ? '▼' : '▲';
+      }else{
+        th.classList.remove('active');
+        indicator.textContent = '';
+      }
+    });
 
     playerOverlay.classList.add('show');
   }
@@ -3687,7 +3756,7 @@
   });
 
   // Leaderboard column sorting
-  document.querySelectorAll('.sortable-header').forEach(th => {
+  document.querySelectorAll('.sortable-header[data-sort]').forEach(th => {
     th.addEventListener('click', () => {
       const sortColumn = th.dataset.sort;
 
@@ -3702,6 +3771,30 @@
 
       renderLeaderboard();
     });
+  });
+
+  // Deck table column sorting
+  document.addEventListener('click', (e) => {
+    const th = e.target.closest('.sortable-header[data-deck-sort]');
+    if(!th) return;
+
+    const sortColumn = th.dataset.deckSort;
+
+    // If clicking the same column, toggle direction
+    if(currentDeckSortColumn === sortColumn){
+      currentDeckSortDirection = currentDeckSortDirection === 'desc' ? 'asc' : 'desc';
+    }else{
+      // New column: default to descending (highest first)
+      currentDeckSortColumn = sortColumn;
+      currentDeckSortDirection = 'desc';
+    }
+
+    // Refresh the currently open player card to apply new sorting
+    if(currentPlayerCardId !== null){
+      const evt = currentEvent();
+      const p = evt.players.find(x => x.id === currentPlayerCardId);
+      if(p) openPlayerCard(p.id);
+    }
   });
 
   // Open deck editor
