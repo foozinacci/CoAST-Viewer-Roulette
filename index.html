@@ -1245,16 +1245,6 @@
           <input id="playerNameInput" placeholder="Add viewer (name / handle)" />
           <button type="submit">Add</button>
         </form>
-        <div class="summary-cards">
-          <div class="summary-card">
-            <div class="summary-label">Expected per 150 spins (diag target)</div>
-            <div class="summary-value">≈50 games · ≈2× CARLO · ≈5× Luna Luck</div>
-          </div>
-          <div class="summary-card">
-            <div class="summary-label">Rules Snapshot</div>
-            <div class="summary-value">5 reels · 3+ hits = slot win · Luna = wild for 3-in-a-row only · CARLO = streamer pick.</div>
-          </div>
-        </div>
         <div class="leaderboard-wrapper">
           <table class="leaderboard-table">
             <thead>
@@ -1389,49 +1379,40 @@
   <!-- HELP OVERLAY -->
   <div class="overlay" id="helpOverlay">
     <div class="help-card">
-      <div class="help-title">How CARLO Slot Works</div>
+      <div class="help-title">How It Works</div>
       <div class="help-body">
-        <div class="help-section-title">Basic Flow</div>
+        <div class="help-section-title">The Basics</div>
         <p>
-          Viewers enter the queue with 1 ticket on each of 5 reels. Each spin shows 5 results:
-          player names, CARLO letters, or Luna. When a player's name appears 3 or more times on
-          the reels, that player wins the slot and their deck is played until it loses.
+          Join the queue and earn tickets on each of 5 reels. Each spin reveals 5 results.
+          <strong>3+ matches = you win the slot.</strong> Your deck gets played until it loses.
         </p>
-        <div class="help-section-title">Tickets & Pity</div>
+
+        <div class="help-section-title">Your Odds</div>
         <p>
-          On a winning spin, the winner is selected. Players who appeared but did not win spend 1
-          ticket on the reels they showed up on. Players who did not appear double their tickets on
-          all reels, up to a cap of 500 per reel. Any overflow above 500 converts into pity tokens.
-          Overflow always grants at least one pity token, and each additional full 500 overflow awards
-          another token (up to 12 tokens). At 12 pity tokens, that player will be auto-picked
-          before the next normal spin. When a regular winner re-enters the queue, all other players
-          double their tickets (patience reward). Pity winners do not trigger this doubling.
+          <strong>Tickets = your weight per reel.</strong> More tickets on a reel = higher chance to appear there.
+          Everyone starts with 1 ticket per reel. Cap: 500 tickets per reel.
         </p>
-        <div class="help-section-title">Dead Spins</div>
         <p>
-          On a dead spin (no winner), players whose names appear spend 1 ticket on the reels they
-          appeared on (down to 1). Players who did not appear have their tickets on every reel
-          halved (rounded up) and then gain +1 ticket, always staying at 1 or more, up to 500.
+          <strong>Patience rewards:</strong> Miss a spin? Your tickets double (up to cap). Appear but don't win?
+          Spend 1 ticket on reels you appeared on. Dead spin? Tickets halved +1.
         </p>
+
+        <div class="help-section-title">Overflow & Pity</div>
+        <p>
+          <strong>When tickets exceed 500,</strong> overflow converts to pity tokens. Each 500 overflow = 1 pity token (max 12).
+          <strong>At 12 pity tokens,</strong> you're auto-picked before the next spin. Guaranteed win for waiting.
+        </p>
+
         <div class="help-section-title">Luna Luck</div>
         <p>
-          Luna is a wild symbol that can help complete exactly 3-in-a-row for a player. Only one
-          Luna can appear per spin. She never makes 4- or 5-of-a-kind count bigger; she only
-          creates a special Luna Luck 3-hit. When Luna Luck wins, the banner says "– wins with
-          Luna Luck!" and uses the Luna emotes.
+          <strong>Luna = wild symbol.</strong> Rarely appears (1 per spin max). Completes 3-in-a-row matches only.
+          Luna Luck wins trigger special animations. She's your lucky break.
         </p>
-        <div class="help-section-title">CARLO</div>
+
+        <div class="help-section-title">CARLO Jackpot</div>
         <p>
-          Each reel has a rare chance to show the letters C, A, R, L, O in order. When all 5
-          letters appear at once, CARLO triggers and the streamer plays their own deck instead of
-          a viewer. Individual letters without the full CARLO just count like normal letters and
-          do not change probabilities.
-        </p>
-        <div class="help-section-title">Hypergeometric Diagnostic</div>
-        <p>
-          The hypergeometric diagnostic approximates slot odds by running 150 simulated spins with your
-          current player weights. It estimates how many slot wins, CARLO hits, and Luna Luck wins you’d
-          get in a typical batch, and flags when counts are outside the expected range.
+          <strong>All 5 letters (C-A-R-L-O) at once = CARLO jackpot.</strong> Rare event. Streamer plays their deck instead of a viewer.
+          Individual letters don't affect your odds—only the full jackpot matters.
         </p>
       </div>
       <div class="finish-actions">
