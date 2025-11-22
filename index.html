@@ -947,6 +947,26 @@
       font-size:10px;
       color:#d1bfa1;
     }
+    .sortable-header{
+      cursor:pointer;
+      user-select:none;
+      transition:color 0.2s ease;
+    }
+    .sortable-header:hover{
+      color:var(--gold);
+    }
+    .sortable-header.active{
+      color:var(--gold);
+      font-weight:900;
+    }
+    .sort-indicator{
+      font-size:8px;
+      margin-left:2px;
+      opacity:0.5;
+    }
+    .sortable-header.active .sort-indicator{
+      opacity:1;
+    }
     .player-row{cursor:pointer;}
     .player-row:hover{background:rgba(17,24,39,.9);}
     .time-cell{
@@ -1916,26 +1936,6 @@
       color:var(--muted);
       line-height:1.5;
     }
-    .help-grid-close{
-      text-align:center;
-      position:relative;
-      z-index:101;
-    }
-    .help-close-btn{
-      background:var(--panel-bg);
-      color:var(--text);
-      border:1px solid rgba(148,116,72,.5);
-      padding:8px 20px;
-      border-radius:6px;
-      font-weight:700;
-      font-size:12px;
-      cursor:pointer;
-      transition:all 0.2s ease;
-    }
-    .help-close-btn:hover{
-      background:rgba(148,116,72,.2);
-      border-color:var(--gold);
-    }
     .spark-progression{
       display:flex;
       flex-direction:row;
@@ -2116,12 +2116,12 @@
             <table class="leaderboard-table">
               <thead>
                 <tr>
-                  <th>Time</th>
+                  <th class="sortable-header" data-sort="time">Time <span class="sort-indicator"></span></th>
                   <th>Player</th>
-                  <th>Total</th>
-                  <th>Slot W</th>
-                  <th>W/L%</th>
-                  <th>Sparks</th>
+                  <th class="sortable-header" data-sort="total">Total <span class="sort-indicator"></span></th>
+                  <th class="sortable-header" data-sort="slotWins">Slot W <span class="sort-indicator"></span></th>
+                  <th class="sortable-header" data-sort="winRate">W/L% <span class="sort-indicator"></span></th>
+                  <th class="sortable-header" data-sort="sparks">Sparks <span class="sort-indicator"></span></th>
                   <th></th>
                 </tr>
               </thead>
@@ -2263,8 +2263,10 @@
           <div class="spark-overflow-label">IGNITED</div>
         </div>
       </div>
-      <div class="help-section-title">Decks (by color identity)</div>
-      <div class="deck-table-wrapper">
+      <div class="help-section-title deck-section-header" id="deckSectionHeader" style="cursor:pointer;user-select:none;">
+        Decks (by color identity) <span id="deckExpandIcon" style="font-size:10px;">▼</span>
+      </div>
+      <div class="deck-table-wrapper" id="deckTableWrapper">
         <table class="deck-table">
           <thead>
             <tr>
@@ -2363,8 +2365,8 @@
           <div class="help-box-text">Report your match results with deck colors and opponent info. Win = back in queue!</div>
         </div>
       </div>
-      <div class="help-grid-close">
-        <button id="closeHelpBtn" class="help-close-btn">Close</button>
+      <div class="finish-actions">
+        <button id="closeHelpBtn">Close</button>
       </div>
     </div>
   </div>
@@ -2466,6 +2468,9 @@
   const removePlayerBtn = document.getElementById('removePlayerBtn');
   const closePlayerCardBtn = document.getElementById('closePlayerCardBtn');
   const deckTableBody = document.getElementById('deckTableBody');
+  const deckTableWrapper = document.getElementById('deckTableWrapper');
+  const deckSectionHeader = document.getElementById('deckSectionHeader');
+  const deckExpandIcon = document.getElementById('deckExpandIcon');
   const deckEditorOverlay = document.getElementById('deckEditorOverlay');
   const deckEditorColorChips = document.getElementById('deckEditorColorChips');
   const deckEditorWins = document.getElementById('deckEditorWins');
@@ -2502,6 +2507,8 @@
   let deckEditorColorSet = new Set(); // Track deck editor color selections
   let currentEditingPlayer = null; // Track which player's deck is being edited
   let currentEditingDeck = null; // Track which deck is being edited
+  let currentSortColumn = 'total'; // Default sort by total tickets (probability)
+  let currentSortDirection = 'desc'; // desc = highest first, asc = lowest first
   let queueReaddChoice = 'yes';
   let bonusRewardChoice = 'tickets';
   let pendingWinner = null;
@@ -3257,11 +3264,57 @@
     const evt = currentEvent();
     const players = evt.players;
     leaderboardBody.innerHTML = '';
+
+    // Sort players based on current sort column and direction
     const sorted = players.slice().sort((a,b)=>{
-      const tDiff = totalTickets(b)-totalTickets(a);
-      if(tDiff!==0) return tDiff;
+      let aVal, bVal;
+
+      switch(currentSortColumn){
+        case 'time':
+          aVal = a.createdAt;
+          bVal = b.createdAt;
+          break;
+        case 'total':
+          aVal = totalTickets(a);
+          bVal = totalTickets(b);
+          break;
+        case 'slotWins':
+          aVal = a.slotWins || 0;
+          bVal = b.slotWins || 0;
+          break;
+        case 'winRate':
+          aVal = overallWinRate(a);
+          bVal = overallWinRate(b);
+          break;
+        case 'sparks':
+          aVal = a.sparks || 0;
+          bVal = b.sparks || 0;
+          break;
+        default:
+          aVal = totalTickets(a);
+          bVal = totalTickets(b);
+      }
+
+      // Apply sort direction
+      const diff = currentSortDirection === 'desc' ? bVal - aVal : aVal - bVal;
+      if(diff !== 0) return diff;
+
+      // Tiebreaker: created time
       return a.createdAt - b.createdAt;
     });
+
+    // Update header indicators
+    document.querySelectorAll('.sortable-header').forEach(th => {
+      const indicator = th.querySelector('.sort-indicator');
+      if(th.dataset.sort === currentSortColumn){
+        th.classList.add('active');
+        indicator.textContent = currentSortDirection === 'desc' ? '▼' : '▲';
+      }else{
+        th.classList.remove('active');
+        indicator.textContent = '';
+      }
+    });
+
     const now = Date.now();
     for(const p of sorted){
       clampPlayer(p);
@@ -3520,7 +3573,27 @@
       rows.push({winRate, tr});
     });
     rows.sort((a,b)=>b.winRate-a.winRate);
-    rows.forEach(r=>deckTableBody.appendChild(r.tr));
+
+    // By default, show only the first (most recent/highest win rate) deck
+    // Mark additional rows as collapsible
+    rows.forEach((r, index) => {
+      if(index > 0){
+        r.tr.classList.add('deck-row-collapsed');
+        r.tr.style.display = 'none';
+      }
+      deckTableBody.appendChild(r.tr);
+    });
+
+    // Update expand icon based on current state
+    if(rows.length <= 1){
+      deckSectionHeader.style.cursor = 'default';
+      deckExpandIcon.style.display = 'none';
+    }else{
+      deckSectionHeader.style.cursor = 'pointer';
+      deckExpandIcon.style.display = 'inline';
+      deckExpandIcon.textContent = '▼';
+    }
+
     playerOverlay.classList.add('show');
   }
 
@@ -3551,6 +3624,38 @@
   closePlayerCardBtn.addEventListener('click',()=>{
     playerOverlay.classList.remove('show');
     currentPlayerCardId=null;
+  });
+
+  // Toggle deck list expand/collapse
+  deckSectionHeader.addEventListener('click', () => {
+    const collapsedRows = deckTableBody.querySelectorAll('.deck-row-collapsed');
+    if(collapsedRows.length === 0) return; // No rows to expand
+
+    const isCurrentlyCollapsed = collapsedRows[0].style.display === 'none';
+
+    collapsedRows.forEach(row => {
+      row.style.display = isCurrentlyCollapsed ? '' : 'none';
+    });
+
+    deckExpandIcon.textContent = isCurrentlyCollapsed ? '▲' : '▼';
+  });
+
+  // Leaderboard column sorting
+  document.querySelectorAll('.sortable-header').forEach(th => {
+    th.addEventListener('click', () => {
+      const sortColumn = th.dataset.sort;
+
+      // If clicking the same column, toggle direction
+      if(currentSortColumn === sortColumn){
+        currentSortDirection = currentSortDirection === 'desc' ? 'asc' : 'desc';
+      }else{
+        // New column: default to descending (highest first)
+        currentSortColumn = sortColumn;
+        currentSortDirection = 'desc';
+      }
+
+      renderLeaderboard();
+    });
   });
 
   // Open deck editor
@@ -4008,6 +4113,11 @@
 
   function performSpin(){
     const evt = currentEvent();
+
+    // Reset sort to default (highest probability at top)
+    currentSortColumn = 'total';
+    currentSortDirection = 'desc';
+
     if(evt.currentRun){
       smallStatus.textContent = "Finish current run before next spin.";
       finishOverlay.classList.add('show');
