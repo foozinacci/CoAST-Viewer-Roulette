@@ -344,16 +344,14 @@
         gap:12px;
       }
       .history-panel{
-        flex:0 0 auto;
-        min-height:300px;
-        max-height:400px;
+        flex:1 1 auto;
+        min-height:250px;
         max-width:100%;
         width:100%;
         order:1;
       }
       .leaderboard-panel{
         flex:0 0 auto;
-        min-height:400px;
         max-width:100%;
         width:100%;
         order:0;
@@ -719,63 +717,6 @@
       z-index:1;
     }
     .status-text{font-size:11px;color:var(--muted);}
-
-    /* Luna's Balance Meter */
-    .luna-balance-meter{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:4px;
-      width:100%;
-      max-width:280px;
-      margin-top:8px;
-    }
-    .luna-balance-label{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      font-size:11px;
-      color:#fcd34d;
-      font-weight:600;
-    }
-    .luna-icon{font-size:14px;}
-    .luna-text{letter-spacing:0.05em;}
-    .luna-balance-bar-bg{
-      width:100%;
-      height:12px;
-      background:#1a1410;
-      border-radius:999px;
-      overflow:hidden;
-      position:relative;
-      border:1px solid rgba(252,211,77,0.3);
-    }
-    .luna-balance-bar-fill{
-      height:100%;
-      width:0%;
-      background:linear-gradient(90deg, #fde68a 0%, #fcd34d 50%, #f59e0b 100%);
-      border-radius:999px;
-      transition:width 0.3s ease;
-      position:relative;
-    }
-    .luna-balance-bar-fill::after{
-      content:'';
-      position:absolute;
-      top:0;
-      left:0;
-      right:0;
-      bottom:0;
-      background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
-      animation:shimmer 2s infinite;
-    }
-    @keyframes shimmer{
-      0%{transform:translateX(-100%);}
-      100%{transform:translateX(100%);}
-    }
-    .luna-balance-count{
-      font-size:10px;
-      color:var(--muted);
-      font-weight:500;
-    }
     /* Lever removed - spin button is sufficient */
     .lever{
       display:none;
@@ -1925,16 +1866,6 @@
         </div>
         <div class="slot-controls">
           <div class="status-text" id="smallStatus">Ready.</div>
-          <div class="luna-balance-meter">
-            <div class="luna-balance-label">
-              <span class="luna-icon">🐱</span>
-              <span class="luna-text">Luna's Balance</span>
-            </div>
-            <div class="luna-balance-bar-bg">
-              <div class="luna-balance-bar-fill" id="lunaBalanceFill"></div>
-            </div>
-            <div class="luna-balance-count" id="lunaBalanceCount">0/20</div>
-          </div>
         </div>
       </section>
       <!-- BOTTOM PANELS (LEADERBOARD + HISTORY) -->
@@ -2133,9 +2064,6 @@
         <p><strong>Luna:</strong> Wild card that appears rarely (max 1 per spin). She helps complete your 3-in-a-row wins.</p>
         <p><strong>CARLO:</strong> Super rare jackpot! If all 5 reels show C-A-R-L-O letters, the streamer plays their own deck.</p>
 
-        <div class="help-section-title">Luna's Balance</div>
-        <p><strong>When frustration builds, Luna shows her skill!</strong></p>
-        <p>After too many dead spins, it's like shaking the machine. Luna (sitting on top) has to land on her feet—and she always does! When she lands, luck shifts and a winning spin is guaranteed. It's not pity, it's feline grace!</p>
       </div>
       <div class="finish-actions">
         <button id="closeHelpBtn">Close</button>
@@ -2195,21 +2123,6 @@
     if(activePlayerCount <= 10) return 6;      // Medium groups - very tight
     if(activePlayerCount <= 20) return 5;      // Large groups - maximum engagement
     return 5;                                   // Never go above 5 dead spins at scale
-  }
-
-  // Update Luna's Balance meter visual
-  function updateLunaBalanceMeter(){
-    const evt = currentEvent();
-    const activePlayers = evt.players.filter(p => p.status === 'active');
-    const maxStreak = getMaxDeadStreakAllowed(activePlayers.length);
-    const currentStreak = evt.deadSpinStreak || 0;
-    const percentage = Math.min((currentStreak / maxStreak) * 100, 100);
-
-    const fillEl = document.getElementById('lunaBalanceFill');
-    const countEl = document.getElementById('lunaBalanceCount');
-
-    if(fillEl) fillEl.style.width = percentage + '%';
-    if(countEl) countEl.textContent = currentStreak + '/' + maxStreak;
   }
 
   const reelsEl = document.getElementById('reels');
@@ -3298,7 +3211,6 @@
     const evt = currentEvent();
     evt.deadSpinStreak = 0;
     evt.lastSpinWasWinner = true;
-    updateLunaBalanceMeter();
     evt.spinCount++;
     player.slotGames = (player.slotGames||0) + 1;
     player.slotWins = (player.slotWins||0) + 1;
@@ -3632,7 +3544,6 @@
           evt.spinCount++;
           evt.deadSpinStreak=0;
           evt.lastSpinWasWinner=true;
-          updateLunaBalanceMeter();
           renderLeaderboard();
           saveAll();
           spinBtn.disabled=false;
@@ -3671,7 +3582,6 @@
         // Dead spin: No bulb celebration
         evt.deadSpinStreak++;
         evt.lastSpinWasWinner = false;
-        updateLunaBalanceMeter();
         log(`<span style="color:var(--red);">Dead spin (#${evt.deadSpinStreak}).</span>`);
         handleDeadSpinTickets(evt,symbols,reelPlayers);
         spinBtn.disabled=false;
@@ -4114,7 +4024,6 @@
     setupReelsPlaceholder();
     renderEvents();
     renderLeaderboard();
-    updateLunaBalanceMeter();
     loadTheme();
     timeTimer = setInterval(renderLeaderboard, 30000);
   }
