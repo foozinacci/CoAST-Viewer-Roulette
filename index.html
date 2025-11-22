@@ -652,8 +652,13 @@
       overflow:hidden;
     }
     body.theme-gold .spin-button{
-      color:var(--gold);
-      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
+      background-image:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:gradientShift 4s ease infinite;
+      filter:drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 0 12px rgba(255,255,255,0.6));
     }
     .spin-button::after{
       content:'';
@@ -734,8 +739,13 @@
       overflow:hidden;
     }
     body.theme-gold .add-player-form button{
-      color:var(--gold);
-      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
+      background-image:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:gradientShift 4s ease infinite;
+      filter:drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 0 12px rgba(255,255,255,0.6));
     }
     .add-player-form button::after{
       content:'';
@@ -968,8 +978,13 @@
       overflow:hidden;
     }
     body.theme-gold .winner-actions button{
-      color:var(--gold);
-      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
+      background-image:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:gradientShift 4s ease infinite;
+      filter:drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 0 12px rgba(255,255,255,0.6));
     }
     .winner-actions button::after{
       content:'';
@@ -1089,8 +1104,13 @@
       overflow:hidden;
     }
     body.theme-gold .adjust-btn{
-      color:var(--gold);
-      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
+      background-image:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:gradientShift 4s ease infinite;
+      filter:drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 0 12px rgba(255,255,255,0.6));
     }
     .adjust-btn::after{
       content:'';
@@ -1176,21 +1196,52 @@
     }
     .queue-chip{
       border-radius:999px;
-      border:1px solid var(--border);
+      border:3px solid transparent;
+      background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
+      background-clip:padding-box;
+      color:#ffffff;
       padding:4px 10px;
       font-size:11px;
+      font-weight:700;
       cursor:pointer;
       text-transform:uppercase;
       letter-spacing:.1em;
-      opacity:.7;
+      text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
+      box-shadow:0 0 16px var(--theme-glow),inset 0 0 12px var(--theme-glow);
+      opacity:.6;
+      transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       z-index:10;
+      overflow:hidden;
+    }
+    .queue-chip::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:999px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:-1;
     }
     .queue-chip.active{
       opacity:1;
-      border-color:var(--blue);
-      box-shadow:0 0 10px rgba(56,189,248,.8);
-      color:var(--blue);
+      transform:scale(1.05);
+      box-shadow:0 0 24px var(--theme-glow),inset 0 0 16px var(--theme-glow);
+    }
+    body.theme-gold .queue-chip{
+      background-image:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:gradientShift 4s ease infinite;
+      filter:drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 0 12px rgba(255,255,255,0.6));
     }
     .finish-actions{
       display:flex;
@@ -1222,8 +1273,13 @@
       overflow:hidden;
     }
     body.theme-gold .finish-actions button{
-      color:var(--gold);
-      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
+      background-image:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:gradientShift 4s ease infinite;
+      filter:drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 0 12px rgba(255,255,255,0.6));
     }
     .finish-actions button::after{
       content:'';
@@ -1315,8 +1371,13 @@
       overflow:hidden;
     }
     body.theme-gold .player-card-actions button{
-      color:var(--gold);
-      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
+      background-image:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:gradientShift 4s ease infinite;
+      filter:drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 0 12px rgba(255,255,255,0.6));
     }
     .player-card-actions button::after{
       content:'';
@@ -1488,8 +1549,13 @@
       overflow:hidden;
     }
     body.theme-gold .footer-buttons button{
-      color:var(--gold);
-      text-shadow:0 0 12px rgba(250,204,21,.6),0 0 20px rgba(250,204,21,.4),0 1px 2px rgba(0,0,0,.8);
+      background-image:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:gradientShift 4s ease infinite;
+      filter:drop-shadow(0 0 8px rgba(255,255,255,0.8)) drop-shadow(0 0 12px rgba(255,255,255,0.6));
     }
     .footer-buttons button::after{
       content:'';
@@ -3058,14 +3124,23 @@
 
   addPlayerForm.addEventListener('submit',e=>{
     e.preventDefault();
+    e.stopPropagation();
+
+    // Grab value first, then immediately clear
     const nameToAdd = playerNameInput.value.trim();
+    playerNameInput.value = '';
+    playerNameInput.blur();
+
+    // Add player if there's a name
     if(nameToAdd){
       addPlayer(nameToAdd);
     }
-    // Clear and reset the entire form
-    addPlayerForm.reset();
-    playerNameInput.value = '';
-    playerNameInput.focus();
+
+    // Refocus for next entry
+    setTimeout(() => {
+      playerNameInput.focus();
+    }, 10);
+
     return false;
   });
   // Event chip switching removed - using single event model
@@ -3273,10 +3348,7 @@
   function toggleThemeColor(code){
     if(selectedColors.has(code)){
       selectedColors.delete(code);
-      // Need at least one color selected
-      if(selectedColors.size === 0){
-        selectedColors.add(code);
-      }
+      // Allow no colors selected - removes all glows
     }else{
       selectedColors.add(code);
     }
@@ -3316,6 +3388,15 @@
   }
 
   function applyGradientGlow(){
+    // No colors selected - remove all glows
+    if(selectedColors.size === 0){
+      document.documentElement.style.setProperty('--gradient-border', 'transparent');
+      document.documentElement.style.setProperty('--gradient-border-size', '100%');
+      document.documentElement.style.setProperty('--logo-ring-gradient', 'transparent');
+      document.documentElement.style.setProperty('--theme-glow', 'rgba(0,0,0,0)');
+      return;
+    }
+
     const colors = Array.from(selectedColors).map(code=>{
       if(code==='W') return '#fefce8';
       if(code==='U') return '#38bdf8';
@@ -3402,6 +3483,9 @@
       const oldSaved = localStorage.getItem('carlo_theme');
       if(oldSaved){
         selectedColors = new Set([oldSaved]);
+      }else{
+        // Default to white theme on first load
+        selectedColors = new Set(['W']);
       }
     }
     applyMultiTheme();
