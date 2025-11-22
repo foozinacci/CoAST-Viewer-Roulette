@@ -40,12 +40,11 @@ function getLunaBaseOdds(activePlayerCount) {
 
 // Dead spin guardrail: Guarantee win after too many dead spins
 function getMaxDeadStreakAllowed(activePlayerCount) {
-  if (activePlayerCount <= 3) return 50;      // Very generous for small groups
-  if (activePlayerCount <= 5) return 35;      // Generous for casual play
-  if (activePlayerCount <= 10) return 25;     // Standard for medium groups
-  if (activePlayerCount <= 20) return 20;     // Tighter for large groups
-  if (activePlayerCount <= 35) return 18;     // Very tight for very large groups
-  return 15;                                  // Maximum engagement protection
+  if (activePlayerCount <= 3) return 12;      // Solo/duo can wait a bit longer
+  if (activePlayerCount <= 5) return 8;       // Small groups - keep it tight
+  if (activePlayerCount <= 10) return 6;      // Medium groups - very tight
+  if (activePlayerCount <= 20) return 5;      // Large groups - maximum engagement
+  return 5;                                   // Never go above 5 dead spins at scale
 }
 
 // Ignition cooldown thresholds
