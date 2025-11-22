@@ -1213,6 +1213,8 @@
       margin-bottom:4px;
       position:relative;
       z-index:10;
+      color:var(--gold);
+      text-align:center;
     }
     .finish-sub{
       font-size:11px;
@@ -1220,6 +1222,7 @@
       margin-bottom:10px;
       position:relative;
       z-index:10;
+      text-align:center;
     }
     .finish-field{
       margin-bottom:8px;
@@ -1496,6 +1499,7 @@
       font-weight:700;
       font-size:14px;
       text-align:center;
+      color:var(--gold);
     }
     .player-card-status{
       font-size:11px;
@@ -1804,6 +1808,8 @@
       font-size:14px;
       font-weight:700;
       margin-bottom:4px;
+      color:var(--gold);
+      text-align:center;
     }
     .help-section-title{
       font-size:11px;
@@ -3607,7 +3613,10 @@
     }
 
     // Dead spin guardrail - guarantee natural-looking win after too many dead spins
-    const maxDeadStreak = getMaxDeadStreakAllowed(activePlayers.length);
+    // Add variance (±1-2 spins) to prevent predictable patterns
+    const baseMaxDeadStreak = getMaxDeadStreakAllowed(activePlayers.length);
+    const variance = activePlayers.length <= 15 ? 1 : 2; // Larger groups get more variance
+    const maxDeadStreak = baseMaxDeadStreak + Math.floor(Math.random() * (variance * 2 + 1)) - variance;
     const guaranteeWin = evt.deadSpinStreak >= maxDeadStreak;
 
     spinBtn.disabled=true;
