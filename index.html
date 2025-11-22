@@ -947,19 +947,25 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:gradientShift 4s ease infinite;
-      z-index:0;
+      z-index:-1;
     }
     .finish-title{
       font-size:14px;
       font-weight:700;
       margin-bottom:4px;
+      position:relative;
+      z-index:1;
     }
     .finish-sub{
       font-size:11px;
       color:var(--muted);
       margin-bottom:10px;
     }
-    .finish-field{margin-bottom:8px;}
+    .finish-field{
+      margin-bottom:8px;
+      position:relative;
+      z-index:1;
+    }
     .finish-label{
       font-size:11px;
       text-transform:uppercase;
@@ -1011,6 +1017,7 @@
       display:flex;
       flex-wrap:wrap;
       gap:4px;
+      justify-content:center;
     }
     .color-chip{
       border-radius:999px;
@@ -1044,6 +1051,7 @@
       display:flex;
       gap:6px;
       flex-wrap:wrap;
+      justify-content:center;
     }
     .queue-chip{
       border-radius:999px;
@@ -1066,6 +1074,8 @@
       justify-content:flex-end;
       gap:6px;
       margin-top:8px;
+      position:relative;
+      z-index:1;
     }
     .finish-actions button{
       border-radius:999px;
@@ -2829,13 +2839,13 @@
 
   addPlayerForm.addEventListener('submit',e=>{
     e.preventDefault();
-    const nameToAdd = playerNameInput.value||'';
-    addPlayer(nameToAdd);
-    // Always clear after submit attempt
-    setTimeout(()=>{
-      playerNameInput.value='';
-      playerNameInput.focus();
-    },10);
+    const nameToAdd = playerNameInput.value.trim();
+    if(nameToAdd){
+      addPlayer(nameToAdd);
+    }
+    // Always clear input after submission
+    playerNameInput.value='';
+    playerNameInput.focus();
   });
   // Event chip switching removed - using single event model
 
