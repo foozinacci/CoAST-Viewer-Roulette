@@ -1819,6 +1819,123 @@
       margin-top:8px;
       margin-bottom:2px;
     }
+    .help-grid-container{
+      width:calc(100% - 20px);
+      max-width:700px;
+      border-radius:16px;
+      border:3px solid transparent;
+      background:var(--panel);
+      background-clip:padding-box;
+      padding:20px;
+      box-shadow:0 0 30px rgba(0,0,0,.9);
+      position:relative;
+      margin:0 10px;
+    }
+    .help-grid-container::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
+    }
+    .help-grid-container::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:100;
+      filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
+    }
+    .help-grid-title{
+      font-size:16px;
+      font-weight:700;
+      margin-bottom:16px;
+      color:var(--gold);
+      text-align:center;
+      position:relative;
+      z-index:101;
+    }
+    .help-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:12px;
+      margin-bottom:16px;
+      position:relative;
+      z-index:101;
+    }
+    @media (max-width: 650px){
+      .help-grid{
+        grid-template-columns:repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 450px){
+      .help-grid{
+        grid-template-columns:1fr;
+      }
+    }
+    .help-box{
+      background:rgba(0,0,0,0.4);
+      border:1px solid rgba(148,116,72,.3);
+      border-radius:8px;
+      padding:12px;
+      text-align:center;
+      box-shadow:0 2px 8px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05);
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .help-box:hover{
+      transform:translateY(-2px);
+      box-shadow:0 4px 12px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .help-box-title{
+      font-size:13px;
+      font-weight:700;
+      color:var(--gold);
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:0.05em;
+    }
+    .help-box-text{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .help-grid-close{
+      text-align:center;
+      position:relative;
+      z-index:101;
+    }
+    .help-close-btn{
+      background:var(--panel-bg);
+      color:var(--text);
+      border:1px solid rgba(148,116,72,.5);
+      padding:8px 20px;
+      border-radius:6px;
+      font-weight:700;
+      font-size:12px;
+      cursor:pointer;
+      transition:all 0.2s ease;
+    }
+    .help-close-btn:hover{
+      background:rgba(148,116,72,.2);
+      border-color:var(--gold);
+    }
     .spark-progression{
       display:flex;
       flex-direction:row;
@@ -2075,6 +2192,17 @@
           <div class="color-chip" data-color="C">C</div>
         </div>
       </div>
+      <div class="finish-field">
+        <div class="finish-label">Opponent Deck Colors (Optional)</div>
+        <div class="color-chips" id="opponentColorChips">
+          <div class="color-chip" data-color="W">W</div>
+          <div class="color-chip" data-color="U">U</div>
+          <div class="color-chip" data-color="B">B</div>
+          <div class="color-chip" data-color="R">R</div>
+          <div class="color-chip" data-color="G">G</div>
+          <div class="color-chip" data-color="C">C</div>
+        </div>
+      </div>
       <div class="finish-field" id="bonusChoiceField" style="display:none;">
         <div class="finish-label">Bonus Reward (4/5-of-a-kind)</div>
         <div class="finish-sub" style="margin-top:4px;">Choose your reward for hitting 4 or 5 symbols:</div>
@@ -2144,6 +2272,7 @@
               <th>Matches</th>
               <th>W/L</th>
               <th>Win%</th>
+              <th>Matchups</th>
               <th>Last</th>
             </tr>
           </thead>
@@ -2152,37 +2281,90 @@
       </div>
     </div>
   </div>
+  <!-- DECK EDITOR OVERLAY -->
+  <div class="overlay" id="deckEditorOverlay">
+    <div class="finish-card">
+      <div class="finish-title">Edit Deck</div>
+      <div class="finish-sub">Correct deck stats and color identity</div>
+
+      <div class="finish-field">
+        <div class="finish-label">Deck Colors</div>
+        <div class="color-chips" id="deckEditorColorChips">
+          <div class="color-chip" data-color="W">W</div>
+          <div class="color-chip" data-color="U">U</div>
+          <div class="color-chip" data-color="B">B</div>
+          <div class="color-chip" data-color="R">R</div>
+          <div class="color-chip" data-color="G">G</div>
+          <div class="color-chip" data-color="C">C</div>
+        </div>
+      </div>
+
+      <div class="finish-field">
+        <div class="finish-label">Wins</div>
+        <div class="finish-controls">
+          <button id="deckEditorWinsDown" class="finish-btn-inc">−</button>
+          <input type="number" id="deckEditorWins" min="0" value="0" class="finish-input"/>
+          <button id="deckEditorWinsUp" class="finish-btn-inc">+</button>
+        </div>
+      </div>
+
+      <div class="finish-field">
+        <div class="finish-label">Losses</div>
+        <div class="finish-controls">
+          <button id="deckEditorLossesDown" class="finish-btn-inc">−</button>
+          <input type="number" id="deckEditorLosses" min="0" value="0" class="finish-input"/>
+          <button id="deckEditorLossesUp" class="finish-btn-inc">+</button>
+        </div>
+      </div>
+
+      <div class="finish-field">
+        <div class="finish-label">Match Type</div>
+        <select id="deckEditorMatchType" class="finish-select">
+          <option value="BO1">Best of 1</option>
+          <option value="BO3" selected>Best of 3</option>
+          <option value="BO5">Best of 5</option>
+        </select>
+      </div>
+
+      <div class="finish-actions">
+        <button id="deckEditorSaveBtn" class="finish-save-btn">Save Changes</button>
+        <button id="deckEditorDeleteBtn" class="finish-cancel-btn" style="background:var(--danger,#dc2626);">Delete Deck</button>
+        <button id="closeDeckEditorBtn" class="finish-cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
   <!-- HELP OVERLAY -->
   <div class="overlay" id="helpOverlay">
-    <div class="help-card">
-      <div class="help-title">How It Works</div>
-      <div class="help-body">
-        <div class="help-section-title">How To Win</div>
-        <p><strong>Get 3, 4, or 5 matches on the reels.</strong></p>
-        <p>Each reel shows a random player's name. If your name appears 3+ times, you win!</p>
-        <p>Winner plays their deck until they lose a match.</p>
-
-        <div class="help-section-title">Tickets (Your Odds)</div>
-        <p><strong>Tickets = your chance to appear on each reel.</strong></p>
-        <p>• You start with 1 ticket per reel (5 total)</p>
-        <p>• When you DON'T appear on a spin: your tickets DOUBLE (max 500 per reel)</p>
-        <p>• When you appear but DON'T win: lose 1 ticket on reels you showed up on</p>
-        <p>• More tickets = better odds of appearing = higher win chance</p>
-
-        <div class="help-section-title">Sparks & Ignition</div>
-        <p><strong>Sparks are earned when tickets overflow past 500.</strong></p>
-        <p>• Every 500 overflow = 1 spark (max 12 sparks)</p>
-        <p>• Get 12 sparks = IGNITED! You're guaranteed to win soon</p>
-        <p>• Ignited players queue up and win one at a time (first in, first out)</p>
-        <p>• When you ignite, you win automatically and sparks reset to 0</p>
-
-        <div class="help-section-title">Luna & CARLO</div>
-        <p><strong>Luna:</strong> Wild card that appears rarely (max 1 per spin). She helps complete your 3-in-a-row wins.</p>
-        <p><strong>CARLO:</strong> Super rare jackpot! If all 5 reels show C-A-R-L-O letters, the streamer plays their own deck.</p>
-
+    <div class="help-grid-container">
+      <div class="help-grid-title">How It Works</div>
+      <div class="help-grid">
+        <div class="help-box">
+          <div class="help-box-title">How To Win</div>
+          <div class="help-box-text">Get 3+ matches on the reels. Winner plays until they lose.</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">Tickets</div>
+          <div class="help-box-text">Your odds per reel. Start at 1, double when you don't appear. Higher tickets = better chances.</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">Sparks</div>
+          <div class="help-box-text">Earned when tickets exceed 500. Get 12 sparks and you're IGNITED – guaranteed win!</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">Luna</div>
+          <div class="help-box-text">Wild card that helps complete wins. Max 1 per spin.</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">CARLO</div>
+          <div class="help-box-text">Jackpot! All 5 reels show C-A-R-L-O letters. Streamer plays their deck.</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">Reporting</div>
+          <div class="help-box-text">Report your match results with deck colors and opponent info. Win = back in queue!</div>
+        </div>
       </div>
-      <div class="finish-actions">
-        <button id="closeHelpBtn">Close</button>
+      <div class="help-grid-close">
+        <button id="closeHelpBtn" class="help-close-btn">Close</button>
       </div>
     </div>
   </div>
@@ -2271,6 +2453,7 @@
   const runLossesInput = document.getElementById('runLosses');
   const matchTypeSelect = document.getElementById('matchType');
   const colorChips = document.getElementById('colorChips');
+  const opponentColorChips = document.getElementById('opponentColorChips');
   const queueChoice = document.getElementById('queueChoice');
   const bonusChoice = document.getElementById('bonusChoice');
   const bonusChoiceField = document.getElementById('bonusChoiceField');
@@ -2283,6 +2466,18 @@
   const removePlayerBtn = document.getElementById('removePlayerBtn');
   const closePlayerCardBtn = document.getElementById('closePlayerCardBtn');
   const deckTableBody = document.getElementById('deckTableBody');
+  const deckEditorOverlay = document.getElementById('deckEditorOverlay');
+  const deckEditorColorChips = document.getElementById('deckEditorColorChips');
+  const deckEditorWins = document.getElementById('deckEditorWins');
+  const deckEditorLosses = document.getElementById('deckEditorLosses');
+  const deckEditorWinsUp = document.getElementById('deckEditorWinsUp');
+  const deckEditorWinsDown = document.getElementById('deckEditorWinsDown');
+  const deckEditorLossesUp = document.getElementById('deckEditorLossesUp');
+  const deckEditorLossesDown = document.getElementById('deckEditorLossesDown');
+  const deckEditorMatchType = document.getElementById('deckEditorMatchType');
+  const deckEditorSaveBtn = document.getElementById('deckEditorSaveBtn');
+  const deckEditorDeleteBtn = document.getElementById('deckEditorDeleteBtn');
+  const closeDeckEditorBtn = document.getElementById('closeDeckEditorBtn');
   const helpOverlay = document.getElementById('helpOverlay');
   const diagOverlay = document.getElementById('diagOverlay');
   const helpBtn = document.getElementById('helpBtn');
@@ -2303,6 +2498,10 @@
   const state = {currentEventIndex: 1,events: []};
   let selectedColors = new Set(); // Multi-select theme colors (empty = white glow default)
   let selectedColorSet = new Set();
+  let opponentColorSet = new Set(); // Track opponent deck colors
+  let deckEditorColorSet = new Set(); // Track deck editor color selections
+  let currentEditingPlayer = null; // Track which player's deck is being edited
+  let currentEditingDeck = null; // Track which deck is being edited
   let queueReaddChoice = 'yes';
   let bonusRewardChoice = 'tickets';
   let pendingWinner = null;
@@ -3273,13 +3472,51 @@
       tdWL.textContent = `${d.wins}/${d.losses}`;
       const tdWinRate = document.createElement('td');
       tdWinRate.textContent = `${winRate.toFixed(1)}%`;
+
+      // Render matchup data
+      const tdMatchups = document.createElement('td');
+      tdMatchups.style.fontSize = '10px';
+      tdMatchups.style.color = 'var(--muted)';
+      if(d.matchups && Object.keys(d.matchups).length > 0){
+        const pipUrls = {
+          'W': 'https://i.ibb.co/sJpHH9VZ/W.png',
+          'U': 'https://i.ibb.co/0bPLHLk/U.png',
+          'B': 'https://i.ibb.co/nM1ZZz3z/B.png',
+          'R': 'https://i.ibb.co/NnjxnmZv/R.png',
+          'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
+          'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
+        };
+        const matchupLines = [];
+        for(const [oppColors, stats] of Object.entries(d.matchups)){
+          // Render opponent color pips
+          let colorPips = '';
+          for(const letter of oppColors){
+            if(pipUrls[letter]){
+              colorPips += `<img src="${pipUrls[letter]}" style="width:12px;height:12px;vertical-align:middle;margin:0 1px;" alt="${letter}"/>`;
+            }
+          }
+          const matchupTotal = stats.wins + stats.losses;
+          const matchupWinRate = matchupTotal > 0 ? ((stats.wins / matchupTotal) * 100).toFixed(0) : 0;
+          matchupLines.push(`vs. ${colorPips}: ${stats.wins}-${stats.losses} (${matchupWinRate}%)`);
+        }
+        tdMatchups.innerHTML = matchupLines.join('<br/>');
+      }else{
+        tdMatchups.textContent = '-';
+      }
+
       const tdLast = document.createElement('td');
       tdLast.textContent = d.lastBestOf || '-';
       tr.appendChild(tdColor);
       tr.appendChild(tdMatches);
       tr.appendChild(tdWL);
       tr.appendChild(tdWinRate);
+      tr.appendChild(tdMatchups);
       tr.appendChild(tdLast);
+
+      // Make deck row clickable to edit
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', () => openDeckEditor(p, d));
+
       rows.push({winRate, tr});
     });
     rows.sort((a,b)=>b.winRate-a.winRate);
@@ -3314,6 +3551,167 @@
   closePlayerCardBtn.addEventListener('click',()=>{
     playerOverlay.classList.remove('show');
     currentPlayerCardId=null;
+  });
+
+  // Open deck editor
+  function openDeckEditor(player, deck){
+    currentEditingPlayer = player;
+    currentEditingDeck = deck;
+
+    // Set color chips
+    deckEditorColorSet.clear();
+    Array.from(deckEditorColorChips.children).forEach(ch => ch.classList.remove('active'));
+    if(deck.color){
+      for(const c of deck.color){
+        deckEditorColorSet.add(c);
+        const chip = Array.from(deckEditorColorChips.children).find(ch => ch.dataset.color === c);
+        if(chip) chip.classList.add('active');
+      }
+    }
+
+    // Set wins/losses
+    deckEditorWins.value = deck.wins;
+    deckEditorLosses.value = deck.losses;
+
+    // Set match type
+    if(deck.lastBestOf){
+      deckEditorMatchType.value = deck.lastBestOf;
+    }
+
+    deckEditorOverlay.classList.add('show');
+  }
+
+  // Deck editor color chip toggling
+  deckEditorColorChips.addEventListener('click', e => {
+    const chip = e.target.closest('.color-chip');
+    if(!chip) return;
+    const c = chip.dataset.color;
+    if(deckEditorColorSet.has(c)){
+      deckEditorColorSet.delete(c);
+      chip.classList.remove('active');
+    }else{
+      deckEditorColorSet.add(c);
+      chip.classList.add('active');
+    }
+  });
+
+  // Deck editor +/- buttons
+  deckEditorWinsUp.addEventListener('click', () => {
+    deckEditorWins.value = Math.max(0, parseInt(deckEditorWins.value, 10) || 0) + 1;
+  });
+  deckEditorWinsDown.addEventListener('click', () => {
+    deckEditorWins.value = Math.max(0, (parseInt(deckEditorWins.value, 10) || 0) - 1);
+  });
+  deckEditorLossesUp.addEventListener('click', () => {
+    deckEditorLosses.value = Math.max(0, parseInt(deckEditorLosses.value, 10) || 0) + 1;
+  });
+  deckEditorLossesDown.addEventListener('click', () => {
+    deckEditorLosses.value = Math.max(0, (parseInt(deckEditorLosses.value, 10) || 0) - 1);
+  });
+
+  // Save deck changes
+  deckEditorSaveBtn.addEventListener('click', () => {
+    if(!currentEditingPlayer || !currentEditingDeck) return;
+
+    const newColors = Array.from(deckEditorColorSet).join('');
+    const newWins = Math.max(0, parseInt(deckEditorWins.value, 10) || 0);
+    const newLosses = Math.max(0, parseInt(deckEditorLosses.value, 10) || 0);
+    const newMatchType = deckEditorMatchType.value;
+
+    // Calculate the delta for overall stats
+    const winsDelta = newWins - currentEditingDeck.wins;
+    const lossesDelta = newLosses - currentEditingDeck.losses;
+
+    // Update overall stats
+    currentEditingPlayer.overallWins += winsDelta;
+    currentEditingPlayer.overallLosses += lossesDelta;
+
+    // If colors changed, we need to move the deck
+    if(newColors !== currentEditingDeck.color){
+      // Remove old deck
+      const idx = currentEditingPlayer.decks.indexOf(currentEditingDeck);
+      if(idx >= 0){
+        currentEditingPlayer.decks.splice(idx, 1);
+      }
+
+      // Find or create deck with new colors
+      let targetDeck = currentEditingPlayer.decks.find(d => d.color === newColors);
+      if(!targetDeck){
+        targetDeck = {color: newColors, wins: 0, losses: 0, lastBestOf: null, matchups: {}};
+        currentEditingPlayer.decks.push(targetDeck);
+      }
+      targetDeck.wins += newWins;
+      targetDeck.losses += newLosses;
+      targetDeck.lastBestOf = newMatchType;
+
+      log(`${currentEditingPlayer.name}: Moved deck ${currentEditingDeck.color} → ${newColors} (${newWins}W/${newLosses}L)`);
+    }else{
+      // Just update the existing deck
+      currentEditingDeck.wins = newWins;
+      currentEditingDeck.losses = newLosses;
+      currentEditingDeck.lastBestOf = newMatchType;
+
+      log(`${currentEditingPlayer.name}: Updated deck ${currentEditingDeck.color} to ${newWins}W/${newLosses}L`);
+    }
+
+    deckEditorOverlay.classList.remove('show');
+    currentEditingPlayer = null;
+    currentEditingDeck = null;
+    renderLeaderboard();
+    saveAll();
+
+    // Refresh player card if it's still open
+    if(currentPlayerCardId !== null){
+      const evt = currentEvent();
+      const p = evt.players.find(x => x.id === currentPlayerCardId);
+      if(p) showPlayerCard(p);
+    }
+  });
+
+  // Delete deck
+  deckEditorDeleteBtn.addEventListener('click', () => {
+    if(!currentEditingPlayer || !currentEditingDeck) return;
+    if(!confirm(`Delete ${currentEditingDeck.color} deck (${currentEditingDeck.wins}W/${currentEditingDeck.losses}L)?`)) return;
+
+    // Update overall stats
+    currentEditingPlayer.overallWins -= currentEditingDeck.wins;
+    currentEditingPlayer.overallLosses -= currentEditingDeck.losses;
+
+    // Remove deck
+    const idx = currentEditingPlayer.decks.indexOf(currentEditingDeck);
+    if(idx >= 0){
+      currentEditingPlayer.decks.splice(idx, 1);
+      log(`${currentEditingPlayer.name}: Deleted deck ${currentEditingDeck.color}`);
+    }
+
+    deckEditorOverlay.classList.remove('show');
+    currentEditingPlayer = null;
+    currentEditingDeck = null;
+    renderLeaderboard();
+    saveAll();
+
+    // Refresh player card if it's still open
+    if(currentPlayerCardId !== null){
+      const evt = currentEvent();
+      const p = evt.players.find(x => x.id === currentPlayerCardId);
+      if(p) showPlayerCard(p);
+    }
+  });
+
+  // Close deck editor
+  closeDeckEditorBtn.addEventListener('click', () => {
+    deckEditorOverlay.classList.remove('show');
+    currentEditingPlayer = null;
+    currentEditingDeck = null;
+  });
+
+  // Close deck editor when clicking outside
+  deckEditorOverlay.addEventListener('click', (e) => {
+    if(e.target === deckEditorOverlay){
+      deckEditorOverlay.classList.remove('show');
+      currentEditingPlayer = null;
+      currentEditingDeck = null;
+    }
   });
 
   // Close player card when clicking outside
@@ -3371,6 +3769,8 @@
     updateResultsDisplay();
     selectedColorSet = new Set();
     Array.from(colorChips.children).forEach(ch=>ch.classList.remove('active'));
+    opponentColorSet = new Set();
+    Array.from(opponentColorChips.children).forEach(ch=>ch.classList.remove('active'));
     queueReaddChoice = 'yes';
     Array.from(queueChoice.children).forEach(ch=>{
       ch.classList.toggle('active', ch.dataset.choice === 'yes');
@@ -3418,6 +3818,19 @@
     }
   });
 
+  opponentColorChips.addEventListener('click',e=>{
+    const chip = e.target.closest('.color-chip');
+    if(!chip) return;
+    const c = chip.dataset.color;
+    if(opponentColorSet.has(c)){
+      opponentColorSet.delete(c);
+      chip.classList.remove('active');
+    }else{
+      opponentColorSet.add(c);
+      chip.classList.add('active');
+    }
+  });
+
   queueChoice.addEventListener('click',e=>{
     const chip = e.target.closest('.queue-chip');
     if(!chip) return;
@@ -3460,6 +3873,7 @@
     const losses = Math.max(0,parseInt(runLossesInput.value,10)||0);
     const colors = Array.from(selectedColorSet).join('');  // Keep input order, don't sort
     const matchType = matchTypeSelect ? matchTypeSelect.value : 'BO3';
+    const opponentColors = Array.from(opponentColorSet).sort().join('');  // Sort opponent colors for consistency
     player.overallWins += wins;
     player.overallLosses += losses;
     if(colors){
@@ -3482,12 +3896,22 @@
             log(`${player.name} reached 32 deck limit. Removed deck ${toRemove.color} (lowest win rate).`);
           }
         }
-        deck = {color:colors,wins:0,losses:0,lastBestOf:null};
+        deck = {color:colors,wins:0,losses:0,lastBestOf:null,matchups:{}};
         player.decks.push(deck);
       }
       deck.wins += wins;
       deck.losses += losses;
       deck.lastBestOf = matchType;
+
+      // Track matchup data against opponent colors if provided
+      if(opponentColors){
+        if(!deck.matchups) deck.matchups = {};  // Initialize if old deck doesn't have matchups
+        if(!deck.matchups[opponentColors]){
+          deck.matchups[opponentColors] = {wins:0, losses:0};
+        }
+        deck.matchups[opponentColors].wins += wins;
+        deck.matchups[opponentColors].losses += losses;
+      }
     }
     const hits = (currentWinnerMeta && currentWinnerMeta.hits) || 3;
     const bonus = hits>=5 ? 2 : hits===4 ? 1 : 0;
@@ -3552,22 +3976,29 @@
       log(`${player.name} marked as AFK.`);
     }
     // Convert colors to mana symbol icons
+    const pipUrls = {
+      'W': 'https://i.ibb.co/sJpHH9VZ/W.png',
+      'U': 'https://i.ibb.co/0bPLHLk/U.png',
+      'B': 'https://i.ibb.co/nM1ZZz3z/B.png',
+      'R': 'https://i.ibb.co/NnjxnmZv/R.png',
+      'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
+      'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
+    };
     let colorDisplay = 'none';
     if(colors){
-      const pipUrls = {
-        'W': 'https://i.ibb.co/sJpHH9VZ/W.png',
-        'U': 'https://i.ibb.co/0bPLHLk/U.png',
-        'B': 'https://i.ibb.co/nM1ZZz3z/B.png',
-        'R': 'https://i.ibb.co/NnjxnmZv/R.png',
-        'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
-        'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
-      };
       const colorIcons = colors.split('').map(c =>
         pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 1px;" alt="${c}"/>` : c
       ).join('');
       colorDisplay = colorIcons;
     }
-    log(`Reported run for ${player.name}: ${wins}W/${losses}L, ${colorDisplay}, type=${matchType}`);
+    let opponentDisplay = '';
+    if(opponentColors){
+      const oppColorIcons = opponentColors.split('').map(c =>
+        pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 1px;" alt="${c}"/>` : c
+      ).join('');
+      opponentDisplay = ` vs. ${oppColorIcons}`;
+    }
+    log(`Reported run for ${player.name}: ${wins}W/${losses}L, ${colorDisplay}${opponentDisplay}, type=${matchType}`);
     evt.currentRun=null;
     finishOverlay.classList.remove('show');
     finishSaveBtn.disabled = false;
