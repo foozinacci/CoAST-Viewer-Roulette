@@ -460,7 +460,8 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:gradientShift 4s ease infinite;
-      z-index:1;
+      z-index:100;
+      filter:drop-shadow(0 0 8px var(--theme-glow));
     }
     .history-header{
       text-align:center;
@@ -502,7 +503,8 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:gradientShift 4s ease infinite;
-      z-index:1;
+      z-index:100;
+      filter:drop-shadow(0 0 12px var(--theme-glow)) drop-shadow(0 0 6px var(--theme-glow));
     }
     .slot-panel::before{
       content:"";
@@ -584,7 +586,8 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:gradientShift 4s ease infinite;
-      z-index:1;
+      z-index:100;
+      filter:drop-shadow(0 0 12px var(--theme-glow)) drop-shadow(0 0 6px var(--theme-glow));
     }
     .reel-labels{
       display:flex;
@@ -708,6 +711,7 @@
     .slot-controls{
       margin-top:12px;
       display:flex;
+      flex-direction:column;
       justify-content:center;
       align-items:center;
       gap:10px;
@@ -715,6 +719,63 @@
       z-index:1;
     }
     .status-text{font-size:11px;color:var(--muted);}
+
+    /* Luna's Balance Meter */
+    .luna-balance-meter{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      width:100%;
+      max-width:280px;
+      margin-top:8px;
+    }
+    .luna-balance-label{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      color:#fcd34d;
+      font-weight:600;
+    }
+    .luna-icon{font-size:14px;}
+    .luna-text{letter-spacing:0.05em;}
+    .luna-balance-bar-bg{
+      width:100%;
+      height:12px;
+      background:#1a1410;
+      border-radius:999px;
+      overflow:hidden;
+      position:relative;
+      border:1px solid rgba(252,211,77,0.3);
+    }
+    .luna-balance-bar-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, #fde68a 0%, #fcd34d 50%, #f59e0b 100%);
+      border-radius:999px;
+      transition:width 0.3s ease;
+      position:relative;
+    }
+    .luna-balance-bar-fill::after{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+      animation:shimmer 2s infinite;
+    }
+    @keyframes shimmer{
+      0%{transform:translateX(-100%);}
+      100%{transform:translateX(100%);}
+    }
+    .luna-balance-count{
+      font-size:10px;
+      color:var(--muted);
+      font-weight:500;
+    }
     /* Lever removed - spin button is sufficient */
     .lever{
       display:none;
@@ -1033,7 +1094,8 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:gradientShift 4s ease infinite;
-      z-index:1;
+      z-index:100;
+      filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
     }
     .winner-heading{
       font-size:20px;
@@ -1138,7 +1200,8 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:gradientShift 4s ease infinite;
-      z-index:1;
+      z-index:100;
+      filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
     }
     .finish-title{
       font-size:14px;
@@ -1398,7 +1461,8 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:gradientShift 4s ease infinite;
-      z-index:1;
+      z-index:100;
+      filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
     }
     .player-card-header{
       display:flex;
@@ -1697,7 +1761,8 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:gradientShift 4s ease infinite;
-      z-index:1;
+      z-index:100;
+      filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
     }
     .help-title{
       font-size:14px;
@@ -1860,6 +1925,16 @@
         </div>
         <div class="slot-controls">
           <div class="status-text" id="smallStatus">Ready.</div>
+          <div class="luna-balance-meter">
+            <div class="luna-balance-label">
+              <span class="luna-icon">🐱</span>
+              <span class="luna-text">Luna's Balance</span>
+            </div>
+            <div class="luna-balance-bar-bg">
+              <div class="luna-balance-bar-fill" id="lunaBalanceFill"></div>
+            </div>
+            <div class="luna-balance-count" id="lunaBalanceCount">0/20</div>
+          </div>
         </div>
       </section>
       <!-- BOTTOM PANELS (LEADERBOARD + HISTORY) -->
@@ -2035,17 +2110,32 @@
     <div class="help-card">
       <div class="help-title">How It Works</div>
       <div class="help-body">
-        <div class="help-section-title">Basics</div>
-        <p><strong>3+ matches = win.</strong> Each of 5 reels weighted by your tickets. Winner's deck plays until loss.</p>
+        <div class="help-section-title">How To Win</div>
+        <p><strong>Get 3, 4, or 5 matches on the reels.</strong></p>
+        <p>Each reel shows a random player's name. If your name appears 3+ times, you win!</p>
+        <p>Winner plays their deck until they lose a match.</p>
 
-        <div class="help-section-title">Tickets & Odds</div>
-        <p><strong>Tickets = weight per reel.</strong> Start: 1/reel. Cap: 500/reel. <strong>Miss spin:</strong> tickets double (to cap). <strong>Appear, don't win:</strong> -1 ticket on reels shown. <strong>Dead spin:</strong> small groups penalized, large groups rewarded.</p>
+        <div class="help-section-title">Tickets (Your Odds)</div>
+        <p><strong>Tickets = your chance to appear on each reel.</strong></p>
+        <p>• You start with 1 ticket per reel (5 total)</p>
+        <p>• When you DON'T appear on a spin: your tickets DOUBLE (max 500 per reel)</p>
+        <p>• When you appear but DON'T win: lose 1 ticket on reels you showed up on</p>
+        <p>• More tickets = better odds of appearing = higher win chance</p>
 
         <div class="help-section-title">Sparks & Ignition</div>
-        <p><strong>Overflow past 500 → sparks.</strong> 500 overflow = 1 spark (max 12). <strong>12 sparks = Ignited:</strong> queued for guaranteed win. <strong>Cooldown:</strong> 1 ignition per 0-4 spins (scales with player count). Multiple players queue in FIFO order.</p>
+        <p><strong>Sparks are earned when tickets overflow past 500.</strong></p>
+        <p>• Every 500 overflow = 1 spark (max 12 sparks)</p>
+        <p>• Get 12 sparks = IGNITED! You're guaranteed to win soon</p>
+        <p>• Ignited players queue up and win one at a time (first in, first out)</p>
+        <p>• When you ignite, you win automatically and sparks reset to 0</p>
 
         <div class="help-section-title">Luna & CARLO</div>
-        <p><strong>Luna:</strong> rare wild (1/spin max), completes 3-in-a-row. <strong>CARLO:</strong> all 5 letters at once = jackpot, streamer plays their deck.</p>
+        <p><strong>Luna:</strong> Wild card that appears rarely (max 1 per spin). She helps complete your 3-in-a-row wins.</p>
+        <p><strong>CARLO:</strong> Super rare jackpot! If all 5 reels show C-A-R-L-O letters, the streamer plays their own deck.</p>
+
+        <div class="help-section-title">Luna's Balance</div>
+        <p><strong>When frustration builds, Luna shows her skill!</strong></p>
+        <p>After too many dead spins, it's like shaking the machine. Luna (sitting on top) has to land on her feet—and she always does! When she lands, luck shifts and a winning spin is guaranteed. It's not pity, it's feline grace!</p>
       </div>
       <div class="finish-actions">
         <button id="closeHelpBtn">Close</button>
@@ -2074,8 +2164,53 @@
   const MAX_PLAYERS = 75;
   const TICKET_CAP = 500;
   const MAX_SPARKS = 12;
-  const LUNA_BASE_ODDS = 1/30;
-  const CARLO_LETTER_ODDS = 1/75;
+  const LUNA_BASE_ODDS = 1/30; // Base odds for 1-5 players
+  const CARLO_LETTER_ODDS = 1/75; // Base odds for 1-3 players
+
+  // DYNAMIC PROBABILITY SCALING - Adjusts game balance based on active player count
+
+  // Dynamic CARLO letter odds: Lower odds = MORE player symbols = HIGHER win rates
+  function getCarloLetterOdds(activePlayerCount){
+    if(activePlayerCount <= 3) return 1/75;     // Original odds (1.33% per reel)
+    if(activePlayerCount <= 5) return 1/85;     // Slightly lower (1.18% per reel)
+    if(activePlayerCount <= 10) return 1/95;    // Lower for medium groups (1.05% per reel)
+    if(activePlayerCount <= 20) return 1/110;   // Much lower for large groups (0.91% per reel)
+    if(activePlayerCount <= 35) return 1/130;   // Very low for very large groups (0.77% per reel)
+    return 1/150;                                // Minimal for maximum capacity (0.67% per reel)
+  }
+
+  // Dynamic Luna spawn odds: Higher frequency at high player counts to compensate for dilution
+  function getLunaBaseOdds(activePlayerCount){
+    if(activePlayerCount <= 5) return 1/30;    // Original odds (~3.33% per spin)
+    if(activePlayerCount <= 10) return 1/25;   // 20% more frequent (~4% per spin)
+    if(activePlayerCount <= 20) return 1/20;   // 50% more frequent (~5% per spin)
+    if(activePlayerCount <= 35) return 1/15;   // 100% more frequent (~6.67% per spin)
+    return 1/12;                                // 150% more frequent for max capacity (~8.33% per spin)
+  }
+
+  // Dead spin guardrail: Guarantee win after too many dead spins
+  function getMaxDeadStreakAllowed(activePlayerCount){
+    if(activePlayerCount <= 3) return 12;      // Solo/duo can wait a bit longer
+    if(activePlayerCount <= 5) return 8;       // Small groups - keep it tight
+    if(activePlayerCount <= 10) return 6;      // Medium groups - very tight
+    if(activePlayerCount <= 20) return 5;      // Large groups - maximum engagement
+    return 5;                                   // Never go above 5 dead spins at scale
+  }
+
+  // Update Luna's Balance meter visual
+  function updateLunaBalanceMeter(){
+    const evt = currentEvent();
+    const activePlayers = evt.players.filter(p => p.status === 'active');
+    const maxStreak = getMaxDeadStreakAllowed(activePlayers.length);
+    const currentStreak = evt.deadSpinStreak || 0;
+    const percentage = Math.min((currentStreak / maxStreak) * 100, 100);
+
+    const fillEl = document.getElementById('lunaBalanceFill');
+    const countEl = document.getElementById('lunaBalanceCount');
+
+    if(fillEl) fillEl.style.width = percentage + '%';
+    if(countEl) countEl.textContent = currentStreak + '/' + maxStreak;
+  }
 
   const reelsEl = document.getElementById('reels');
   const spinBtn = document.getElementById('spinBtn');
@@ -2186,7 +2321,8 @@
         deadSpinStreak: 0,
         currentRun: null,
         carloHits: 0,
-        lunaHits: 0
+        lunaHits: 0,
+        lastSpinWasWinner: false
       };
     }
     return state.events[state.currentEventIndex];
@@ -2221,6 +2357,7 @@
         evt.currentRun = evt.currentRun || null;
         evt.carloHits = evt.carloHits || 0;
         evt.lunaHits = evt.lunaHits || 0;
+        evt.lastSpinWasWinner = evt.lastSpinWasWinner || false;
         for(const p of evt.players){
           p.tickets = p.tickets || [1,1,1,1,1];
           p.sparks = p.sparks || 0;
@@ -2680,28 +2817,105 @@
     return processIgnitionQueue(evt);
   }
 
-  function buildSpinResult(evt){
-    const symbols = [];
+  function buildSpinResult(evt, guaranteeWin = false, forceDead = false){
     const letters = ['C','A','R','L','O'];
-    const luna = Math.random() < LUNA_BASE_ODDS;
-    const lunaIndex = luna ? Math.floor(Math.random()*5) : -1;
-    for(let i=0;i<5;i++){
-      if(i === lunaIndex){
-        symbols.push({type:'luna'});
-        continue;
-      }
-      const roll = Math.random();
-      if(roll < CARLO_LETTER_ODDS){
-        symbols.push({type:'letter', letter:letters[i]});
-      }else{
-        const p = randomWeightedPlayer(evt, i);
-        if(p){
-          symbols.push({type:'player', playerId:p.id, name:p.name});
-        }else{
+    const activePlayerCount = evt.players.filter(p => p.status === 'active').length;
+    const lunaOdds = getLunaBaseOdds(activePlayerCount);
+    const carloLetterOdds = getCarloLetterOdds(activePlayerCount);
+
+    const maxRetries = 100; // Prevent infinite loops
+    let attempt = 0;
+
+    while(attempt < maxRetries){
+      attempt++;
+      const symbols = [];
+
+      // Build one spin attempt
+      const luna = Math.random() < lunaOdds;
+      const lunaIndex = luna ? Math.floor(Math.random()*5) : -1;
+
+      for(let i=0;i<5;i++){
+        if(i === lunaIndex){
+          symbols.push({type:'luna'});
+          continue;
+        }
+        const roll = Math.random();
+        if(roll < carloLetterOdds){
           symbols.push({type:'letter', letter:letters[i]});
+        }else{
+          const p = randomWeightedPlayer(evt, i);
+          if(p){
+            symbols.push({type:'player', playerId:p.id, name:p.name});
+          }else{
+            symbols.push({type:'letter', letter:letters[i]});
+          }
+        }
+      }
+
+      // Check if this spin meets our requirements
+      const isCarlo = detectCarlo(symbols);
+      const lunaWin = detectLunaWinner(evt, symbols);
+      const hitWin = detectHitWinner(evt, symbols);
+      const hasWinner = isCarlo || lunaWin || hitWin;
+
+      // Guardrail: Must have winner
+      if(guaranteeWin && !hasWinner){
+        continue; // Try again
+      }
+
+      // Force dead: Must NOT have winner
+      if(forceDead && hasWinner){
+        continue; // Try again
+      }
+
+      // Success! Return this result
+      return symbols;
+    }
+
+    // Fallback: If we hit max retries, manually construct a valid result
+    const symbols = [];
+
+    if(guaranteeWin){
+      // Force a 3-of-a-kind win: pick first active player and fill 3+ reels
+      const activePlayers = evt.players.filter(p => p.status === 'active');
+      if(activePlayers.length > 0){
+        const winner = activePlayers[0];
+        for(let i=0;i<5;i++){
+          if(i < 3){
+            symbols.push({type:'player', playerId:winner.id, name:winner.name});
+          }else{
+            symbols.push({type:'letter', letter:letters[i]});
+          }
+        }
+      }
+    }else if(forceDead){
+      // Force a dead spin: all CARLO letters (no matches)
+      for(let i=0;i<5;i++){
+        symbols.push({type:'letter', letter:letters[i]});
+      }
+    }else{
+      // Normal fallback
+      const luna = Math.random() < lunaOdds;
+      const lunaIndex = luna ? Math.floor(Math.random()*5) : -1;
+      for(let i=0;i<5;i++){
+        if(i === lunaIndex){
+          symbols.push({type:'luna'});
+          continue;
+        }
+        const roll = Math.random();
+        if(roll < carloLetterOdds){
+          symbols.push({type:'letter', letter:letters[i]});
+        }else{
+          const p = randomWeightedPlayer(evt, i);
+          if(p){
+            symbols.push({type:'player', playerId:p.id, name:p.name});
+          }else{
+            symbols.push({type:'letter', letter:letters[i]});
+          }
         }
       }
     }
+
     return symbols;
   }
 
@@ -3083,6 +3297,8 @@
   function handleWinnerBanner(player, reason, hits, isLuna){
     const evt = currentEvent();
     evt.deadSpinStreak = 0;
+    evt.lastSpinWasWinner = true;
+    updateLunaBalanceMeter();
     evt.spinCount++;
     player.slotGames = (player.slotGames||0) + 1;
     player.slotWins = (player.slotWins||0) + 1;
@@ -3350,13 +3566,27 @@
       smallStatus.textContent="No active players. Add someone first.";
       return;
     }
+
+    // Back-to-back cooldown: Force dead spin after winner (ultra-rare exception: 1/2500)
+    let forceDead = false;
+    if(evt.lastSpinWasWinner){
+      const backToBackChance = 1/2500;
+      if(Math.random() >= backToBackChance){
+        forceDead = true;
+      }
+    }
+
+    // Dead spin guardrail - guarantee natural-looking win after too many dead spins
+    const maxDeadStreak = getMaxDeadStreakAllowed(activePlayers.length);
+    const guaranteeWin = evt.deadSpinStreak >= maxDeadStreak;
+
     spinBtn.disabled=true;
     leverEl.classList.add('pull');
     spinAnimationStart();
     smallStatus.textContent="Spinning…";
 
     // Build spin result immediately (for timing calculation)
-    const symbols = buildSpinResult(evt);
+    const symbols = buildSpinResult(evt, guaranteeWin, forceDead);
     const isCarlo = detectCarlo(symbols);
     let isLunaWin = false;
     const lunaPick = detectLunaWinner(evt,symbols);
@@ -3401,6 +3631,8 @@
           currentWinnerMeta={reason:'carlo',hits:0};
           evt.spinCount++;
           evt.deadSpinStreak=0;
+          evt.lastSpinWasWinner=true;
+          updateLunaBalanceMeter();
           renderLeaderboard();
           saveAll();
           spinBtn.disabled=false;
@@ -3438,6 +3670,8 @@
       }else{
         // Dead spin: No bulb celebration
         evt.deadSpinStreak++;
+        evt.lastSpinWasWinner = false;
+        updateLunaBalanceMeter();
         log(`<span style="color:var(--red);">Dead spin (#${evt.deadSpinStreak}).</span>`);
         handleDeadSpinTickets(evt,symbols,reelPlayers);
         spinBtn.disabled=false;
@@ -3623,13 +3857,16 @@
       const active = players.slice();
       const symbols=[];
       let lunaIndex=-1;
-      if(Math.random() < LUNA_BASE_ODDS){
+      // Use dynamic odds based on active player count
+      const lunaOdds = getLunaBaseOdds(active.length);
+      const carloLetterOdds = getCarloLetterOdds(active.length);
+      if(Math.random() < lunaOdds){
         lunaIndex=Math.floor(Math.random()*5);
       }
       const letters=['C','A','R','L','O'];
       for(let i=0;i<5;i++){
         if(i===lunaIndex){symbols.push({type:'luna'});continue;}
-        if(Math.random() < CARLO_LETTER_ODDS){
+        if(Math.random() < carloLetterOdds){
           symbols.push({type:'letter',letter:letters[i]});
         }else{
           const p = randomPlayer(i,active);
@@ -3877,6 +4114,7 @@
     setupReelsPlaceholder();
     renderEvents();
     renderLeaderboard();
+    updateLunaBalanceMeter();
     loadTheme();
     timeTimer = setInterval(renderLeaderboard, 30000);
   }
