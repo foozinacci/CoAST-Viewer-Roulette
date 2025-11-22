@@ -417,15 +417,18 @@
       display:flex;
       gap:12px;
       width:100%;
+      max-width:100%;
+      box-sizing:border-box;
     }
     .history-panel{
-      flex:0 0 40%;
+      flex:0 0 calc(40% - 4px);
+      max-width:calc(40% - 4px);
       background:radial-gradient(circle at top,var(--panel) 0,var(--bg) 50%,#000 100%);
       border-radius:16px;
       border:3px solid transparent;
       background-clip:padding-box;
       padding:10px;
-      box-shadow:0 0 16px var(--theme-glow);
+      box-shadow:none;
       position:relative;
       overflow:hidden;
       display:flex;
@@ -462,14 +465,16 @@
       border:3px solid transparent;
       background-clip:padding-box;
       padding:10px;
-      box-shadow:0 0 16px var(--theme-glow);
+      box-shadow:none;
       position:relative;
       overflow:hidden;
     }
     .leaderboard-panel{
-      flex:0 0 60%;
+      flex:0 0 calc(60% - 8px);
       display:flex;
       flex-direction:column;
+      order:-1;
+      max-width:calc(60% - 8px);
     }
     .slot-panel::after,.leaderboard-panel::after{
       content:'';
@@ -546,11 +551,27 @@
     .reels-box{
       position:relative;
       border-radius:16px;
-      border:2px solid rgba(148,116,72,.9);
+      border:3px solid transparent;
       background:linear-gradient(180deg,#020617 0,#020617 40%,#000 100%);
+      background-clip:padding-box;
       padding:10px 8px 14px;
-      box-shadow:inset 0 0 18px rgba(15,23,42,.9),0 0 26px rgba(0,0,0,.9);
+      box-shadow:0 0 26px var(--theme-glow);
       overflow:hidden;
+    }
+    .reels-box::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:-1;
     }
     .reel-labels{
       display:flex;
@@ -697,21 +718,14 @@
       font-weight:900;
       letter-spacing:.12em;
       cursor:pointer;
-      background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
-      background-clip:padding-box;
-      color:#ffffff;
-      text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
-      box-shadow:0 0 16px var(--theme-glow);
-      transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
-      position:relative;
-      overflow:hidden;
-    }
-    body.theme-gold .spin-button{
       background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
       background-clip:padding-box;
       color:#78350f;
-      text-shadow:0 0 8px rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.3);
-      font-weight:900;
+      text-shadow:none;
+      box-shadow:none;
+      transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
+      position:relative;
+      overflow:hidden;
     }
     .spin-button::after{
       content:'';
@@ -776,28 +790,22 @@
     }
     .add-player-form button{
       border-radius:999px;
-      border:2px solid transparent;
-      background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
+      border:3px solid transparent;
+      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
       background-clip:padding-box;
       font-size:12px;
       padding:6px 12px;
-      color:#ffffff;
+      color:#78350f;
       font-weight:900;
       text-transform:uppercase;
       letter-spacing:.12em;
       cursor:pointer;
-      text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
-      box-shadow:0 0 16px var(--theme-glow);
+      text-shadow:none;
+      box-shadow:none;
       position:relative;
       overflow:hidden;
     }
-    body.theme-gold .add-player-form button{
-      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
-      background-clip:padding-box;
-      color:#78350f;
-      text-shadow:0 0 8px rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.3);
-      font-weight:900;
-    }
+    /* Gold mode styling removed - all buttons now use pale gold */
     .add-player-form button::after{
       content:'';
       position:absolute;
@@ -1012,28 +1020,22 @@
     .winner-actions button{
       border-radius:999px;
       border:3px solid transparent;
-      background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
+      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
       background-clip:padding-box;
-      color:#ffffff;
+      color:#78350f;
       font-size:11px;
       font-weight:700;
       padding:6px 10px;
       cursor:pointer;
       text-transform:uppercase;
       letter-spacing:.12em;
-      text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
-      box-shadow:0 0 16px var(--theme-glow);
+      text-shadow:none;
+      box-shadow:none;
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       overflow:hidden;
     }
-    body.theme-gold .winner-actions button{
-      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
-      background-clip:padding-box;
-      color:#78350f;
-      text-shadow:0 0 8px rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.3);
-      font-weight:900;
-    }
+    /* Gold mode styling removed - all buttons now use pale gold */
     .winner-actions button::after{
       content:'';
       position:absolute;
@@ -1135,29 +1137,23 @@
     .adjust-btn{
       border-radius:999px;
       border:3px solid transparent;
-      background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
+      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
       background-clip:padding-box;
-      color:#ffffff;
+      color:#78350f;
       font-size:13px;
       font-weight:700;
       padding:8px 16px;
       cursor:pointer;
       text-transform:uppercase;
       letter-spacing:.08em;
-      text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
-      box-shadow:0 0 16px var(--theme-glow);
+      text-shadow:none;
+      box-shadow:none;
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       z-index:10;
       overflow:hidden;
     }
-    body.theme-gold .adjust-btn{
-      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
-      background-clip:padding-box;
-      color:#78350f;
-      text-shadow:0 0 8px rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.3);
-      font-weight:900;
-    }
+    /* Gold mode styling removed - all buttons now use pale gold */
     .adjust-btn::after{
       content:'';
       position:absolute;
@@ -1243,17 +1239,17 @@
     .queue-chip{
       border-radius:999px;
       border:3px solid transparent;
-      background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
+      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
       background-clip:padding-box;
-      color:#ffffff;
+      color:#78350f;
       padding:4px 10px;
       font-size:11px;
       font-weight:700;
       cursor:pointer;
       text-transform:uppercase;
       letter-spacing:.1em;
-      text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
-      box-shadow:0 0 16px var(--theme-glow);
+      text-shadow:none;
+      box-shadow:none;
       opacity:.6;
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
@@ -1280,13 +1276,7 @@
       transform:scale(1.05);
       box-shadow:0 0 24px var(--theme-glow),inset 0 0 16px var(--theme-glow);
     }
-    body.theme-gold .queue-chip{
-      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
-      background-clip:padding-box;
-      color:#78350f;
-      text-shadow:0 0 8px rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.3);
-      font-weight:900;
-    }
+    /* Gold mode styling removed - all buttons now use pale gold */
     .finish-actions{
       display:flex;
       justify-content:center;
@@ -1300,29 +1290,23 @@
     .finish-actions button{
       border-radius:999px;
       border:3px solid transparent;
-      background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
+      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
       background-clip:padding-box;
-      color:#ffffff;
+      color:#78350f;
       font-size:11px;
       font-weight:700;
       padding:6px 10px;
       text-transform:uppercase;
       letter-spacing:.12em;
       cursor:pointer;
-      text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
-      box-shadow:0 0 16px var(--theme-glow);
+      text-shadow:none;
+      box-shadow:none;
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       z-index:10;
       overflow:hidden;
     }
-    body.theme-gold .finish-actions button{
-      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
-      background-clip:padding-box;
-      color:#78350f;
-      text-shadow:0 0 8px rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.3);
-      font-weight:900;
-    }
+    /* Gold mode styling removed - all buttons now use pale gold */
     .finish-actions button::after{
       content:'';
       position:absolute;
@@ -1397,28 +1381,22 @@
     .player-card-actions button{
       border-radius:999px;
       border:3px solid transparent;
-      background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
+      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
       background-clip:padding-box;
-      color:#ffffff;
+      color:#78350f;
       font-size:11px;
       font-weight:700;
       padding:4px 8px;
       text-transform:uppercase;
       letter-spacing:.1em;
       cursor:pointer;
-      text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
-      box-shadow:0 0 16px var(--theme-glow);
+      text-shadow:none;
+      box-shadow:none;
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       overflow:hidden;
     }
-    body.theme-gold .player-card-actions button{
-      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
-      background-clip:padding-box;
-      color:#78350f;
-      text-shadow:0 0 8px rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.3);
-      font-weight:900;
-    }
+    /* Gold mode styling removed - all buttons now use pale gold */
     .player-card-actions button::after{
       content:'';
       position:absolute;
@@ -1470,12 +1448,30 @@
       height:60px;
       border-radius:50%;
       position:relative;
+      border:3px solid transparent;
       background:conic-gradient(var(--theme-color) 0% var(--percentage), rgba(0,0,0,.3) var(--percentage) 100%);
-      box-shadow:0 0 8px var(--theme-glow),inset 0 0 4px rgba(0,0,0,.5);
+      background-clip:padding-box;
+      box-shadow:0 0 12px var(--theme-glow);
       display:flex;
       align-items:center;
       justify-content:center;
       filter:brightness(var(--chart-brightness, 1));
+      overflow:hidden;
+    }
+    .pie-chart::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:50%;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:-1;
     }
     .pie-chart-inner{
       width:44px;
@@ -1499,8 +1495,9 @@
       width:24px;
       height:24px;
       border-radius:4px;
-      border:2px solid var(--theme-color);
+      border:2px solid transparent;
       background:rgba(0,0,0,0.3);
+      background-clip:padding-box;
       color:var(--theme-color);
       font-size:14px;
       font-weight:800;
@@ -1511,6 +1508,23 @@
       transition:all .15s ease-out;
       box-shadow:0 0 6px var(--theme-glow);
       text-shadow:0 0 4px var(--theme-glow);
+      position:relative;
+      overflow:hidden;
+    }
+    .ticket-btn::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:4px;
+      padding:2px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:-1;
     }
     .ticket-btn:hover{
       background:var(--theme-color);
@@ -1573,28 +1587,22 @@
     .footer-buttons button{
       border-radius:999px;
       border:3px solid transparent;
-      background:radial-gradient(circle at top,#fcd34d 0,#f59e0b 50%,#d97706 100%);
+      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
       background-clip:padding-box;
-      color:#ffffff;
+      color:#78350f;
       font-size:10px;
       font-weight:700;
       padding:4px 8px;
       text-transform:uppercase;
       letter-spacing:.1em;
       cursor:pointer;
-      text-shadow:0 0 12px var(--theme-glow),0 0 20px var(--theme-glow),0 1px 2px rgba(0,0,0,.8);
-      box-shadow:0 0 16px var(--theme-glow);
+      text-shadow:none;
+      box-shadow:none;
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
       position:relative;
       overflow:hidden;
     }
-    body.theme-gold .footer-buttons button{
-      background:radial-gradient(circle at top,#fef3c7 0,#fde68a 50%,#fcd34d 100%);
-      background-clip:padding-box;
-      color:#78350f;
-      text-shadow:0 0 8px rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.3);
-      font-weight:900;
-    }
+    /* Gold mode styling removed - all buttons now use pale gold */
     .footer-buttons button::after{
       content:'';
       position:absolute;
@@ -1719,14 +1727,9 @@
           <div class="status-text" id="smallStatus">Ready.</div>
         </div>
       </section>
-      <!-- BOTTOM PANELS (HISTORY + LEADERBOARD) -->
+      <!-- BOTTOM PANELS (LEADERBOARD + HISTORY) -->
       <div class="bottom-panels-container">
-        <!-- HISTORY LOG PANEL (LEFT - 40%) -->
-        <section class="history-panel">
-          <div class="history-header">History Log</div>
-          <div class="log" id="log"></div>
-        </section>
-        <!-- LEADERBOARD PANEL (RIGHT - 60%) -->
+        <!-- LEADERBOARD PANEL (LEFT - 60%) -->
         <section class="leaderboard-panel">
           <div class="side-panel-header">
             <div class="side-panel-section-title">Leaderboard Odds</div>
@@ -1751,6 +1754,11 @@
               <tbody id="leaderboardBody"></tbody>
             </table>
           </div>
+        </section>
+        <!-- HISTORY LOG PANEL (RIGHT - 40%) -->
+        <section class="history-panel">
+          <div class="history-header">History Log</div>
+          <div class="log" id="log"></div>
         </section>
       </div>
     </div>
@@ -2139,7 +2147,7 @@
 
   const BULB_COLORS = ['#fefce8','#38bdf8','#020617','#ef4444','#22c55e'];
   const BULB_LUNA_COLORS = ['#fdf2ff','#fb7185','#a855f7','#f973fa'];
-  function startBulbsAnimation(isLuna){
+  function startBulbsAnimation(isLunaWin){
     stopBulbsAnimation();
     const top = bulbRowTop.querySelectorAll('.bulb');
     const bottom = bulbRowBottom.querySelectorAll('.bulb');
@@ -2156,7 +2164,8 @@
     let t = 0;
     const trailLength = 8; // Number of bulbs to light up in the trail
     bulbsTimer = setInterval(()=>{
-      const colors = isLuna ? BULB_LUNA_COLORS : BULB_COLORS;
+      // For Luna wins: use pink colors. For others: randomly cycle all non-pink colors
+      const availableColors = isLunaWin ? BULB_LUNA_COLORS : BULB_COLORS;
 
       // Turn off all bulbs first
       all.forEach(b => {
@@ -2165,12 +2174,12 @@
         b.style.color = '#4b5563';
       });
 
-      // Light up trailing bulbs with gradient effect
+      // Light up trailing bulbs with random color cycling
       for(let i = 0; i < trailLength; i++){
         const idx = (t - i + all.length) % all.length;
         const bulb = all[idx];
-        const colorIdx = Math.floor(i / 2) % colors.length;
-        const c = colors[colorIdx];
+        // Random color from available palette
+        const c = availableColors[Math.floor(Math.random() * availableColors.length)];
         const opacity = 1 - (i / trailLength) * 0.7; // Fade trail
         bulb.style.color = c;
         bulb.style.background = c;
@@ -3119,6 +3128,14 @@
     spinAnimationStopCascade(() => {
       leverEl.classList.remove('pull');
       renderSpinResult(symbols);
+
+      // Log Luna appearances (regardless of win/loss)
+      const lunaCount = symbols.filter(s => s.type === 'luna').length;
+      if(lunaCount > 0){
+        const appearanceText = lunaCount === 1 ? 'appearance' : 'appearances';
+        log(`<span style="color:#f973fa;font-weight:600;">Luna made ${lunaCount} ${appearanceText}</span>`);
+      }
+
       const reelPlayers=[];
       symbols.forEach((s,idx)=>{
         if(s.type==='player') reelPlayers.push({index:idx,playerId:s.playerId});
