@@ -20,10 +20,11 @@
       --muted:#d1bfa1;
       --danger:#f97373;
       --ok:#4ade80;
-      --theme-color:#fefce8;
-      --theme-glow:rgba(254,252,232,0.6);
-      --gradient-border:#fefce8;
+      --theme-color:#ffffff;
+      --theme-glow:rgba(255,255,255,0.4);
+      --gradient-border:linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff);
       --gradient-border-size:200%;
+      --logo-ring-gradient:conic-gradient(from 0deg, #ffffff 0deg 60deg, transparent 60deg 120deg, #ffffff 120deg 180deg, transparent 180deg 240deg, #ffffff 240deg 300deg, transparent 300deg 360deg);
     }
     body.theme-white{
       --bg:#1f2937;
@@ -344,6 +345,8 @@
       .history-panel,.leaderboard-panel{
         flex:1 1 auto;
         min-height:200px;
+        max-width:100%;
+        width:100%;
       }
       .slot-panel,.leaderboard-panel{
         padding:8px;
@@ -949,6 +952,35 @@
       background:var(--theme-color);
       box-shadow:0 0 8px var(--theme-glow);
     }
+    .help-body::-webkit-scrollbar,
+    .help-card::-webkit-scrollbar,
+    .deck-table-wrapper::-webkit-scrollbar,
+    .reel-charts-wrapper::-webkit-scrollbar{
+      width:8px;
+      height:8px;
+    }
+    .help-body::-webkit-scrollbar-track,
+    .help-card::-webkit-scrollbar-track,
+    .deck-table-wrapper::-webkit-scrollbar-track,
+    .reel-charts-wrapper::-webkit-scrollbar-track{
+      background:rgba(0,0,0,0.3);
+      border-radius:4px;
+    }
+    .help-body::-webkit-scrollbar-thumb,
+    .help-card::-webkit-scrollbar-thumb,
+    .deck-table-wrapper::-webkit-scrollbar-thumb,
+    .reel-charts-wrapper::-webkit-scrollbar-thumb{
+      background:var(--gradient-border);
+      border-radius:4px;
+      border:1px solid var(--border);
+    }
+    .help-body::-webkit-scrollbar-thumb:hover,
+    .help-card::-webkit-scrollbar-thumb:hover,
+    .deck-table-wrapper::-webkit-scrollbar-thumb:hover,
+    .reel-charts-wrapper::-webkit-scrollbar-thumb:hover{
+      background:var(--theme-color);
+      box-shadow:0 0 8px var(--theme-glow);
+    }
     .log-timestamp{
       color:var(--gold);
       font-weight:600;
@@ -1451,12 +1483,13 @@
       border:3px solid transparent;
       background:conic-gradient(var(--theme-color) 0% var(--percentage), rgba(0,0,0,.3) var(--percentage) 100%);
       background-clip:padding-box;
-      box-shadow:0 0 12px var(--theme-glow);
+      box-shadow:0 0 20px var(--theme-glow),0 0 40px var(--theme-glow);
       display:flex;
       align-items:center;
       justify-content:center;
-      filter:brightness(var(--chart-brightness, 1));
+      filter:brightness(1.3);
       overflow:hidden;
+      transition:all .15s ease-out;
     }
     .pie-chart::after{
       content:'';
@@ -1877,39 +1910,17 @@
     <div class="help-card">
       <div class="help-title">How It Works</div>
       <div class="help-body">
-        <div class="help-section-title">The Basics</div>
-        <p>
-          Join the queue and earn tickets on each of 5 reels. Each spin reveals 5 results.
-          <strong>3+ matches = you win the slot.</strong> Your deck gets played until it loses.
-        </p>
+        <div class="help-section-title">Basics</div>
+        <p><strong>3+ matches = win.</strong> Each of 5 reels weighted by your tickets. Winner's deck plays until loss.</p>
 
-        <div class="help-section-title">Your Odds</div>
-        <p>
-          <strong>Tickets = your weight per reel.</strong> More tickets on a reel = higher chance to appear there.
-          Everyone starts with 1 ticket per reel. Cap: 500 tickets per reel.
-        </p>
-        <p>
-          <strong>Patience rewards:</strong> Miss a spin? Your tickets double (up to cap). Appear but don't win?
-          Spend 1 ticket on reels you appeared on. Dead spin? Tickets adjusted based on group size (smaller groups penalized, larger groups rewarded).
-        </p>
+        <div class="help-section-title">Tickets & Odds</div>
+        <p><strong>Tickets = weight per reel.</strong> Start: 1/reel. Cap: 500/reel. <strong>Miss spin:</strong> tickets double (to cap). <strong>Appear, don't win:</strong> -1 ticket on reels shown. <strong>Dead spin:</strong> small groups penalized, large groups rewarded.</p>
 
-        <div class="help-section-title">Overflow & Sparks</div>
-        <p>
-          <strong>When tickets exceed 500,</strong> overflow converts to sparks. Each 500 overflow = 1 spark (max 12).
-          <strong>At 12 sparks,</strong> you're auto-picked before the next spin and Ignited. Guaranteed win for waiting.
-        </p>
+        <div class="help-section-title">Sparks & Ignition</div>
+        <p><strong>Overflow past 500 → sparks.</strong> 500 overflow = 1 spark (max 12). <strong>12 sparks = Ignited:</strong> auto-pick next spin, guaranteed win.</p>
 
-        <div class="help-section-title">Luna Luck</div>
-        <p>
-          <strong>Luna = wild symbol.</strong> Rarely appears (1 per spin max). Completes 3-in-a-row matches only.
-          Luna Luck wins trigger special animations. She's your lucky break.
-        </p>
-
-        <div class="help-section-title">CARLO Jackpot</div>
-        <p>
-          <strong>All 5 letters (C-A-R-L-O) at once = CARLO jackpot.</strong> Rare event. Streamer plays their deck instead of a viewer.
-          Individual letters don't affect your odds—only the full jackpot matters.
-        </p>
+        <div class="help-section-title">Luna & CARLO</div>
+        <p><strong>Luna:</strong> rare wild (1/spin max), completes 3-in-a-row. <strong>CARLO:</strong> all 5 letters at once = jackpot, streamer plays their deck.</p>
       </div>
       <div class="finish-actions">
         <button id="closeHelpBtn">Close</button>
@@ -2000,7 +2011,7 @@
   const currentResults = document.getElementById('currentResults');
 
   const state = {currentEventIndex: 1,events: []};
-  let selectedColors = new Set(['W']); // Multi-select theme colors
+  let selectedColors = new Set(); // Multi-select theme colors (empty = white glow default)
   let selectedColorSet = new Set();
   let queueReaddChoice = 'yes';
   let bonusRewardChoice = 'tickets';
@@ -3532,13 +3543,14 @@
   }
 
   function applyGradientGlow(){
-    // No colors selected - default to gold
+    // No colors selected - default to white glow
     if(selectedColors.size === 0){
-      const goldGradient = 'linear-gradient(90deg, #fcd34d, #f59e0b, #d97706, #fcd34d)';
-      document.documentElement.style.setProperty('--gradient-border', goldGradient);
+      const whiteGradient = 'linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff)';
+      document.documentElement.style.setProperty('--gradient-border', whiteGradient);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
-      document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg, #fcd34d 0deg 60deg, transparent 60deg 120deg, #fcd34d 120deg 180deg, transparent 180deg 240deg, #fcd34d 240deg 300deg, transparent 300deg 360deg)`);
-      document.documentElement.style.setProperty('--theme-glow', 'rgba(250,204,21,0.4)');
+      document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg, #ffffff 0deg 60deg, transparent 60deg 120deg, #ffffff 120deg 180deg, transparent 180deg 240deg, #ffffff 240deg 300deg, transparent 300deg 360deg)`);
+      document.documentElement.style.setProperty('--theme-glow', 'rgba(255,255,255,0.4)');
+      document.documentElement.style.setProperty('--theme-color', '#ffffff');
       return;
     }
 
@@ -3611,7 +3623,7 @@
       try{
         selectedColors = new Set(JSON.parse(saved));
       }catch(e){
-        selectedColors = new Set(['W']);
+        selectedColors = new Set(); // Empty = white glow default
       }
     }else{
       // Migrate old single-color theme
@@ -3619,8 +3631,8 @@
       if(oldSaved){
         selectedColors = new Set([oldSaved]);
       }else{
-        // Default to white theme on first load
-        selectedColors = new Set(['W']);
+        // Default to white glow (no theme selected)
+        selectedColors = new Set();
       }
     }
     applyMultiTheme();
