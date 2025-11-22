@@ -338,6 +338,13 @@
         padding:6px;
         gap:6px;
       }
+      .bottom-panels-container{
+        flex-direction:column;
+      }
+      .history-panel,.leaderboard-panel{
+        flex:1 1 auto;
+        min-height:200px;
+      }
       .slot-panel,.leaderboard-panel{
         padding:8px;
       }
@@ -406,6 +413,49 @@
         overflow-wrap:break-word;
       }
     }
+    .bottom-panels-container{
+      display:flex;
+      gap:12px;
+      width:100%;
+    }
+    .history-panel{
+      flex:0 0 40%;
+      background:radial-gradient(circle at top,var(--panel) 0,var(--bg) 50%,#000 100%);
+      border-radius:16px;
+      border:3px solid transparent;
+      background-clip:padding-box;
+      padding:10px;
+      box-shadow:0 0 16px var(--theme-glow),inset 0 0 12px var(--theme-glow);
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .history-panel::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:-1;
+    }
+    .history-header{
+      text-align:center;
+      font-size:14px;
+      font-weight:700;
+      color:var(--gold);
+      text-shadow:0 0 12px rgba(250,204,21,.6);
+      margin-bottom:8px;
+      text-transform:uppercase;
+      letter-spacing:.15em;
+    }
     .slot-panel,.leaderboard-panel{
       background:radial-gradient(circle at top,var(--panel) 0,var(--bg) 50%,#000 100%);
       border-radius:16px;
@@ -415,6 +465,11 @@
       box-shadow:0 0 16px var(--theme-glow),inset 0 0 12px var(--theme-glow);
       position:relative;
       overflow:hidden;
+    }
+    .leaderboard-panel{
+      flex:0 0 60%;
+      display:flex;
+      flex-direction:column;
     }
     .slot-panel::after,.leaderboard-panel::after{
       content:'';
@@ -786,13 +841,14 @@
     }
     .summary-value{font-weight:600;font-size:12px;}
     .leaderboard-wrapper{
-      max-height:260px;
       overflow:auto;
       border-radius:10px;
       border:2px solid rgba(148,116,72,.9);
       background:linear-gradient(145deg, rgba(30,30,30,0.95) 0%, rgba(0,0,0,0.9) 100%);
       margin-top:6px;
       box-shadow:0 0 16px rgba(0,0,0,0.5),inset 0 0 20px rgba(0,0,0,0.6);
+      flex:1;
+      min-height:0;
     }
     .leaderboard-wrapper::-webkit-scrollbar{
       width:8px;
@@ -865,15 +921,13 @@
       color:var(--muted);
     }
     .log{
-      margin-top:8px;
-      padding-top:6px;
-      border-top:1px solid var(--border);
       font-size:11px;
-      max-height:120px;
       overflow-y:auto;
       color:var(--muted);
-      text-align:center;
-      padding-right:4px;
+      text-align:left;
+      padding:8px;
+      flex:1;
+      min-height:0;
     }
     .log::-webkit-scrollbar{
       width:8px;
@@ -1681,33 +1735,40 @@
           <div class="status-text" id="smallStatus">Ready.</div>
         </div>
       </section>
-      <!-- LEADERBOARD PANEL (BELOW SLOT) -->
-      <section class="leaderboard-panel">
-        <div class="side-panel-header">
-          <div class="side-panel-section-title">Leaderboard Odds</div>
-        </div>
-        <form class="add-player-form" id="addPlayerForm" autocomplete="off">
-          <input type="text" id="playerNameInput" name="player-name-input" placeholder="Add viewer (name / handle)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-          <button type="submit">Add</button>
-        </form>
-        <div class="leaderboard-wrapper">
-          <table class="leaderboard-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Player</th>
-                <th>Total</th>
-                <th>Slot W</th>
-                <th>W/L%</th>
-                <th>Pity</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="leaderboardBody"></tbody>
-          </table>
-        </div>
-        <div class="log" id="log"></div>
-      </section>
+      <!-- BOTTOM PANELS (HISTORY + LEADERBOARD) -->
+      <div class="bottom-panels-container">
+        <!-- HISTORY LOG PANEL (LEFT - 40%) -->
+        <section class="history-panel">
+          <div class="history-header">History Log</div>
+          <div class="log" id="log"></div>
+        </section>
+        <!-- LEADERBOARD PANEL (RIGHT - 60%) -->
+        <section class="leaderboard-panel">
+          <div class="side-panel-header">
+            <div class="side-panel-section-title">Leaderboard Odds</div>
+          </div>
+          <form class="add-player-form" id="addPlayerForm" autocomplete="off">
+            <input type="text" id="playerNameInput" name="player-name-input" placeholder="Add viewer (name / handle)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <button type="submit">Add</button>
+          </form>
+          <div class="leaderboard-wrapper">
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Player</th>
+                  <th>Total</th>
+                  <th>Slot W</th>
+                  <th>W/L%</th>
+                  <th>Pity</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
   </main>
   <div class="footer-bar">
@@ -2237,7 +2298,7 @@
   function addPlayer(name){
     const evt = currentEvent();
     if(evt.players.length >= MAX_PLAYERS){
-      smallStatus.textContent = "Player cap reached for this event.";
+      smallStatus.textContent = "Player cap reached for this session.";
       return;
     }
     name = name.trim();
@@ -2261,7 +2322,7 @@
       decks:[]
     };
     evt.players.push(p);
-    log(`Added player ${name} to event ${state.currentEventIndex}.`);
+    log(`Added player ${name} to session ${state.currentEventIndex}.`);
     renderLeaderboard();
     const lbWrap = document.querySelector('.leaderboard-wrapper');
     if(lbWrap) lbWrap.scrollTop = lbWrap.scrollHeight;
@@ -2761,7 +2822,7 @@
     const idx = evt.players.findIndex(x=>x.id===currentPlayerCardId);
     if(idx>=0){
       const removed = evt.players.splice(idx,1)[0];
-      log(`Removed ${removed.name} from event ${state.currentEventIndex}.`);
+      log(`Removed ${removed.name} from session ${state.currentEventIndex}.`);
     }
     playerOverlay.classList.remove('show');
     currentPlayerCardId = null;
@@ -3122,13 +3183,24 @@
   spinBtn.addEventListener('click',performSpin);
   leverEl.addEventListener('click',performSpin);
 
+  let isSubmitting = false;
   addPlayerForm.addEventListener('submit',e=>{
     e.preventDefault();
     e.stopPropagation();
 
-    // Grab value first, then immediately clear
+    // Prevent double-submission
+    if(isSubmitting) return false;
+    isSubmitting = true;
+
+    // Grab value FIRST before any manipulation
     const nameToAdd = playerNameInput.value.trim();
+
+    // Aggressively clear the input multiple ways
     playerNameInput.value = '';
+    playerNameInput.setAttribute('value', '');
+    addPlayerForm.reset();
+
+    // Blur to ensure no focus restore
     playerNameInput.blur();
 
     // Add player if there's a name
@@ -3136,10 +3208,13 @@
       addPlayer(nameToAdd);
     }
 
-    // Refocus for next entry
+    // Double-check it's cleared and refocus
     setTimeout(() => {
+      playerNameInput.value = '';
+      playerNameInput.setAttribute('value', '');
       playerNameInput.focus();
-    }, 10);
+      isSubmitting = false;
+    }, 50);
 
     return false;
   });
