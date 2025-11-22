@@ -133,24 +133,20 @@
     header{
       padding:12px 16px;
       border-bottom:2px solid var(--border);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:8px;
       box-shadow:0 2px 12px var(--theme-glow);
     }
     .header-top{
       display:flex;
-      flex-direction:column;
       align-items:center;
-      gap:8px;
-    }
-    .header-left{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      width:100%;
       justify-content:space-between;
+      gap:12px;
+      width:100%;
+    }
+    .header-spin-controls{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      flex-shrink:0;
     }
     .logo{
       width:110px;
@@ -174,7 +170,8 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap:4px;
+      gap:6px;
+      flex:1;
     }
     .title{
       font-size:22px;
@@ -190,53 +187,12 @@
       letter-spacing:.06em;
       opacity:0.8;
     }
-    .header-right{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:2px;
-      font-size:10px;
-    }
-    .spin-meta{
-      display:none; /* Stats moved to HELP tab */
-    }
-    .event-row{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      font-size:11px;
-      color:var(--muted);
-    }
-    .event-label{
-      text-transform:uppercase;
-      letter-spacing:.12em;
-    }
-    .event-chip{
-      border-radius:999px;
-      border:1px solid var(--border);
-      padding:6px 14px;
-      font-size:12px;
-      cursor:pointer;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      opacity:.6;
-      background:var(--panel);
-      color:var(--muted);
-    }
-    .event-chip.active{
-      opacity:1;
-      border-color:var(--blue);
-      box-shadow:0 0 10px rgba(56,189,248,.7);
-      color:var(--blue);
-    }
     .theme-toggle{
       display:flex;
       align-items:center;
-      gap:4px;
-      font-size:10px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.12em;
+      justify-content:center;
+      gap:6px;
+      margin-top:4px;
     }
     .theme-chip{
       width:30px;
@@ -272,13 +228,10 @@
       overflow:auto;
     }
     .slot-layout{
-      display:grid;
-      grid-template-columns:2.3fr 1.3fr;
+      display:flex;
+      flex-direction:column;
       gap:10px;
       padding:10px;
-    }
-    @media(max-width:900px){
-      .slot-layout{grid-template-columns:1fr;}
     }
     @media(max-width:640px){
       #app{
@@ -301,53 +254,34 @@
       .title{
         font-size:18px;
       }
-      .header-left{
-        flex-direction:column;
-        gap:6px;
-        align-items:center;
-      }
-      .header-right{
-        align-items:center;
-        gap:2px;
-      }
-      .event-row{
-        width:100%;
-        justify-content:center;
-      }
-      .spin-meta{
-        display:none;
-      }
       .subtitle{
         font-size:10px;
       }
-      .event-row{
-        flex-wrap:wrap;
-        gap:4px;
-      }
-      .event-label{
-        width:100%;
-        font-size:10px;
-      }
       .theme-toggle{
-        font-size:9px;
-        gap:3px;
+        gap:4px;
       }
       .theme-chip{
         width:26px;
         height:26px;
       }
+      .header-top{
+        flex-direction:column;
+        align-items:center;
+      }
+      .header-spin-controls{
+        width:100%;
+        justify-content:center;
+      }
+      .spin-button{
+        font-size:16px;
+        padding:10px 32px;
+      }
       .slot-layout{
         padding:6px;
         gap:6px;
       }
-      .slot-panel,.side-panel{
+      .slot-panel,.leaderboard-panel{
         padding:8px;
-        padding-bottom:70px; /* Extra space for spin button */
-      }
-      .spin-button{
-        font-size:18px;
-        padding:10px 28px;
-        letter-spacing:.12em;
       }
       .lever{
         display:none;
@@ -416,15 +350,14 @@
         overflow-wrap:break-word;
       }
     }
-    .slot-panel,.side-panel{
+    .slot-panel,.leaderboard-panel{
       background:radial-gradient(circle at top,var(--panel) 0,var(--bg) 50%,#000 100%);
       border-radius:16px;
       border:2px solid var(--border);
       padding:10px;
-      padding-bottom:80px; /* Extra space for spin button */
       box-shadow:0 0 16px var(--theme-glow),inset 0 0 12px var(--theme-glow);
       position:relative;
-      overflow:visible; /* Changed from hidden to prevent cutting off spin button */
+      overflow:hidden;
     }
     .slot-panel::before{
       content:"";
@@ -643,9 +576,6 @@
       text-shadow:0 1px 2px rgba(255,255,255,.8), 0 0 8px rgba(255,255,255,.6);
       box-shadow:0 0 24px var(--theme-glow),0 0 12px var(--theme-glow),inset 0 0 8px rgba(255,255,255,.5);
       transition:transform .1s ease-out,box-shadow .1s ease-out,opacity .1s ease-out;
-      position:absolute;
-      left:50%;
-      transform:translateX(-50%);
     }
     .spin-button:disabled{
       opacity:.45;
@@ -653,7 +583,7 @@
       box-shadow:0 0 6px rgba(0,0,0,.4);
     }
     .spin-button:active:not(:disabled){
-      transform:translateX(-50%) translateY(1px) scale(.99);
+      transform:translateY(1px) scale(.99);
       box-shadow:0 0 16px var(--theme-glow),inset 0 0 6px rgba(0,0,0,.4);
     }
     .side-panel-header{
@@ -1211,28 +1141,16 @@
       <div class="title-block">
         <div class="title">CarloMTG</div>
         <div class="subtitle">Viewer Roulette</div>
-      </div>
-    </div>
-    <div class="header-left">
-      <div class="event-row">
-        <span class="event-label">Event:</span>
-        <span id="eventChips"></span>
-      </div>
-      <div class="header-right">
-        <div class="spin-meta">
-          Spins: <span id="spinCount">0</span> · Dead: <span id="deadStreak">0</span> · Players: <span id="playerCount">0</span>/50
-        </div>
-        <div class="spin-meta">
-          Cap: 500 · Pity: 12 max
+        <div class="theme-toggle">
+          <div class="theme-chip" data-color="W">W</div>
+          <div class="theme-chip" data-color="U">U</div>
+          <div class="theme-chip" data-color="B">B</div>
+          <div class="theme-chip" data-color="R">R</div>
+          <div class="theme-chip" data-color="G">G</div>
         </div>
       </div>
-      <div class="theme-toggle">
-        Theme:
-        <div class="theme-chip" data-color="W">W</div>
-        <div class="theme-chip" data-color="U">U</div>
-        <div class="theme-chip" data-color="B">B</div>
-        <div class="theme-chip" data-color="R">R</div>
-        <div class="theme-chip" data-color="G">G</div>
+      <div class="header-spin-controls">
+        <button class="spin-button" id="spinBtn">SPIN</button>
       </div>
     </div>
   </header>
@@ -1259,11 +1177,10 @@
         </div>
         <div class="slot-controls">
           <div class="status-text" id="smallStatus">Ready.</div>
-          <button class="spin-button" id="spinBtn">SPIN</button>
         </div>
       </section>
-      <!-- SIDE PANEL -->
-      <section class="side-panel">
+      <!-- LEADERBOARD PANEL (BELOW SLOT) -->
+      <section class="leaderboard-panel">
         <div class="side-panel-header">
           <div class="side-panel-section-title">Leaderboard Odds</div>
         </div>
@@ -1628,14 +1545,7 @@
   }
 
   function renderEvents(){
-    eventChipsEl.innerHTML = '';
-    for(let i=1;i<=MAX_EVENTS;i++){
-      const span = document.createElement('span');
-      span.className = 'event-chip' + (state.currentEventIndex === i ? ' active' : '');
-      span.textContent = i;
-      span.dataset.index = i;
-      eventChipsEl.appendChild(span);
-    }
+    // Event system UI removed - events still work in background but no UI for switching
   }
 
   function initBulbs(){
@@ -2675,16 +2585,7 @@
     addPlayer(playerNameInput.value||'');
     playerNameInput.value='';
   });
-  eventChipsEl.addEventListener('click',e=>{
-    const chip = e.target.closest('.event-chip');
-    if(!chip) return;
-    const idx = parseInt(chip.dataset.index,10);
-    state.currentEventIndex = idx;
-    log(`Switched to event #${idx}.`);
-    renderEvents();
-    renderLeaderboard();
-    saveAll();
-  });
+  // Event chip switching removed - using single event model
 
   helpBtn.addEventListener('click',()=>helpOverlay.classList.add('show'));
   closeHelpBtn.addEventListener('click',()=>helpOverlay.classList.remove('show'));
