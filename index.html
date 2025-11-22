@@ -2193,15 +2193,18 @@
         </div>
       </div>
       <div class="finish-field">
-        <div class="finish-label">Opponent Deck Colors (Optional)</div>
-        <div class="color-chips" id="opponentColorChips">
-          <div class="color-chip" data-color="W">W</div>
-          <div class="color-chip" data-color="U">U</div>
-          <div class="color-chip" data-color="B">B</div>
-          <div class="color-chip" data-color="R">R</div>
-          <div class="color-chip" data-color="G">G</div>
-          <div class="color-chip" data-color="C">C</div>
+        <div class="finish-label">Match Format</div>
+        <select id="matchType" class="finish-select">
+          <option value="BO1">Best of 1</option>
+          <option value="BO3" selected>Best of 3</option>
+          <option value="BO5">Best of 5</option>
+        </select>
+        <div style="margin-top:6px;font-size:10px;color:var(--muted);">
+          BO1 = One opponent per game | BO3/BO5 = One opponent per match
         </div>
+      </div>
+      <div class="finish-field" id="opponentColorsContainer">
+        <!-- Dynamically populated based on match type -->
       </div>
       <div class="finish-field" id="bonusChoiceField" style="display:none;">
         <div class="finish-label">Bonus Reward (4/5-of-a-kind)</div>
@@ -2455,7 +2458,7 @@
   const runLossesInput = document.getElementById('runLosses');
   const matchTypeSelect = document.getElementById('matchType');
   const colorChips = document.getElementById('colorChips');
-  const opponentColorChips = document.getElementById('opponentColorChips');
+  const opponentColorsContainer = document.getElementById('opponentColorsContainer');
   const queueChoice = document.getElementById('queueChoice');
   const bonusChoice = document.getElementById('bonusChoice');
   const bonusChoiceField = document.getElementById('bonusChoiceField');
@@ -2503,7 +2506,6 @@
   const state = {currentEventIndex: 1,events: []};
   let selectedColors = new Set(); // Multi-select theme colors (empty = white glow default)
   let selectedColorSet = new Set();
-  let opponentColorSet = new Set(); // Track opponent deck colors
   let deckEditorColorSet = new Set(); // Track deck editor color selections
   let currentEditingPlayer = null; // Track which player's deck is being edited
   let currentEditingDeck = null; // Track which deck is being edited
@@ -2543,12 +2545,18 @@
     const current = parseInt(runWinsInput.value,10)||0;
     runWinsInput.value = current + 1;
     updateResultsDisplay();
+    regenerateOpponentColorSelectors();
   });
 
   addLossBtn.addEventListener('click',()=>{
     const current = parseInt(runLossesInput.value,10)||0;
     runLossesInput.value = current + 1;
     updateResultsDisplay();
+    regenerateOpponentColorSelectors();
+  });
+
+  matchTypeSelect.addEventListener('change',()=>{
+    regenerateOpponentColorSelectors();
   });
 
   function currentEvent(){
@@ -4000,6 +4008,75 @@
     winnerOverlay.classList.add('show');
   }
 
+  // Generate dynamic opponent color selectors based on match type and game count
+  function regenerateOpponentColorSelectors(){
+    const wins = Math.max(0, parseInt(runWinsInput.value, 10) || 0);
+    const losses = Math.max(0, parseInt(runLossesInput.value, 10) || 0);
+    const matchType = matchTypeSelect.value;
+    const totalGames = wins + losses;
+
+    // Clear existing content
+    opponentColorsContainer.innerHTML = '';
+
+    if(matchType === 'BO1'){
+      // BO1: One opponent color selector per game
+      if(totalGames === 0){
+        opponentColorsContainer.innerHTML = '<div class="finish-label" style="color:var(--muted);font-size:11px;">Add wins/losses to track opponents</div>';
+        return;
+      }
+
+      opponentColorsContainer.innerHTML = '<div class="finish-label">Opponent Colors (Optional - one per game)</div>';
+
+      for(let i = 0; i < totalGames; i++){
+        const gameLabel = i < wins ? `Win ${i + 1}` : `Loss ${i - wins + 1}`;
+        const gameDiv = document.createElement('div');
+        gameDiv.className = 'opponent-game-group';
+        gameDiv.style.cssText = 'margin-top:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:4px;';
+
+        const labelDiv = document.createElement('div');
+        labelDiv.textContent = gameLabel;
+        labelDiv.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:4px;';
+
+        const chipsDiv = document.createElement('div');
+        chipsDiv.className = 'opponent-color-chips';
+        chipsDiv.dataset.gameIndex = i;
+        chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+
+        // Create color chips
+        ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
+          const chip = document.createElement('div');
+          chip.className = 'color-chip';
+          chip.dataset.color = color;
+          chip.textContent = color;
+          chipsDiv.appendChild(chip);
+        });
+
+        gameDiv.appendChild(labelDiv);
+        gameDiv.appendChild(chipsDiv);
+        opponentColorsContainer.appendChild(gameDiv);
+      }
+    } else {
+      // BO3/BO5: Single opponent color selector for the entire match
+      opponentColorsContainer.innerHTML = '<div class="finish-label">Opponent Colors (Optional)</div>';
+
+      const chipsDiv = document.createElement('div');
+      chipsDiv.className = 'opponent-color-chips';
+      chipsDiv.dataset.gameIndex = 'match'; // Special marker for match-level
+      chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;';
+
+      // Create color chips
+      ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
+        const chip = document.createElement('div');
+        chip.className = 'color-chip';
+        chip.dataset.color = color;
+        chip.textContent = color;
+        chipsDiv.appendChild(chip);
+      });
+
+      opponentColorsContainer.appendChild(chipsDiv);
+    }
+  }
+
   function finishRunPrompt(player){
     const evt = currentEvent();
     const hits = (currentWinnerMeta && currentWinnerMeta.hits) || 3;
@@ -4013,8 +4090,8 @@
     updateResultsDisplay();
     selectedColorSet = new Set();
     Array.from(colorChips.children).forEach(ch=>ch.classList.remove('active'));
-    opponentColorSet = new Set();
-    Array.from(opponentColorChips.children).forEach(ch=>ch.classList.remove('active'));
+    matchTypeSelect.value = 'BO3'; // Reset to default
+    regenerateOpponentColorSelectors(); // Generate initial opponent selectors
     queueReaddChoice = 'yes';
     Array.from(queueChoice.children).forEach(ch=>{
       ch.classList.toggle('active', ch.dataset.choice === 'yes');
@@ -4062,17 +4139,11 @@
     }
   });
 
-  opponentColorChips.addEventListener('click',e=>{
+  // Event delegation for dynamically generated opponent color chips
+  opponentColorsContainer.addEventListener('click',e=>{
     const chip = e.target.closest('.color-chip');
     if(!chip) return;
-    const c = chip.dataset.color;
-    if(opponentColorSet.has(c)){
-      opponentColorSet.delete(c);
-      chip.classList.remove('active');
-    }else{
-      opponentColorSet.add(c);
-      chip.classList.add('active');
-    }
+    chip.classList.toggle('active');
   });
 
   queueChoice.addEventListener('click',e=>{
@@ -4117,7 +4188,18 @@
     const losses = Math.max(0,parseInt(runLossesInput.value,10)||0);
     const colors = Array.from(selectedColorSet).join('');  // Keep input order, don't sort
     const matchType = matchTypeSelect ? matchTypeSelect.value : 'BO3';
-    const opponentColors = Array.from(opponentColorSet).sort().join('');  // Sort opponent colors for consistency
+
+    // Collect opponent colors from dynamic selectors
+    let opponentColorsByGame = []; // Array for BO1, single element for BO3/BO5
+    const opponentChipGroups = opponentColorsContainer.querySelectorAll('.opponent-color-chips');
+    opponentChipGroups.forEach(group => {
+      const activeChips = Array.from(group.querySelectorAll('.color-chip.active'));
+      const gameColors = activeChips.map(chip => chip.dataset.color).sort().join('');
+      if(gameColors){
+        opponentColorsByGame.push(gameColors);
+      }
+    });
+
     player.overallWins += wins;
     player.overallLosses += losses;
     if(colors){
@@ -4148,13 +4230,31 @@
       deck.lastBestOf = matchType;
 
       // Track matchup data against opponent colors if provided
-      if(opponentColors){
+      if(opponentColorsByGame.length > 0){
         if(!deck.matchups) deck.matchups = {};  // Initialize if old deck doesn't have matchups
-        if(!deck.matchups[opponentColors]){
-          deck.matchups[opponentColors] = {wins:0, losses:0};
+
+        if(matchType === 'BO1'){
+          // BO1: Track each game individually
+          opponentColorsByGame.forEach((oppColors, index) => {
+            if(!deck.matchups[oppColors]){
+              deck.matchups[oppColors] = {wins:0, losses:0};
+            }
+            // First 'wins' games are wins, remaining are losses
+            if(index < wins){
+              deck.matchups[oppColors].wins += 1;
+            } else {
+              deck.matchups[oppColors].losses += 1;
+            }
+          });
+        } else {
+          // BO3/BO5: Track entire match against single opponent
+          const opponentColors = opponentColorsByGame[0]; // Only one opponent for match
+          if(!deck.matchups[opponentColors]){
+            deck.matchups[opponentColors] = {wins:0, losses:0};
+          }
+          deck.matchups[opponentColors].wins += wins;
+          deck.matchups[opponentColors].losses += losses;
         }
-        deck.matchups[opponentColors].wins += wins;
-        deck.matchups[opponentColors].losses += losses;
       }
     }
     const hits = (currentWinnerMeta && currentWinnerMeta.hits) || 3;
@@ -4236,11 +4336,25 @@
       colorDisplay = colorIcons;
     }
     let opponentDisplay = '';
-    if(opponentColors){
-      const oppColorIcons = opponentColors.split('').map(c =>
-        pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 1px;" alt="${c}"/>` : c
-      ).join('');
-      opponentDisplay = ` vs. ${oppColorIcons}`;
+    if(opponentColorsByGame.length > 0){
+      if(matchType === 'BO1'){
+        // Show each game's opponent for BO1
+        const gameOppDisplays = opponentColorsByGame.map((oppColors, index) => {
+          const oppColorIcons = oppColors.split('').map(c =>
+            pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 1px;" alt="${c}"/>` : c
+          ).join('');
+          const gameLabel = index < wins ? `W${index + 1}` : `L${index - wins + 1}`;
+          return `${gameLabel}:${oppColorIcons}`;
+        }).join(', ');
+        opponentDisplay = ` vs. [${gameOppDisplays}]`;
+      } else {
+        // Show single opponent for BO3/BO5
+        const oppColors = opponentColorsByGame[0];
+        const oppColorIcons = oppColors.split('').map(c =>
+          pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 1px;" alt="${c}"/>` : c
+        ).join('');
+        opponentDisplay = ` vs. ${oppColorIcons}`;
+      }
     }
     const themeName = colors ? getColorThemeName(colors) : '';
     const themeDisplay = themeName ? ` (Theme ${themeName})` : '';
