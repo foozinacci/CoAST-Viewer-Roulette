@@ -2376,13 +2376,11 @@
 
   function applyOverflowToSparks(player, overflow){
     if(overflow <= 0) return;
-    let tokens;
-    if(overflow < TICKET_CAP){
-      tokens = 1;
-    } else {
-      tokens = Math.floor(overflow / TICKET_CAP);
+    // Every 500 overflow = 1 spark
+    const tokens = Math.floor(overflow / TICKET_CAP);
+    if(tokens > 0){
+      player.sparks = Math.min(MAX_SPARKS, (player.sparks || 0) + tokens);
     }
-    player.sparks = Math.min(MAX_SPARKS, (player.sparks || 0) + tokens);
   }
 
   function doubleTicketsAllReels(player){
@@ -2397,9 +2395,11 @@
         // Overflow: raw exceeds 500 cap
         const overflow = raw - TICKET_CAP;
 
-        // Calculate sparks from overflow
-        const sparks = overflow < TICKET_CAP ? 1 : Math.floor(overflow / TICKET_CAP);
-        player.sparks = Math.min(MAX_SPARKS, (player.sparks || 0) + sparksFromOverflow);
+        // Calculate sparks from overflow (every 500 overflow = 1 spark)
+        const sparksFromOverflow = Math.floor(overflow / TICKET_CAP);
+        if(sparksFromOverflow > 0){
+          player.sparks = Math.min(MAX_SPARKS, (player.sparks || 0) + sparksFromOverflow);
+        }
 
         // Calculate remaining tickets after overflow
         let newTickets = overflow % TICKET_CAP;
