@@ -22,6 +22,8 @@
       --ok:#4ade80;
       --theme-color:#fefce8;
       --theme-glow:rgba(254,252,232,0.6);
+      --gradient-border:#fefce8;
+      --gradient-border-size:200%;
     }
     body.theme-white{
       --bg:#1f2937;
@@ -106,6 +108,12 @@
       --theme-color:#fcd34d;
       --theme-glow:rgba(252,211,77,0.8);
       --border:#fcd34d;
+    }
+
+    @keyframes gradientShift{
+      0%{background-position:0% 50%;}
+      50%{background-position:100% 50%;}
+      100%{background-position:0% 50%;}
     }
 
     *{box-sizing:border-box;}
@@ -365,11 +373,27 @@
     .slot-panel,.leaderboard-panel{
       background:radial-gradient(circle at top,var(--panel) 0,var(--bg) 50%,#000 100%);
       border-radius:16px;
-      border:2px solid var(--border);
+      border:3px solid transparent;
+      background-clip:padding-box;
       padding:10px;
       box-shadow:0 0 16px var(--theme-glow),inset 0 0 12px var(--theme-glow);
       position:relative;
       overflow:hidden;
+    }
+    .slot-panel::after,.leaderboard-panel::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:0;
     }
     .slot-panel::before{
       content:"";
@@ -472,7 +496,7 @@
       font-weight:700;
       padding:4px 8px;
       border-radius:8px;
-      width:64px;
+      width:100px;
       min-height:48px;
       text-align:center;
       box-shadow:0 0 10px rgba(15,23,42,.9);
@@ -698,7 +722,7 @@
     .leaderboard-table td{
       border-bottom:1px solid rgba(148,116,72,.3);
       padding:4px 6px;
-      text-align:left;
+      text-align:center;
       vertical-align:top;
     }
     .leaderboard-table th{
@@ -737,6 +761,7 @@
       max-height:120px;
       overflow-y:auto;
       color:var(--muted);
+      text-align:center;
     }
     .log-timestamp{
       color:var(--gold);
@@ -757,12 +782,29 @@
       width:100%;
       max-width:420px;
       border-radius:18px;
-      border:1px solid rgba(250,204,21,.6);
+      border:3px solid transparent;
       background:radial-gradient(circle at top,#1e293b 0,#020617 50%,#000 100%);
+      background-clip:padding-box;
       padding:14px 16px 18px;
       box-shadow:0 0 40px rgba(250,204,21,.8);
       text-align:center;
       position:relative;
+      overflow:hidden;
+    }
+    .winner-card::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:0;
     }
     .winner-heading{
       font-size:20px;
@@ -816,11 +858,30 @@
       width:100%;
       max-width:460px;
       border-radius:18px;
-      border:1px solid var(--border);
+      border:3px solid transparent;
       background:var(--panel);
+      background-clip:padding-box;
       padding:14px 16px 18px;
       box-shadow:0 0 30px rgba(0,0,0,.9);
       font-size:12px;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .finish-card::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:0;
     }
     .finish-title{
       font-size:14px;
@@ -842,9 +903,26 @@
     }
     .finish-input-row{
       display:flex;
-      gap:6px;
+      gap:12px;
       align-items:center;
       flex-wrap:wrap;
+    }
+    .adjust-btn{
+      border-radius:999px;
+      border:2px solid var(--theme-color);
+      background:var(--panel);
+      color:var(--theme-color);
+      font-size:13px;
+      font-weight:700;
+      padding:8px 16px;
+      cursor:pointer;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      transition:all .15s ease-out;
+    }
+    .adjust-btn:hover{
+      background:var(--theme-color);
+      color:var(--bg);
     }
     .finish-input-row input[type="number"]{
       width:80px;
@@ -942,11 +1020,29 @@
       width:100%;
       max-width:640px;
       border-radius:16px;
-      border:1px solid var(--border);
+      border:3px solid transparent;
       background:var(--panel);
+      background-clip:padding-box;
       padding:12px 14px;
       box-shadow:0 0 30px rgba(0,0,0,.9);
       font-size:12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .player-card::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:0;
     }
     .player-card-header{
       display:flex;
@@ -1126,11 +1222,29 @@
       width:100%;
       max-width:520px;
       border-radius:16px;
-      border:1px solid var(--border);
+      border:3px solid transparent;
       background:var(--panel);
+      background-clip:padding-box;
       padding:12px 14px;
       box-shadow:0 0 30px rgba(0,0,0,.9);
       font-size:12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .help-card::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:0;
     }
     .help-title{
       font-size:14px;
@@ -1267,21 +1381,16 @@
         Enter how this deck performed before returning to the slot. Wins/losses here are the actual MTG games, not the slot.
       </div>
       <div class="finish-field">
-        <div class="finish-label">Wins / Losses This Run</div>
-        <div class="finish-input-row">
-          <label>Wins
-            <input type="number" id="runWins" min="0" value="0"/>
-          </label>
-          <label>Losses
-            <input type="number" id="runLosses" min="0" value="1"/>
-          </label>
-          <label>Match type
-            <select id="matchType">
-              <option value="BO1">Bo1</option>
-              <option value="BO3">Bo3</option>
-            </select>
-          </label>
+        <div class="finish-label">Adjust Results (Base 0)</div>
+        <div class="finish-input-row" style="justify-content:center;">
+          <button class="adjust-btn" id="addWinBtn">+1 Win</button>
+          <button class="adjust-btn" id="addLossBtn">-1 Loss</button>
         </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);">
+          Current: <span id="currentResults">0 wins, 0 losses</span>
+        </div>
+        <input type="hidden" id="runWins" value="0"/>
+        <input type="hidden" id="runLosses" value="0"/>
       </div>
       <div class="finish-field">
         <div class="finish-label">Deck Color Identity</div>
@@ -1471,6 +1580,9 @@
   const runDiagNowBtn = document.getElementById('runDiagNowBtn');
   const diagResult = document.getElementById('diagResult');
   const themeChips = document.querySelectorAll('.theme-chip');
+  const addWinBtn = document.getElementById('addWinBtn');
+  const addLossBtn = document.getElementById('addLossBtn');
+  const currentResults = document.getElementById('currentResults');
 
   const state = {currentEventIndex: 1,events: []};
   let selectedColors = new Set(['W']); // Multi-select theme colors
@@ -1482,6 +1594,25 @@
   let bulbsTimer = null;
   let timeTimer = null;
   let currentPlayerCardId = null;
+
+  // Handle +1 Win and -1 Loss buttons
+  function updateResultsDisplay(){
+    const wins = parseInt(runWinsInput.value,10)||0;
+    const losses = parseInt(runLossesInput.value,10)||0;
+    currentResults.textContent = `${wins} wins, ${losses} losses`;
+  }
+
+  addWinBtn.addEventListener('click',()=>{
+    const current = parseInt(runWinsInput.value,10)||0;
+    runWinsInput.value = current + 1;
+    updateResultsDisplay();
+  });
+
+  addLossBtn.addEventListener('click',()=>{
+    const current = parseInt(runLossesInput.value,10)||0;
+    runLossesInput.value = current + 1;
+    updateResultsDisplay();
+  });
 
   function currentEvent(){
     if(!state.events[state.currentEventIndex]){
@@ -2331,8 +2462,8 @@
       bonusPerReel: 0
     };
     runWinsInput.value = "0";
-    runLossesInput.value = "1";
-    matchTypeSelect.value = "BO1";
+    runLossesInput.value = "0";
+    updateResultsDisplay();
     selectedColorSet = new Set();
     Array.from(colorChips.children).forEach(ch=>ch.classList.remove('active'));
     queueReaddChoice = 'yes';
@@ -2632,8 +2763,13 @@
 
   addPlayerForm.addEventListener('submit',e=>{
     e.preventDefault();
-    addPlayer(playerNameInput.value||'');
-    playerNameInput.value='';
+    const nameToAdd = playerNameInput.value||'';
+    addPlayer(nameToAdd);
+    // Always clear after submit attempt
+    setTimeout(()=>{
+      playerNameInput.value='';
+      playerNameInput.focus();
+    },10);
   });
   // Event chip switching removed - using single event model
 
@@ -2895,6 +3031,7 @@
     // All 5 selected = gold
     if(selectedColors.size === 5){
       document.documentElement.style.setProperty('--multi-theme-gradient', '#fcd34d');
+      document.documentElement.style.setProperty('--gradient-border', 'linear-gradient(90deg, #fcd34d, #fcd34d)');
       return;
     }
 
@@ -2904,6 +3041,7 @@
       : colors[0];
 
     document.documentElement.style.setProperty('--multi-theme-gradient', gradient);
+    document.documentElement.style.setProperty('--gradient-border', gradient);
   }
 
   themeChips.forEach(ch=>{
