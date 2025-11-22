@@ -2458,9 +2458,8 @@
       const tdTotal = document.createElement('td');
       tdTotal.textContent = totalTickets(p);
       const tdPity = document.createElement('td');
-      const pityIcon = p.pityTokens > 0 ? '🥣' : '';
       const pityText = p.pityTokens > 0 ? `${p.pityTokens} / ${MAX_PITY_TOKENS}` : '';
-      tdPity.innerHTML = `${pityIcon} <span class="pity-count">${pityText}</span>`;
+      tdPity.innerHTML = `<span class="pity-count">${pityText}</span>`;
       const tdSlotWins = document.createElement('td');
       tdSlotWins.textContent = `${p.slotWins}`;
       const tdWL = document.createElement('td');
@@ -2999,7 +2998,7 @@
       }else{
         // Dead spin: No bulb celebration
         evt.deadSpinStreak++;
-        log(`Dead spin (#${evt.deadSpinStreak}).`);
+        log(`<span style="color:var(--red);">Dead spin (#${evt.deadSpinStreak}).</span>`);
         handleDeadSpinTickets(evt,symbols,reelPlayers);
         spinBtn.disabled=false;
         smallStatus.textContent="Ready.";
