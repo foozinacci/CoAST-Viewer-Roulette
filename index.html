@@ -2216,6 +2216,7 @@
       <div class="winner-meta" id="winnerMeta"></div>
       <div class="winner-actions">
         <button id="winnerPlayBtn">Play Deck</button>
+        <button id="winnerExportBtn" style="display:none;">📋 Export to Arena</button>
         <button id="winnerSkipBtn">Skip / Remove</button>
       </div>
       <div class="winner-luna-sticker" id="winnerLunaSticker" style="display:none;">
@@ -2400,6 +2401,26 @@
       </div>
     </div>
   </div>
+  <!-- DECK IMPORT OVERLAY -->
+  <div class="overlay" id="deckImportOverlay">
+    <div class="finish-card" style="max-width:600px;">
+      <div class="finish-title">Import Deck for <span id="deckImportPlayerName"></span></div>
+      <div class="finish-sub">
+        Paste your MTG Arena deck list below. Color identity will be auto-detected.
+      </div>
+      <div class="finish-field">
+        <textarea id="deckImportText" placeholder="Paste MTG Arena deck list here...&#10;&#10;Example:&#10;4 Lightning Bolt (DOM) 111&#10;4 Shock (M21) 159&#10;20 Mountain (ZNR) 275" style="width:100%;height:200px;padding:8px;background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--text);font-family:monospace;font-size:12px;resize:vertical;"></textarea>
+      </div>
+      <div class="finish-field" id="deckImportColorPreview" style="display:none;">
+        <div class="finish-label">Detected Colors</div>
+        <div class="color-chips" id="deckImportColors"></div>
+      </div>
+      <div class="finish-actions">
+        <button id="deckImportSaveBtn" class="finish-save-btn">Import Deck</button>
+        <button id="deckImportSkipBtn" class="finish-cancel-btn">Skip (No Deck)</button>
+      </div>
+    </div>
+  </div>
   <!-- HELP OVERLAY -->
   <div class="overlay" id="helpOverlay">
     <div class="help-grid-container">
@@ -2514,6 +2535,7 @@
   const winnerMetaEl = document.getElementById('winnerMeta');
   const winnerPlayBtn = document.getElementById('winnerPlayBtn');
   const winnerSkipBtn = document.getElementById('winnerSkipBtn');
+  const winnerExportBtn = document.getElementById('winnerExportBtn');
   const winnerLunaSticker = document.getElementById('winnerLunaSticker');
   const finishOverlay = document.getElementById('finishOverlay');
   const runWinsInput = document.getElementById('runWins');
@@ -2548,6 +2570,13 @@
   const deckEditorSaveBtn = document.getElementById('deckEditorSaveBtn');
   const deckEditorDeleteBtn = document.getElementById('deckEditorDeleteBtn');
   const closeDeckEditorBtn = document.getElementById('closeDeckEditorBtn');
+  const deckImportOverlay = document.getElementById('deckImportOverlay');
+  const deckImportPlayerName = document.getElementById('deckImportPlayerName');
+  const deckImportText = document.getElementById('deckImportText');
+  const deckImportColorPreview = document.getElementById('deckImportColorPreview');
+  const deckImportColors = document.getElementById('deckImportColors');
+  const deckImportSaveBtn = document.getElementById('deckImportSaveBtn');
+  const deckImportSkipBtn = document.getElementById('deckImportSkipBtn');
   const helpOverlay = document.getElementById('helpOverlay');
   const diagOverlay = document.getElementById('diagOverlay');
   const helpBtn = document.getElementById('helpBtn');
@@ -2582,6 +2611,9 @@
   let bulbsTimer = null;
   let timeTimer = null;
   let currentPlayerCardId = null;
+  let pendingImportPlayer = null; // Track player waiting for deck import
+  let hasUnreportedGame = false; // Track if there's an unreported game
+  let unreportedGamePlayer = null; // Track which player has unreported game
 
   // Ignition Queue System - FIFO with scaling cooldowns
   let ignitedQueue = []; // Array of player IDs ready for ignition
@@ -2954,7 +2986,75 @@
     });
   }
 
-  function addPlayer(name){
+  // Parse MTG Arena deck list and detect color identity
+  function parseDeckList(deckText){
+    const lines = deckText.split('\n').filter(l => l.trim());
+    const cards = [];
+    const colorSet = new Set();
+
+    // Color detection from mana symbols in card names
+    const colorPatterns = {
+      'W': /\{W\}|Plains|white/i,
+      'U': /\{U\}|Island|blue/i,
+      'B': /\{B\}|Swamp|black/i,
+      'R': /\{R\}|Mountain|red/i,
+      'G': /\{G\}|Forest|green/i
+    };
+
+    // Basic land detection
+    const basicLands = {
+      'Plains': 'W',
+      'Island': 'U',
+      'Swamp': 'B',
+      'Mountain': 'R',
+      'Forest': 'G'
+    };
+
+    for(const line of lines){
+      // Match format: "4 Lightning Bolt (DOM) 111" or "4x Lightning Bolt"
+      const match = line.match(/^(\d+)x?\s+(.+?)(?:\s+\([\w\d]+\)\s*\d*)?$/i);
+      if(match){
+        const count = parseInt(match[1], 10);
+        const cardName = match[2].trim();
+        cards.push({count, name: cardName});
+
+        // Check for basic lands
+        for(const [land, color] of Object.entries(basicLands)){
+          if(cardName.includes(land)){
+            colorSet.add(color);
+          }
+        }
+
+        // Check for color indicators in card name
+        for(const [color, pattern] of Object.entries(colorPatterns)){
+          if(pattern.test(cardName)){
+            colorSet.add(color);
+          }
+        }
+      }
+    }
+
+    return {
+      cards,
+      colors: Array.from(colorSet).sort((a,b) => {
+        const order = ['W','U','B','R','G'];
+        return order.indexOf(a) - order.indexOf(b);
+      }).join(''),
+      rawText: deckText
+    };
+  }
+
+  // Show deck import dialog for a player
+  function showDeckImportDialog(player){
+    pendingImportPlayer = player;
+    deckImportPlayerName.textContent = player.name;
+    deckImportText.value = '';
+    deckImportColorPreview.style.display = 'none';
+    deckImportColors.innerHTML = '';
+    deckImportOverlay.classList.add('show');
+  }
+
+  function addPlayer(name, skipImport = false){
     const evt = currentEvent();
     if(evt.players.length >= MAX_PLAYERS){
       smallStatus.textContent = "Player cap reached for this session.";
@@ -2986,6 +3086,11 @@
     const lbWrap = document.querySelector('.leaderboard-wrapper');
     if(lbWrap) lbWrap.scrollTop = lbWrap.scrollHeight;
     saveAll();
+
+    // Show deck import dialog unless skipped
+    if(!skipImport){
+      setTimeout(() => showDeckImportDialog(p), 100);
+    }
   }
 
   function randomWeightedPlayer(evt, reelIndex){
@@ -3974,15 +4079,21 @@
       const tdLast = document.createElement('td');
       tdLast.textContent = d.lastBestOf || '-';
 
-      // Actions column with cog icon for editing
+      // Actions column with edit button
       const tdActions = document.createElement('td');
       tdActions.style.textAlign = 'center';
       const editBtn = document.createElement('button');
-      editBtn.innerHTML = '⚙️';
-      editBtn.title = 'Edit deck';
-      editBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:16px;padding:4px 8px;opacity:0.7;transition:opacity 0.2s;';
-      editBtn.onmouseover = () => editBtn.style.opacity = '1';
-      editBtn.onmouseout = () => editBtn.style.opacity = '0.7';
+      editBtn.innerHTML = '✏️ Edit';
+      editBtn.title = 'Edit deck stats and colors';
+      editBtn.style.cssText = 'background:rgba(255,255,255,0.1);border:1px solid var(--border);cursor:pointer;font-size:11px;padding:4px 8px;border-radius:4px;color:var(--text);opacity:0.8;transition:all 0.2s;';
+      editBtn.onmouseover = () => {
+        editBtn.style.opacity = '1';
+        editBtn.style.background = 'rgba(255,255,255,0.15)';
+      };
+      editBtn.onmouseout = () => {
+        editBtn.style.opacity = '0.8';
+        editBtn.style.background = 'rgba(255,255,255,0.1)';
+      };
       editBtn.onclick = (e) => {
         e.stopPropagation();
         openDeckEditor(p, d);
@@ -4583,6 +4694,81 @@
     }
   });
 
+  // Deck Import - Auto-detect colors as user types
+  deckImportText.addEventListener('input', () => {
+    const text = deckImportText.value.trim();
+    if(text.length > 10){ // Only parse if there's substantial input
+      const parsed = parseDeckList(text);
+      if(parsed.colors){
+        deckImportColorPreview.style.display = 'block';
+        deckImportColors.innerHTML = '';
+        for(const color of parsed.colors){
+          const chip = document.createElement('div');
+          chip.className = 'color-chip active';
+          chip.dataset.color = color;
+          chip.textContent = color;
+          chip.style.pointerEvents = 'none'; // Read-only display
+          deckImportColors.appendChild(chip);
+        }
+      }else{
+        deckImportColorPreview.style.display = 'none';
+      }
+    }else{
+      deckImportColorPreview.style.display = 'none';
+    }
+  });
+
+  // Deck Import - Save deck
+  deckImportSaveBtn.addEventListener('click', () => {
+    if(!pendingImportPlayer) return;
+    const text = deckImportText.value.trim();
+    if(!text){
+      alert('Please paste a deck list first.');
+      return;
+    }
+
+    const parsed = parseDeckList(text);
+    if(!parsed.colors){
+      if(!confirm('No colors detected. Import anyway with colorless (C)?')){
+        return;
+      }
+      parsed.colors = 'C';
+    }
+
+    const evt = currentEvent();
+    const player = evt.players.find(p => p.id === pendingImportPlayer.id);
+    if(!player) return;
+
+    // Store deck list with player
+    if(!player.deckList){
+      player.deckList = parsed.rawText;
+    }
+
+    // Create initial deck entry if colors were detected
+    const existingDeck = player.decks.find(d => d.color === parsed.colors);
+    if(!existingDeck && parsed.colors){
+      player.decks.push({
+        color: parsed.colors,
+        wins: 0,
+        losses: 0,
+        matchups: {},
+        lastBestOf: 'BO3'
+      });
+      log(`Imported deck for ${player.name}: ${parsed.colors} (${parsed.cards.length} cards)`);
+    }
+
+    deckImportOverlay.classList.remove('show');
+    pendingImportPlayer = null;
+    renderLeaderboard();
+    saveAll();
+  });
+
+  // Deck Import - Skip
+  deckImportSkipBtn.addEventListener('click', () => {
+    deckImportOverlay.classList.remove('show');
+    pendingImportPlayer = null;
+  });
+
   // Close player card when clicking outside
   playerOverlay.addEventListener('click',(e)=>{
     if(e.target === playerOverlay){
@@ -4602,6 +4788,14 @@
     pendingWinner = player;
     currentWinnerMeta = {reason,hits};
     winnerLunaSticker.style.display = isLuna ? 'block' : 'none';
+
+    // Show export button if player has a deck list
+    if(player.deckList && player.deckList.trim()){
+      winnerExportBtn.style.display = 'inline-block';
+    }else{
+      winnerExportBtn.style.display = 'none';
+    }
+
     winnerNameEl.textContent = player.name;
     if(reason==='luna'){
       winnerHeading.textContent = 'LUNA LUCK!';
@@ -4748,7 +4942,28 @@
     const p=pendingWinner;
     pendingWinner=null;
     winnerOverlay.classList.remove('show');
+    hasUnreportedGame = true;
+    unreportedGamePlayer = p;
     finishRunPrompt(p);
+  });
+
+  winnerExportBtn.addEventListener('click',()=>{
+    if(!pendingWinner) return;
+    if(!pendingWinner.deckList || !pendingWinner.deckList.trim()){
+      alert('No deck list found for this player.');
+      return;
+    }
+    // Copy to clipboard
+    navigator.clipboard.writeText(pendingWinner.deckList).then(()=>{
+      log(`Deck exported to clipboard for ${pendingWinner.name}`);
+      winnerExportBtn.textContent = '✅ Copied!';
+      setTimeout(()=>{
+        winnerExportBtn.textContent = '📋 Export to Arena';
+      }, 2000);
+    }).catch(err=>{
+      console.error('Failed to copy:', err);
+      alert('Failed to copy deck to clipboard. Please try again.');
+    });
   });
 
   winnerSkipBtn.addEventListener('click',()=>{
@@ -4759,6 +4974,8 @@
       if(idx>=0) evt.players.splice(idx,1);
     }
     pendingWinner=null;
+    hasUnreportedGame = false;
+    unreportedGamePlayer = null;
     winnerOverlay.classList.remove('show');
     renderLeaderboard();
     saveAll();
@@ -4804,6 +5021,8 @@
 
   finishCancelBtn.addEventListener('click',()=>{
     finishOverlay.classList.remove('show');
+    // Note: Don't clear hasUnreportedGame here - user still needs to report
+    // The unreported game check will re-trigger on next spin attempt
     saveAll();
   });
 
@@ -5027,6 +5246,11 @@
     evt.currentRun=null;
     finishOverlay.classList.remove('show');
     finishSaveBtn.disabled = false;
+
+    // Clear unreported game flag
+    hasUnreportedGame = false;
+    unreportedGamePlayer = null;
+
     renderLeaderboard();
     saveAll();
   });
@@ -5037,6 +5261,14 @@
     // Reset sort to default (highest probability at top)
     currentSortColumn = 'total';
     currentSortDirection = 'desc';
+
+    // Check for unreported game before allowing spin
+    if(hasUnreportedGame && unreportedGamePlayer){
+      smallStatus.textContent = "Please report previous game results first.";
+      log(`<span style="color:var(--gold);">⚠️ Unreported game detected - please report ${unreportedGamePlayer.name}'s results before spinning again.</span>`);
+      finishRunPrompt(unreportedGamePlayer);
+      return;
+    }
 
     if(evt.currentRun){
       smallStatus.textContent = "Finish current run before next spin.";
