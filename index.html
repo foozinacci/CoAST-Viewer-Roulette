@@ -1716,16 +1716,19 @@
       min-width:300px;
     }
     .deck-table th,.deck-table td{
-      border-bottom:1px solid var(--border);
       padding:3px 4px;
-      text-align:left;
+      text-align:center;
       white-space:nowrap;
+    }
+    .deck-table tr{
+      border-bottom:1px solid var(--border);
     }
     .deck-table th{
       text-transform:uppercase;
       letter-spacing:.1em;
       font-size:10px;
       color:var(--muted);
+      font-weight:900;
     }
     .footer-bar{
       position:sticky;
@@ -4060,6 +4063,7 @@
   closePlayerCardBtn.addEventListener('click',()=>{
     playerOverlay.classList.remove('show');
     currentPlayerCardId=null;
+    saveAll();
   });
 
   // Toggle deck list expand/collapse
@@ -4268,6 +4272,7 @@
     deckEditorOverlay.classList.remove('show');
     currentEditingPlayer = null;
     currentEditingDeck = null;
+    saveAll();
   });
 
   // Close deck editor when clicking outside
@@ -4500,6 +4505,7 @@
 
   finishCancelBtn.addEventListener('click',()=>{
     finishOverlay.classList.remove('show');
+    saveAll();
   });
 
   finishSaveBtn.addEventListener('click',()=>{
@@ -4902,9 +4908,9 @@
   });
 
   helpBtn.addEventListener('click',()=>helpOverlay.classList.add('show'));
-  closeHelpBtn.addEventListener('click',()=>helpOverlay.classList.remove('show'));
+  closeHelpBtn.addEventListener('click',()=>{helpOverlay.classList.remove('show');saveAll();});
   diagBtn.addEventListener('click',()=>diagOverlay.classList.add('show'));
-  closeDiagBtn.addEventListener('click',()=>diagOverlay.classList.remove('show'));
+  closeDiagBtn.addEventListener('click',()=>{diagOverlay.classList.remove('show');saveAll();});
   exportBtn.addEventListener('click',()=>{
     const exportData = {
       version: '1.0',
@@ -5160,6 +5166,7 @@
 
     // Save to localStorage
     localStorage.setItem('carlo_theme_multi', JSON.stringify(Array.from(selectedColors)));
+    saveAll();
   }
 
   // MTG Color Identity Mappings - Proper ordering for all combinations
