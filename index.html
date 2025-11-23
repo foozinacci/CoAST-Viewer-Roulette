@@ -146,6 +146,24 @@
       }
     }
 
+    @keyframes savePulseWUBRG{
+      0%{
+        background:linear-gradient(90deg, #fefce8, #38bdf8, #c084fc, #fb4b4b, #22c55e);
+        box-shadow:0 0 12px rgba(250,204,21,0.8);
+        transform:scale(1);
+      }
+      50%{
+        background:linear-gradient(90deg, #fefce8, #38bdf8, #c084fc, #fb4b4b, #22c55e);
+        box-shadow:0 0 16px rgba(250,204,21,0.9);
+        transform:scale(1.2);
+      }
+      100%{
+        background:#4b5563;
+        box-shadow:0 0 4px rgba(0,0,0,.8);
+        transform:scale(1);
+      }
+    }
+
     *{box-sizing:border-box;}
     html,body{
       margin:0;
@@ -613,6 +631,9 @@
     }
     .bulb.saving{
       animation:savePulse 0.6s ease-out;
+    }
+    .bulb.saving-wubrg{
+      animation:savePulseWUBRG 0.6s ease-out;
     }
     .reels-box{
       position:relative;
@@ -2622,14 +2643,17 @@
 
       // Animate bulbs to show save confirmation
       const allBulbs = document.querySelectorAll('.bulb');
+      const isWUBRG = selectedColors.size === 5;
+      const animClass = isWUBRG ? 'saving-wubrg' : 'saving';
+
       allBulbs.forEach(bulb => {
-        bulb.classList.add('saving');
+        bulb.classList.add(animClass);
       });
 
       // Remove class after animation completes
       setTimeout(() => {
         allBulbs.forEach(bulb => {
-          bulb.classList.remove('saving');
+          bulb.classList.remove(animClass);
         });
       }, 600);
     }catch(e){
