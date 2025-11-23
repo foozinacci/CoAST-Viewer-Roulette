@@ -3689,9 +3689,9 @@
 
       leaderboardBody.appendChild(tr1);
     }
-    spinCountEl.textContent = evt.spinCount;
-    deadStreakEl.textContent = evt.deadSpinStreak;
-    playerCountEl.textContent = evt.players.length;
+    if(spinCountEl) spinCountEl.textContent = evt.spinCount;
+    if(deadStreakEl) deadStreakEl.textContent = evt.deadSpinStreak;
+    if(playerCountEl) playerCountEl.textContent = evt.players.length;
   }
 
   function openPlayerCard(playerId){
