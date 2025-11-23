@@ -2646,11 +2646,18 @@
       localStorage.setItem('carlo_slot_events', JSON.stringify(state));
       console.log('[SAVE] Progress saved:', state.events.length, 'events');
 
-      // Update debug display
+      // Update debug display (safe version)
       const debugText = document.getElementById('debugText');
       if(debugText){
         const time = new Date().toLocaleTimeString();
-        debugText.innerHTML = `✅ SAVED ${time} | Events: ${state.events.length} | Players: ${currentEvent().players.length}`;
+        let playerCount = 0;
+        try{
+          const evt = currentEvent();
+          if(evt && evt.players) playerCount = evt.players.length;
+        }catch(e){
+          // Ignore player count errors
+        }
+        debugText.innerHTML = `✅ SAVED ${time} | Events: ${state.events.length} | Players: ${playerCount}`;
         debugText.style.color = '#22c55e';
       }
 
