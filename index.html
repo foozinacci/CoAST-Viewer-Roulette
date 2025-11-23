@@ -3106,6 +3106,30 @@
     };
   }
 
+  // Helper: Check if player has valid deck list
+  function hasValidDeckList(player){
+    return player && player.deckList && player.deckList.trim();
+  }
+
+  // Helper: Export deck to clipboard with visual feedback
+  function exportDeckToClipboard(player, buttonElement){
+    if(!hasValidDeckList(player)){
+      alert('No deck list found for this player.');
+      return;
+    }
+    navigator.clipboard.writeText(player.deckList).then(()=>{
+      log(`Deck exported to clipboard for ${player.name}`);
+      const originalText = buttonElement.textContent;
+      buttonElement.textContent = '✅ Copied!';
+      setTimeout(()=>{
+        buttonElement.textContent = originalText;
+      }, 2000);
+    }).catch(err=>{
+      console.error('Failed to copy:', err);
+      alert('Failed to copy deck to clipboard. Please try again.');
+    });
+  }
+
   // Show deck import dialog for a player
   function showDeckImportDialog(player){
     pendingImportPlayer = player;
@@ -4262,11 +4286,7 @@
     });
 
     // Show/hide export deck button based on whether player has a deck list
-    if(p.deckList && p.deckList.trim()){
-      exportPlayerDeckBtn.style.display = 'inline-block';
-    }else{
-      exportPlayerDeckBtn.style.display = 'none';
-    }
+    exportPlayerDeckBtn.style.display = hasValidDeckList(p) ? 'inline-block' : 'none';
 
     playerOverlay.classList.add('show');
   }
@@ -4520,21 +4540,7 @@
     const evt = currentEvent();
     const p = evt.players.find(x=>x.id===currentPlayerCardId);
     if(!p) return;
-    if(!p.deckList || !p.deckList.trim()){
-      alert('No deck list found for this player.');
-      return;
-    }
-    // Copy to clipboard
-    navigator.clipboard.writeText(p.deckList).then(()=>{
-      log(`Deck exported to clipboard for ${p.name}`);
-      exportPlayerDeckBtn.textContent = '✅ Copied!';
-      setTimeout(()=>{
-        exportPlayerDeckBtn.textContent = '📋 Export Deck';
-      }, 2000);
-    }).catch(err=>{
-      console.error('Failed to copy:', err);
-      alert('Failed to copy deck to clipboard. Please try again.');
-    });
+    exportDeckToClipboard(p, exportPlayerDeckBtn);
   });
 
   toggleAfkBtn.addEventListener('click',()=>{
@@ -4881,11 +4887,7 @@
     winnerLunaSticker.style.display = isLuna ? 'block' : 'none';
 
     // Show export button if player has a deck list
-    if(player.deckList && player.deckList.trim()){
-      winnerExportBtn.style.display = 'inline-block';
-    }else{
-      winnerExportBtn.style.display = 'none';
-    }
+    winnerExportBtn.style.display = hasValidDeckList(player) ? 'inline-block' : 'none';
 
     winnerNameEl.textContent = player.name;
     if(reason==='luna'){
@@ -5012,7 +5014,7 @@
     // Auto-detect deck colors from imported deck list
     selectedColorSet = new Set();
     Array.from(colorChips.children).forEach(ch=>ch.classList.remove('active'));
-    if(player.deckList && player.deckList.trim()){
+    if(hasValidDeckList(player)){
       const parsed = parseDeckList(player.deckList);
       if(parsed.colors){
         for(const c of parsed.colors){
@@ -5054,21 +5056,7 @@
 
   winnerExportBtn.addEventListener('click',()=>{
     if(!pendingWinner) return;
-    if(!pendingWinner.deckList || !pendingWinner.deckList.trim()){
-      alert('No deck list found for this player.');
-      return;
-    }
-    // Copy to clipboard
-    navigator.clipboard.writeText(pendingWinner.deckList).then(()=>{
-      log(`Deck exported to clipboard for ${pendingWinner.name}`);
-      winnerExportBtn.textContent = '✅ Copied!';
-      setTimeout(()=>{
-        winnerExportBtn.textContent = '📋 Export to Arena';
-      }, 2000);
-    }).catch(err=>{
-      console.error('Failed to copy:', err);
-      alert('Failed to copy deck to clipboard. Please try again.');
-    });
+    exportDeckToClipboard(pendingWinner, winnerExportBtn);
   });
 
   winnerSkipBtn.addEventListener('click',()=>{
