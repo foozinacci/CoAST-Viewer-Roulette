@@ -5282,8 +5282,9 @@
       document.documentElement.style.setProperty('--gradient-shadow', shadowGradient);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
     } else {
-      const singleColorGradient = `linear-gradient(90deg, ${colors[0]}, ${colors[0]}, ${colors[0]})`;
-      const singleShadowGradient = `linear-gradient(90deg, ${shadows[0]}, ${shadows[0]}, ${shadows[0]})`;
+      // Mono-colored theme: animate from theme color to black and back
+      const singleColorGradient = `linear-gradient(90deg, ${colors[0]}, ${colors[0]}, #000000, #000000, ${colors[0]}, ${colors[0]})`;
+      const singleShadowGradient = `linear-gradient(90deg, ${shadows[0]}, ${shadows[0]}, #000000, #000000, ${shadows[0]}, ${shadows[0]})`;
       document.documentElement.style.setProperty('--multi-theme-gradient', singleColorGradient);
       document.documentElement.style.setProperty('--gradient-border', singleColorGradient);
       document.documentElement.style.setProperty('--gradient-shadow', singleShadowGradient);
