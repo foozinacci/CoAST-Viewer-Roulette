@@ -128,6 +128,42 @@
       100%{transform:rotate(360deg);}
     }
 
+    @keyframes savePulse{
+      0%{
+        background:var(--theme-color);
+        box-shadow:0 0 12px var(--theme-glow);
+        transform:scale(1);
+      }
+      50%{
+        background:var(--theme-color);
+        box-shadow:0 0 16px var(--theme-glow);
+        transform:scale(1.2);
+      }
+      100%{
+        background:#4b5563;
+        box-shadow:0 0 4px rgba(0,0,0,.8);
+        transform:scale(1);
+      }
+    }
+
+    @keyframes savePulseWUBRG{
+      0%{
+        background:linear-gradient(90deg, #fefce8, #38bdf8, #c084fc, #fb4b4b, #22c55e);
+        box-shadow:0 0 12px rgba(250,204,21,0.8);
+        transform:scale(1);
+      }
+      50%{
+        background:linear-gradient(90deg, #fefce8, #38bdf8, #c084fc, #fb4b4b, #22c55e);
+        box-shadow:0 0 16px rgba(250,204,21,0.9);
+        transform:scale(1.2);
+      }
+      100%{
+        background:#4b5563;
+        box-shadow:0 0 4px rgba(0,0,0,.8);
+        transform:scale(1);
+      }
+    }
+
     *{box-sizing:border-box;}
     html,body{
       margin:0;
@@ -588,9 +624,16 @@
       border-radius:999px;
       background:#4b5563;
       box-shadow:0 0 4px rgba(0,0,0,.8);
+      transition:background 0.3s, box-shadow 0.3s, transform 0.3s;
     }
     .bulb.active{
       box-shadow:0 0 10px currentColor;
+    }
+    .bulb.saving{
+      animation:savePulse 0.6s ease-out;
+    }
+    .bulb.saving-wubrg{
+      animation:savePulseWUBRG 0.6s ease-out;
     }
     .reels-box{
       position:relative;
@@ -2597,6 +2640,22 @@
   function saveAll(){
     try{
       localStorage.setItem('carlo_slot_events', JSON.stringify(state));
+
+      // Animate bulbs to show save confirmation
+      const allBulbs = document.querySelectorAll('.bulb');
+      const isWUBRG = selectedColors.size === 5;
+      const animClass = isWUBRG ? 'saving-wubrg' : 'saving';
+
+      allBulbs.forEach(bulb => {
+        bulb.classList.add(animClass);
+      });
+
+      // Remove class after animation completes
+      setTimeout(() => {
+        allBulbs.forEach(bulb => {
+          bulb.classList.remove(animClass);
+        });
+      }, 600);
     }catch(e){
       console.warn("Save failed", e);
     }
@@ -5353,6 +5412,23 @@
     timeTimer = setInterval(renderLeaderboard, 30000);
   }
   init();
+
+  // Save state when page is about to unload (refresh, close, navigate away)
+  window.addEventListener('beforeunload', (e) => {
+    saveAll();
+  });
+
+  // Additional save on visibility change (mobile backgrounding)
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden){
+      saveAll();
+    }
+  });
+
+  // Auto-save every 5 seconds as a safety net
+  setInterval(() => {
+    saveAll();
+  }, 5000);
 })();
 </script>
 </body>
