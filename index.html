@@ -1514,7 +1514,7 @@
     .player-card{
       width:calc(100% - 20px);
       max-width:640px;
-      max-height:calc(100vh - 40px);
+      max-height:90vh;
       margin:0 auto;
       border-radius:16px;
       border:3px solid transparent;
@@ -1526,11 +1526,16 @@
       position:relative;
       overflow-y:auto;
       overflow-x:hidden;
+      display:flex;
+      flex-direction:column;
     }
     .player-card::before{
       content:'';
       position:absolute;
-      inset:0;
+      top:-3px;
+      left:-3px;
+      right:-3px;
+      bottom:-3px;
       border-radius:16px;
       padding:3px;
       background:var(--gradient-shadow);
@@ -1546,7 +1551,10 @@
     .player-card::after{
       content:'';
       position:absolute;
-      inset:0;
+      top:-3px;
+      left:-3px;
+      right:-3px;
+      bottom:-3px;
       border-radius:16px;
       padding:3px;
       background:var(--gradient-border);
@@ -1569,9 +1577,11 @@
     }
     .player-card-name{
       font-weight:700;
-      font-size:14px;
+      font-size:16px;
       text-align:center;
-      color:var(--gold);
+      color:#facc15;
+      text-shadow:0 0 8px rgba(250, 204, 21, 0.6);
+      letter-spacing:0.02em;
     }
     .player-card-status{
       font-size:11px;
@@ -3870,8 +3880,8 @@
 
           // Match history column headers
           const matchHistoryHeader = document.createElement('div');
-          matchHistoryHeader.style.cssText = 'display:grid;grid-template-columns:50px 35px 1fr auto;gap:8px;padding:3px 8px;background:rgba(255,255,255,0.05);border-radius:2px;font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px;';
-          matchHistoryHeader.innerHTML = `<span>Result</span><span>Type</span><span>Date/Time</span><span></span>`;
+          matchHistoryHeader.style.cssText = 'display:grid;grid-template-columns:50px 35px 1fr;gap:8px;padding:3px 8px;background:rgba(255,255,255,0.05);border-radius:2px;font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px;';
+          matchHistoryHeader.innerHTML = `<span>Result</span><span>Type</span><span>Date/Time</span>`;
           detailDiv.appendChild(matchHistoryHeader);
 
           // Individual matches - limit initial render for performance
@@ -3884,7 +3894,7 @@
             for(let idx = start; idx < end; idx++){
               const m = matches[idx];
               const matchDiv = document.createElement('div');
-              matchDiv.style.cssText = 'padding:4px 8px;margin:2px 0;background:rgba(255,255,255,0.02);border-radius:3px;font-size:9px;display:grid;grid-template-columns:50px 35px 1fr auto;gap:8px;align-items:center;';
+              matchDiv.style.cssText = 'padding:4px 8px;margin:2px 0;background:rgba(255,255,255,0.02);border-radius:3px;font-size:9px;display:grid;grid-template-columns:50px 35px 1fr;gap:8px;align-items:center;';
               matchDiv.dataset.matchId = m.id;
               matchDiv.dataset.deckColor = d.color;
 
@@ -3914,19 +3924,9 @@
               const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
               dateSpan.textContent = dateStr;
 
-              // Column 4: Edit Button
-              const editBtn = document.createElement('button');
-              editBtn.textContent = 'Edit';
-              editBtn.style.cssText = 'font-size:9px;padding:2px 6px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;';
-              editBtn.onclick = (e) => {
-                e.stopPropagation();
-                openMatchEditDialog(currentPlayer, d, m);
-              };
-
               matchDiv.appendChild(resultSpan);
               matchDiv.appendChild(typeSpan);
               matchDiv.appendChild(dateSpan);
-              matchDiv.appendChild(editBtn);
               container.appendChild(matchDiv);
             }
             return end;
