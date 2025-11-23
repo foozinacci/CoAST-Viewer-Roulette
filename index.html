@@ -3687,12 +3687,15 @@
 
         // Collect all match history across all opponents
         const allMatches = [];
+        const seenMatchIds = new Set(); // Prevent duplicate matches
         for(const [oppColors, stats] of Object.entries(d.matchups)){
           if(!stats || typeof stats !== 'object') continue; // Skip invalid stats
           if(stats.history && Array.isArray(stats.history) && stats.history.length > 0){
             stats.history.forEach(match => {
-              // Validate match data
+              // Validate match data and check for duplicates
               if(!match || !match.id || !match.timestamp) return;
+              if(seenMatchIds.has(match.id)) return; // Skip duplicates
+              seenMatchIds.add(match.id);
               if(!match.opponentColors) match.opponentColors = oppColors; // Fallback
               allMatches.push({...match, oppColors: oppColors});
             });
@@ -3745,24 +3748,37 @@
             for(let idx = start; idx < end; idx++){
               const m = matches[idx];
               const matchDiv = document.createElement('div');
-              matchDiv.style.cssText = 'padding:4px 8px;margin:2px 0;background:rgba(255,255,255,0.02);border-radius:3px;font-size:9px;display:flex;justify-content:space-between;align-items:center;';
+              matchDiv.style.cssText = 'padding:4px 8px;margin:2px 0;background:rgba(255,255,255,0.02);border-radius:3px;font-size:9px;display:grid;grid-template-columns:50px 35px 1fr auto;gap:8px;align-items:center;';
               matchDiv.dataset.matchId = m.id;
               matchDiv.dataset.deckColor = d.color;
 
-              const matchInfo = document.createElement('span');
-              const date = new Date(m.timestamp || Date.now());
-              const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
-
+              // Column 1: Result/Score (fixed width)
+              const resultSpan = document.createElement('span');
+              resultSpan.style.cssText = 'font-weight:600;text-align:left;';
               if(m.matchType === 'BO1'){
                 const result = m.result || 'unknown';
                 const resultColor = result === 'win' ? 'var(--theme-color)' : 'var(--muted)';
-                matchInfo.innerHTML = `<span style="color:${resultColor};font-weight:600;">${result.toUpperCase()}</span> - ${m.matchType || 'BO1'} - ${dateStr}`;
+                resultSpan.style.color = resultColor;
+                resultSpan.textContent = result.toUpperCase();
               } else {
                 const wins = m.wins || 0;
                 const losses = m.losses || 0;
-                matchInfo.innerHTML = `${wins}W-${losses}L - ${m.matchType || 'BO3'} - ${dateStr}`;
+                resultSpan.textContent = `${wins}W-${losses}L`;
               }
 
+              // Column 2: Match Type (fixed width)
+              const typeSpan = document.createElement('span');
+              typeSpan.style.cssText = 'color:var(--muted);text-align:left;';
+              typeSpan.textContent = m.matchType || 'BO1';
+
+              // Column 3: Date/Time
+              const dateSpan = document.createElement('span');
+              dateSpan.style.cssText = 'color:var(--muted);';
+              const date = new Date(m.timestamp || Date.now());
+              const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+              dateSpan.textContent = dateStr;
+
+              // Column 4: Edit Button
               const editBtn = document.createElement('button');
               editBtn.textContent = 'Edit';
               editBtn.style.cssText = 'font-size:9px;padding:2px 6px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;';
@@ -3771,7 +3787,9 @@
                 openMatchEditDialog(currentPlayer, d, m);
               };
 
-              matchDiv.appendChild(matchInfo);
+              matchDiv.appendChild(resultSpan);
+              matchDiv.appendChild(typeSpan);
+              matchDiv.appendChild(dateSpan);
               matchDiv.appendChild(editBtn);
               container.appendChild(matchDiv);
             }
