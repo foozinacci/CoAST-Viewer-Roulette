@@ -2642,12 +2642,23 @@
     logEl.prepend(div);
   }
   function saveAll(){
+    console.log('[SAVE] saveAll() called');
+
+    // Update debug display FIRST to show we're attempting save
+    const debugText = document.getElementById('debugText');
+    if(debugText){
+      const time = new Date().toLocaleTimeString();
+      debugText.innerHTML = `⏳ SAVING... ${time}`;
+      debugText.style.color = '#facc15';
+    }
+
     try{
+      console.log('[SAVE] Attempting to save state...');
       localStorage.setItem('carlo_slot_events', JSON.stringify(state));
+      console.log('[SAVE] ✅ localStorage.setItem succeeded');
       console.log('[SAVE] Progress saved:', state.events.length, 'events');
 
-      // Update debug display (safe version)
-      const debugText = document.getElementById('debugText');
+      // Update debug display to show success
       if(debugText){
         const time = new Date().toLocaleTimeString();
         let playerCount = 0;
@@ -2655,30 +2666,40 @@
           const evt = currentEvent();
           if(evt && evt.players) playerCount = evt.players.length;
         }catch(e){
-          // Ignore player count errors
+          console.log('[SAVE] Could not get player count:', e.message);
         }
         debugText.innerHTML = `✅ SAVED ${time} | Events: ${state.events.length} | Players: ${playerCount}`;
         debugText.style.color = '#22c55e';
+        console.log('[SAVE] ✅ Debug display updated');
       }
 
       // Animate bulbs to show save confirmation
-      const allBulbs = document.querySelectorAll('.bulb');
-      const isWUBRG = selectedColors.size === 5;
-      const animClass = isWUBRG ? 'saving-wubrg' : 'saving';
+      try{
+        const allBulbs = document.querySelectorAll('.bulb');
+        console.log('[SAVE] Found', allBulbs.length, 'bulbs');
 
-      allBulbs.forEach(bulb => {
-        bulb.classList.add(animClass);
-      });
+        // Safe check for selectedColors
+        const isWUBRG = (typeof selectedColors !== 'undefined' && selectedColors.size === 5);
+        const animClass = isWUBRG ? 'saving-wubrg' : 'saving';
+        console.log('[SAVE] Using animation class:', animClass);
 
-      // Remove class after animation completes
-      setTimeout(() => {
         allBulbs.forEach(bulb => {
-          bulb.classList.remove(animClass);
+          bulb.classList.add(animClass);
         });
-      }, 600);
+
+        // Remove class after animation completes
+        setTimeout(() => {
+          allBulbs.forEach(bulb => {
+            bulb.classList.remove(animClass);
+          });
+        }, 600);
+        console.log('[SAVE] ✅ Bulb animation triggered');
+      }catch(bulbError){
+        console.warn('[SAVE] Bulb animation failed:', bulbError.message);
+      }
     }catch(e){
       console.error("❌ [SAVE ERROR]", e);
-      const debugText = document.getElementById('debugText');
+      console.error("❌ [SAVE ERROR] Stack:", e.stack);
       if(debugText){
         debugText.innerHTML = `❌ SAVE ERROR: ${e.message}`;
         debugText.style.color = '#ef4444';
