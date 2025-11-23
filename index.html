@@ -3735,8 +3735,144 @@
           }
           const matchupTotal = stats.wins + stats.losses;
           const matchupWinRate = matchupTotal > 0 ? ((stats.wins / matchupTotal) * 100).toFixed(0) : 0;
-          groupHeader.innerHTML = `vs. ${colorPips}: ${stats.wins}-${stats.losses} (${matchupWinRate}%)`;
+          groupHeader.innerHTML = `vs. ${colorPips}`;
           detailDiv.appendChild(groupHeader);
+
+          // Calculate match type breakdown
+          const bo1Count = oppMatches.filter(m => m.matchType === 'BO1').length;
+          const bo3Count = oppMatches.filter(m => m.matchType === 'BO3').length;
+          const bo5Count = oppMatches.filter(m => m.matchType === 'BO5').length;
+
+          // Statistics table with column headers
+          const statsTable = document.createElement('div');
+          statsTable.style.cssText = 'margin:6px 0;font-size:9px;';
+
+          const statsHeader = document.createElement('div');
+          statsHeader.style.cssText = 'display:grid;grid-template-columns:45px 30px 30px 30px 70px 70px 50px auto;gap:4px;padding:3px 4px;background:rgba(255,255,255,0.05);border-radius:2px;font-weight:700;color:var(--muted);text-align:center;';
+          statsHeader.innerHTML = `<span>Total</span><span>BO1</span><span>BO3</span><span>BO5</span><span>Wins</span><span>Loss</span><span>W/L%</span><span></span>`;
+          statsTable.appendChild(statsHeader);
+
+          const statsRow = document.createElement('div');
+          statsRow.style.cssText = 'display:grid;grid-template-columns:45px 30px 30px 30px 70px 70px 50px auto;gap:4px;padding:3px 4px;align-items:center;';
+
+          // Total, BO1, BO3, BO5 (read-only)
+          const totalSpan = document.createElement('span');
+          totalSpan.style.cssText = 'text-align:center;';
+          totalSpan.textContent = matchupTotal;
+
+          const bo1Span = document.createElement('span');
+          bo1Span.style.cssText = 'text-align:center;';
+          bo1Span.textContent = bo1Count;
+
+          const bo3Span = document.createElement('span');
+          bo3Span.style.cssText = 'text-align:center;';
+          bo3Span.textContent = bo3Count;
+
+          const bo5Span = document.createElement('span');
+          bo5Span.style.cssText = 'text-align:center;';
+          bo5Span.textContent = bo5Count;
+
+          // Wins with +/- controls
+          const winsCell = document.createElement('div');
+          winsCell.style.cssText = 'display:flex;gap:2px;align-items:center;justify-content:center;';
+          const winsMinusBtn = document.createElement('button');
+          winsMinusBtn.textContent = '-';
+          winsMinusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+          const winsSpan = document.createElement('span');
+          winsSpan.textContent = stats.wins;
+          winsSpan.style.cssText = 'min-width:20px;text-align:center;';
+          const winsPlusBtn = document.createElement('button');
+          winsPlusBtn.textContent = '+';
+          winsPlusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+
+          winsMinusBtn.onclick = (e) => {
+            e.stopPropagation();
+            if(stats.wins > 0) {
+              stats.wins--;
+              openPlayerCard(p.id);
+              saveAll();
+            }
+          };
+          winsPlusBtn.onclick = (e) => {
+            e.stopPropagation();
+            stats.wins++;
+            openPlayerCard(p.id);
+            saveAll();
+          };
+
+          winsCell.appendChild(winsMinusBtn);
+          winsCell.appendChild(winsSpan);
+          winsCell.appendChild(winsPlusBtn);
+
+          // Losses with +/- controls
+          const lossesCell = document.createElement('div');
+          lossesCell.style.cssText = 'display:flex;gap:2px;align-items:center;justify-content:center;';
+          const lossesMinusBtn = document.createElement('button');
+          lossesMinusBtn.textContent = '-';
+          lossesMinusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+          const lossesSpan = document.createElement('span');
+          lossesSpan.textContent = stats.losses;
+          lossesSpan.style.cssText = 'min-width:20px;text-align:center;';
+          const lossesPlusBtn = document.createElement('button');
+          lossesPlusBtn.textContent = '+';
+          lossesPlusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+
+          lossesMinusBtn.onclick = (e) => {
+            e.stopPropagation();
+            if(stats.losses > 0) {
+              stats.losses--;
+              openPlayerCard(p.id);
+              saveAll();
+            }
+          };
+          lossesPlusBtn.onclick = (e) => {
+            e.stopPropagation();
+            stats.losses++;
+            openPlayerCard(p.id);
+            saveAll();
+          };
+
+          lossesCell.appendChild(lossesMinusBtn);
+          lossesCell.appendChild(lossesSpan);
+          lossesCell.appendChild(lossesPlusBtn);
+
+          // Win rate (read-only)
+          const winRateSpan = document.createElement('span');
+          winRateSpan.style.cssText = 'text-align:center;';
+          winRateSpan.textContent = matchupWinRate + '%';
+
+          // Edit opponent colors button
+          const editOppBtn = document.createElement('button');
+          editOppBtn.textContent = 'Edit Opp';
+          editOppBtn.style.cssText = 'font-size:9px;padding:2px 6px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;white-space:nowrap;';
+          editOppBtn.onclick = (e) => {
+            e.stopPropagation();
+            openOpponentColorEditDialog(p, d, oppColors, stats);
+          };
+
+          statsRow.appendChild(totalSpan);
+          statsRow.appendChild(bo1Span);
+          statsRow.appendChild(bo3Span);
+          statsRow.appendChild(bo5Span);
+          statsRow.appendChild(winsCell);
+          statsRow.appendChild(lossesCell);
+          statsRow.appendChild(winRateSpan);
+          statsRow.appendChild(editOppBtn);
+          statsTable.appendChild(statsRow);
+
+          detailDiv.appendChild(statsTable);
+
+          // Match history section title
+          const historyTitle = document.createElement('div');
+          historyTitle.style.cssText = 'font-size:9px;font-weight:600;color:var(--muted);margin:8px 0 4px 0;';
+          historyTitle.textContent = 'Match History';
+          detailDiv.appendChild(historyTitle);
+
+          // Match history column headers
+          const matchHistoryHeader = document.createElement('div');
+          matchHistoryHeader.style.cssText = 'display:grid;grid-template-columns:50px 35px 1fr auto;gap:8px;padding:3px 8px;background:rgba(255,255,255,0.05);border-radius:2px;font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px;';
+          matchHistoryHeader.innerHTML = `<span>Result</span><span>Type</span><span>Date/Time</span><span></span>`;
+          detailDiv.appendChild(matchHistoryHeader);
 
           // Individual matches - limit initial render for performance
           const INITIAL_MATCH_LIMIT = 10;
@@ -3956,6 +4092,108 @@
   }
 
   // Inline editing for match opponent colors
+  function openOpponentColorEditDialog(player, deck, oldOppColors, stats){
+    const dialogContainer = document.createElement('div');
+    dialogContainer.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);border:2px solid var(--theme-color);border-radius:8px;padding:20px;z-index:100000;max-width:400px;box-shadow:0 8px 24px rgba(0,0,0,0.8);';
+
+    const title = document.createElement('div');
+    title.style.cssText = 'font-weight:700;font-size:14px;margin-bottom:12px;color:var(--text);';
+    title.textContent = 'Edit Opponent Colors';
+    dialogContainer.appendChild(title);
+
+    const instruction = document.createElement('div');
+    instruction.style.cssText = 'font-size:11px;color:var(--muted);margin-bottom:12px;';
+    instruction.textContent = 'This will update ALL matches against this opponent to new colors.';
+    dialogContainer.appendChild(instruction);
+
+    const colorChipsDiv = document.createElement('div');
+    colorChipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;';
+
+    const currentColors = new Set(oldOppColors.split(''));
+    ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
+      const chip = document.createElement('div');
+      chip.className = 'color-chip';
+      if(currentColors.has(color)) chip.classList.add('active');
+      chip.dataset.color = color;
+      chip.textContent = color;
+      chip.style.cssText = 'cursor:pointer;padding:8px 12px;font-size:12px;';
+      chip.onclick = () => chip.classList.toggle('active');
+      colorChipsDiv.appendChild(chip);
+    });
+    dialogContainer.appendChild(colorChipsDiv);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'font-size:11px;padding:6px 12px;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;';
+    cancelBtn.onclick = () => {
+      document.body.removeChild(dialogContainer);
+      document.body.removeChild(overlay);
+    };
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save';
+    saveBtn.style.cssText = 'font-size:11px;padding:6px 12px;background:var(--theme-color);border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:600;';
+    saveBtn.onclick = () => {
+      const activeChips = colorChipsDiv.querySelectorAll('.color-chip.active');
+      const newOppColors = Array.from(activeChips).map(c => c.dataset.color).sort().join('');
+
+      if(newOppColors && newOppColors !== oldOppColors){
+        const evt = currentEvent();
+        const p = evt.players.find(x => x.id === player.id);
+        if(!p) return;
+        const d = p.decks.find(x => x.color === deck.color);
+        if(!d) return;
+
+        // Move all matches from old opponent to new opponent
+        if(d.matchups[oldOppColors]){
+          const oldMatchups = d.matchups[oldOppColors];
+
+          // Create new opponent group if doesn't exist
+          if(!d.matchups[newOppColors]){
+            d.matchups[newOppColors] = {wins: 0, losses: 0, history: []};
+          }
+
+          // Transfer stats and history
+          d.matchups[newOppColors].wins += oldMatchups.wins;
+          d.matchups[newOppColors].losses += oldMatchups.losses;
+
+          if(oldMatchups.history){
+            oldMatchups.history.forEach(match => {
+              match.opponentColors = newOppColors;
+              d.matchups[newOppColors].history.push(match);
+            });
+          }
+
+          // Delete old matchup group
+          delete d.matchups[oldOppColors];
+
+          openPlayerCard(p.id);
+          saveAll();
+        }
+      }
+
+      document.body.removeChild(dialogContainer);
+      document.body.removeChild(overlay);
+    };
+
+    btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(saveBtn);
+    dialogContainer.appendChild(btnRow);
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:99999;';
+    overlay.onclick = () => {
+      document.body.removeChild(dialogContainer);
+      document.body.removeChild(overlay);
+    };
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(dialogContainer);
+  }
+
   function openMatchEditDialog(player, deck, match){
     const pipUrls = {
       'W': 'https://i.ibb.co/sJpHH9VZ/W.png',
