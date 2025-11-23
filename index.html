@@ -2440,10 +2440,6 @@
     </div>
   </div>
 </div>
-<!-- DEBUG STATUS DISPLAY -->
-<div id="debugStatus" style="position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#22c55e;font-family:monospace;font-size:10px;padding:4px 8px;z-index:99999;border-top:1px solid #22c55e;">
-  <div id="debugText">Initializing...</div>
-</div>
 <script>
 (function(){
   "use strict";
@@ -2642,115 +2638,20 @@
     logEl.prepend(div);
   }
   function saveAll(){
-    console.log('[SAVE] saveAll() called');
-
-    // Update debug display FIRST to show we're attempting save
-    const debugText = document.getElementById('debugText');
-    if(debugText){
-      const time = new Date().toLocaleTimeString();
-      debugText.innerHTML = `⏳ SAVING... ${time}`;
-      debugText.style.color = '#facc15';
-    }
-
     try{
-      console.log('[SAVE] Attempting to save state...');
-      console.log('[SAVE] Current state:', JSON.stringify(state, null, 2));
-      const serialized = JSON.stringify(state);
-      console.log('[SAVE] Serialized length:', serialized.length, 'bytes');
-      localStorage.setItem('carlo_slot_events', serialized);
-      console.log('[SAVE] ✅ localStorage.setItem succeeded');
-
-      // Verify it was actually saved
-      const verification = localStorage.getItem('carlo_slot_events');
-      console.log('[SAVE] Verification read back:', verification ? verification.length : 0, 'bytes');
-      console.log('[SAVE] Progress saved:', state.events.length, 'events');
-
-      // Update debug display to show success
-      if(debugText){
-        const time = new Date().toLocaleTimeString();
-        let playerCount = 0;
-        try{
-          const evt = currentEvent();
-          if(evt && evt.players) playerCount = evt.players.length;
-        }catch(e){
-          console.log('[SAVE] Could not get player count:', e.message);
-        }
-        debugText.innerHTML = `✅ SAVED ${time} | Events: ${state.events.length} | Players: ${playerCount}`;
-        debugText.style.color = '#22c55e';
-        console.log('[SAVE] ✅ Debug display updated');
-      }
-
-      // Animate bulbs to show save confirmation
-      try{
-        const allBulbs = document.querySelectorAll('.bulb');
-        console.log('[SAVE] Found', allBulbs.length, 'bulbs');
-
-        // Safe check for selectedColors
-        const isWUBRG = (typeof selectedColors !== 'undefined' && selectedColors.size === 5);
-        const animClass = isWUBRG ? 'saving-wubrg' : 'saving';
-        console.log('[SAVE] Using animation class:', animClass);
-
-        allBulbs.forEach(bulb => {
-          bulb.classList.add(animClass);
-        });
-
-        // Remove class after animation completes
-        setTimeout(() => {
-          allBulbs.forEach(bulb => {
-            bulb.classList.remove(animClass);
-          });
-        }, 600);
-        console.log('[SAVE] ✅ Bulb animation triggered');
-      }catch(bulbError){
-        console.warn('[SAVE] Bulb animation failed:', bulbError.message);
-      }
+      localStorage.setItem('carlo_slot_events', JSON.stringify(state));
     }catch(e){
-      console.error("❌ [SAVE ERROR]", e);
-      console.error("❌ [SAVE ERROR] Stack:", e.stack);
-      if(debugText){
-        debugText.innerHTML = `❌ SAVE ERROR: ${e.message}`;
-        debugText.style.color = '#ef4444';
-      }
+      console.warn("Save failed", e);
     }
   }
   function loadAll(){
     try{
-      console.log('[LOAD] Attempting to load from localStorage...');
-      console.log('[LOAD] localStorage keys:', Object.keys(localStorage));
       const raw = localStorage.getItem('carlo_slot_events');
-      console.log('[LOAD] Raw data length:', raw ? raw.length : 0, 'bytes');
-      if(!raw){
-        console.log('[LOAD] ❌ No saved data found');
-        const debugText = document.getElementById('debugText');
-        if(debugText){
-          debugText.innerHTML = '⚠️ No saved data found - Starting fresh';
-          debugText.style.color = '#facc15';
-        }
-        return;
-      }
-      console.log('[LOAD] Raw data preview:', raw.substring(0, 200));
+      if(!raw) return;
       const parsed = JSON.parse(raw);
-      if(!parsed || typeof parsed !== 'object'){
-        console.warn('[LOAD] Invalid saved data');
-        const debugText = document.getElementById('debugText');
-        if(debugText){
-          debugText.innerHTML = '⚠️ Invalid saved data';
-          debugText.style.color = '#facc15';
-        }
-        return;
-      }
+      if(!parsed || typeof parsed !== 'object') return;
       if(parsed.events) state.events = parsed.events;
       if(parsed.currentEventIndex) state.currentEventIndex = parsed.currentEventIndex;
-      console.log('[LOAD] Progress loaded:', state.events.length, 'events');
-
-      // Update debug display
-      const debugText = document.getElementById('debugText');
-      if(debugText){
-        const time = new Date().toLocaleTimeString();
-        debugText.innerHTML = `📥 LOADED ${time} | Events: ${state.events.length} | Ready`;
-        debugText.style.color = '#38bdf8';
-      }
-
       for(const evt of state.events){
         if(!evt) continue;
         evt.players = evt.players || [];
@@ -5495,32 +5396,6 @@
     timeTimer = setInterval(renderLeaderboard, 30000);
   }
   init();
-
-  // Save state when page is about to unload (refresh, close, navigate away)
-  window.addEventListener('beforeunload', (e) => {
-    console.log('[EVENT] beforeunload - saving...');
-    saveAll();
-  });
-
-  // pagehide is more reliable on mobile (especially iOS)
-  window.addEventListener('pagehide', (e) => {
-    console.log('[EVENT] pagehide - saving...');
-    saveAll();
-  });
-
-  // Additional save on visibility change (mobile backgrounding)
-  document.addEventListener('visibilitychange', () => {
-    if(document.hidden){
-      console.log('[EVENT] visibilitychange (hidden) - saving...');
-      saveAll();
-    }
-  });
-
-  // Auto-save every 5 seconds as a safety net
-  setInterval(() => {
-    console.log('[EVENT] Auto-save timer - saving...');
-    saveAll();
-  }, 5000);
 })();
 </script>
 </body>
