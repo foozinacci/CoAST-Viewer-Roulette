@@ -3132,12 +3132,16 @@
 
   // Show deck import dialog for a player
   function showDeckImportDialog(player){
+    console.log('🎴 showDeckImportDialog called for:', player.name);
+    console.log('🎴 deckImportOverlay element:', deckImportOverlay);
     pendingImportPlayer = player;
     deckImportPlayerName.textContent = player.name;
     deckImportText.value = '';
     deckImportColorPreview.style.display = 'none';
     deckImportColors.innerHTML = '';
     deckImportOverlay.classList.add('show');
+    console.log('🎴 Overlay classes after add:', deckImportOverlay.classList.toString());
+    console.log('🎴 Overlay display:', window.getComputedStyle(deckImportOverlay).display);
   }
 
   function addPlayer(name, skipImport = false){
@@ -3174,8 +3178,12 @@
     saveAll();
 
     // Show deck import dialog unless skipped
+    console.log('🎴 addPlayer completed for:', name, 'skipImport:', skipImport);
     if(!skipImport){
+      console.log('🎴 Scheduling showDeckImportDialog in 100ms...');
       setTimeout(() => showDeckImportDialog(p), 100);
+    } else {
+      console.log('🎴 Skipping deck import dialog (skipImport=true)');
     }
   }
 
