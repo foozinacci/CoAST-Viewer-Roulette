@@ -1557,6 +1557,8 @@
       background-clip:padding-box;
       padding:12px 14px;
       box-shadow:0 0 30px rgba(0,0,0,.9);
+      overflow-y:auto;
+      overflow-x:hidden;
       font-size:12px;
       position:relative;
       overflow-y:auto;
@@ -1936,8 +1938,9 @@
       text-transform:uppercase;
       letter-spacing:.12em;
       color:var(--muted);
-      margin-top:8px;
-      margin-bottom:2px;
+      margin-top:12px;
+      margin-bottom:6px;
+      text-align:center;
     }
     .help-grid-container{
       width:calc(100% - 20px);
@@ -2203,8 +2206,8 @@
         <section class="leaderboard-panel">
           <div class="side-panel-header">
             <div class="side-panel-section-title">Leaderboard Odds</div>
-            <div id="playerCountHeader" style="font-size:10px;color:var(--muted);margin-top:4px;"></div>
           </div>
+          <div id="playerCountHeader" style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:8px;"></div>
           <form class="add-player-form" id="addPlayerForm" autocomplete="off">
             <input type="text" id="playerNameInput" name="player-name-input" placeholder="Add viewer (name / handle)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             <button type="submit">Add</button>
@@ -2229,7 +2232,9 @@
         </section>
         <!-- HISTORY LOG PANEL (RIGHT - 40%) -->
         <section class="history-panel">
-          <div class="history-header">History Log</div>
+          <div class="history-header" id="historyHeader" style="cursor:pointer;user-select:none;">
+            History Log <span id="historyExpandIcon" style="font-size:10px;margin-left:4px;">▼</span>
+          </div>
           <div class="log" id="log"></div>
         </section>
       </div>
@@ -2252,9 +2257,8 @@
       <div class="winner-name" id="winnerName"></div>
       <div class="winner-meta" id="winnerMeta"></div>
       <div class="winner-actions">
-        <button id="winnerPlayBtn">Play Deck</button>
-        <button id="winnerExportBtn" style="display:none;">📋 Export to Arena</button>
-        <button id="winnerSkipBtn">Skip / Remove</button>
+        <button id="winnerExportPlayBtn">📋 Export and Play</button>
+        <button id="winnerSkipBtn">Skip and Remove</button>
       </div>
       <div class="winner-luna-sticker" id="winnerLunaSticker" style="display:none;">
         <img src="https://i.ibb.co/23vVSmXN/LunaGG.png" alt="Luna">
@@ -2266,53 +2270,81 @@
     <div class="finish-card">
       <div class="finish-title">Report Deck Run Results</div>
       <div class="finish-sub">
-        Enter how this deck performed before returning to the slot. Wins/losses here are the actual MTG games, not the slot.
+        Enter how this deck performed before returning to the slot.
       </div>
-      <div class="finish-field">
-        <div class="finish-label">Adjust Results (Base 0)</div>
-        <div class="finish-input-row" style="justify-content:center;">
-          <button type="button" class="adjust-btn" id="addWinBtn">+1 Win</button>
-          <button type="button" class="adjust-btn" id="addLossBtn">-1 Loss</button>
-        </div>
-        <div style="margin-top:8px;font-size:11px;color:var(--muted);">
-          Current: <span id="currentResults">0 wins, 0 losses</span>
-        </div>
-        <input type="hidden" id="runWins" value="0"/>
-        <input type="hidden" id="runLosses" value="0"/>
-      </div>
-      <!-- Deck Color Identity removed - now stored with player during import -->
       <div class="finish-field">
         <div class="finish-label">Match Format</div>
         <div class="queue-choice" id="matchTypeChoice">
-          <div class="queue-chip" data-match-type="BO1">BO1</div>
-          <div class="queue-chip active" data-match-type="BO3">BO3</div>
-          <div class="queue-chip" data-match-type="BO5">BO5</div>
-        </div>
-        <div style="margin-top:6px;font-size:10px;color:var(--muted);text-align:center;">
-          BO1 = One opponent per game | BO3/BO5 = One opponent per match
-        </div>
-      </div>
-      <div class="finish-field" id="opponentColorsContainer">
-        <!-- Dynamically populated based on match type -->
-      </div>
-      <div class="finish-field" id="bonusChoiceField" style="display:none;">
-        <div class="finish-label">Bonus Reward (4/5-of-a-kind)</div>
-        <div class="finish-sub" style="margin-top:4px;">Choose your reward for hitting 4 or 5 symbols:</div>
-        <div class="queue-choice" id="bonusChoice">
-          <div class="queue-chip active" data-choice="tickets">Bonus Tickets</div>
-          <div class="queue-chip" data-choice="games">Extra Games</div>
+          <div class="queue-chip" data-match-type="BO1">Best of 1</div>
+          <div class="queue-chip active" data-match-type="BO3">Best of 3</div>
+          <div class="queue-chip" data-match-type="BO5">Best of 5</div>
         </div>
       </div>
       <div class="finish-field">
-        <div class="finish-label">Re-add player to queue?</div>
-        <div class="queue-choice" id="queueChoice">
-          <div class="queue-chip active" data-choice="yes">Yes</div>
-          <div class="queue-chip" data-choice="no">No</div>
+        <div class="finish-label">How many matches were played?</div>
+        <div class="finish-input-row" style="justify-content:center;gap:8px;">
+          <button type="button" class="adjust-btn" id="removeMatchBtn">−</button>
+          <input type="number" id="matchesPlayed" min="0" value="0" style="width:60px;text-align:center;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text);" readonly />
+          <button type="button" class="adjust-btn" id="addMatchBtn">+</button>
         </div>
+      </div>
+      <div class="finish-field">
+        <div class="finish-label">Wins and Losses</div>
+        <div style="display:flex;gap:12px;justify-content:center;align-items:center;margin-top:8px;">
+          <div style="text-align:center;">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Wins</div>
+            <div class="finish-input-row" style="justify-content:center;">
+              <button type="button" class="adjust-btn" id="removeWinBtn">−</button>
+              <input type="number" id="runWins" min="0" value="0" style="width:50px;text-align:center;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text);" readonly />
+              <button type="button" class="adjust-btn" id="addWinBtn">+</button>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Losses</div>
+            <div class="finish-input-row" style="justify-content:center;">
+              <button type="button" class="adjust-btn" id="removeLossBtn">−</button>
+              <input type="number" id="runLosses" min="0" value="0" style="width:50px;text-align:center;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text);" readonly />
+              <button type="button" class="adjust-btn" id="addLossBtn">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="finish-field" id="opponentColorsContainer">
+        <!-- Dynamically populated based on match type and matches played -->
       </div>
       <div class="finish-actions">
         <button type="button" id="finishCancelBtn">Cancel</button>
         <button type="button" class="primary" id="finishSaveBtn" style="pointer-events:auto!important;z-index:9999;position:relative;">Save Results</button>
+      </div>
+    </div>
+  </div>
+  <!-- RE-ADD TO QUEUE OVERLAY -->
+  <div class="overlay" id="requeueOverlay">
+    <div class="finish-card" style="max-width:400px;">
+      <div class="finish-title">Re-add to Queue?</div>
+      <div class="finish-sub">
+        Would you like <span id="requeuePlayerName"></span> to be re-added to the queue?
+      </div>
+      <div class="finish-actions" style="margin-top:16px;">
+        <button type="button" id="requeueYesBtn" class="primary">Yes</button>
+        <button type="button" id="requeueNoBtn">No</button>
+      </div>
+    </div>
+  </div>
+  <!-- BONUS REWARD OVERLAY -->
+  <div class="overlay" id="bonusRewardOverlay">
+    <div class="finish-card" style="max-width:400px;">
+      <div class="finish-title">Bonus Reward</div>
+      <div class="finish-sub">
+        <span id="bonusPlayerName"></span> hit <span id="bonusHitCount"></span> symbols!<br>
+        How would you like to use your bonus tickets?
+      </div>
+      <div class="queue-choice" id="bonusChoice" style="margin-top:16px;">
+        <div class="queue-chip active" data-choice="tickets">Bonus Tickets</div>
+        <div class="queue-chip" data-choice="games">Extra Games</div>
+      </div>
+      <div class="finish-actions" style="margin-top:16px;">
+        <button type="button" id="bonusConfirmBtn" class="primary">Confirm</button>
       </div>
     </div>
   </div>
@@ -2593,6 +2625,8 @@
   const playerCountEl = document.getElementById('playerCount');
   const leaderboardBody = document.getElementById('leaderboardBody');
   const logEl = document.getElementById('log');
+  const historyHeader = document.getElementById('historyHeader');
+  const historyExpandIcon = document.getElementById('historyExpandIcon');
   const eventChipsEl = document.getElementById('eventChips');
   const bulbRowTop = document.getElementById('bulbRowTop');
   const bulbRowBottom = document.getElementById('bulbRowBottom');
@@ -2604,21 +2638,32 @@
   const winnerHeading = document.getElementById('winnerHeading');
   const winnerNameEl = document.getElementById('winnerName');
   const winnerMetaEl = document.getElementById('winnerMeta');
-  const winnerPlayBtn = document.getElementById('winnerPlayBtn');
+  const winnerExportPlayBtn = document.getElementById('winnerExportPlayBtn');
   const winnerSkipBtn = document.getElementById('winnerSkipBtn');
-  const winnerExportBtn = document.getElementById('winnerExportBtn');
   const winnerLunaSticker = document.getElementById('winnerLunaSticker');
   const finishOverlay = document.getElementById('finishOverlay');
   const runWinsInput = document.getElementById('runWins');
   const runLossesInput = document.getElementById('runLosses');
+  const matchesPlayedInput = document.getElementById('matchesPlayed');
+  const addMatchBtn = document.getElementById('addMatchBtn');
+  const removeMatchBtn = document.getElementById('removeMatchBtn');
+  const addWinBtn = document.getElementById('addWinBtn');
+  const removeWinBtn = document.getElementById('removeWinBtn');
+  const addLossBtn = document.getElementById('addLossBtn');
+  const removeLossBtn = document.getElementById('removeLossBtn');
   const matchTypeChoice = document.getElementById('matchTypeChoice');
-  const colorChips = document.getElementById('colorChips');
   const opponentColorsContainer = document.getElementById('opponentColorsContainer');
-  const queueChoice = document.getElementById('queueChoice');
-  const bonusChoice = document.getElementById('bonusChoice');
-  const bonusChoiceField = document.getElementById('bonusChoiceField');
   const finishCancelBtn = document.getElementById('finishCancelBtn');
   const finishSaveBtn = document.getElementById('finishSaveBtn');
+  const requeueOverlay = document.getElementById('requeueOverlay');
+  const requeuePlayerName = document.getElementById('requeuePlayerName');
+  const requeueYesBtn = document.getElementById('requeueYesBtn');
+  const requeueNoBtn = document.getElementById('requeueNoBtn');
+  const bonusRewardOverlay = document.getElementById('bonusRewardOverlay');
+  const bonusPlayerName = document.getElementById('bonusPlayerName');
+  const bonusHitCount = document.getElementById('bonusHitCount');
+  const bonusChoice = document.getElementById('bonusChoice');
+  const bonusConfirmBtn = document.getElementById('bonusConfirmBtn');
   const playerOverlay = document.getElementById('playerOverlay');
   const playerCardName = document.getElementById('playerCardName');
   const playerCardStatus = document.getElementById('playerCardStatus');
@@ -2681,8 +2726,6 @@
   let currentSortDirection = 'desc'; // desc = highest first, asc = lowest first
   let currentDeckSortColumn = 'winRate'; // Default deck sort by win rate
   let currentDeckSortDirection = 'desc'; // desc = highest first
-  let queueReaddChoice = 'yes';
-  let bonusRewardChoice = 'tickets';
   let pendingWinner = null;
   let currentWinnerMeta = null;
   let bulbsTimer = null;
@@ -2706,25 +2749,49 @@
     return 4; // 4 spin cooldown for large queues
   }
 
-  // Handle +1 Win and -1 Loss buttons
-  function updateResultsDisplay(){
-    const wins = parseInt(runWinsInput.value,10)||0;
-    const losses = parseInt(runLossesInput.value,10)||0;
-    currentResults.textContent = `${wins} wins, ${losses} losses`;
-  }
-
-  addWinBtn.addEventListener('click',()=>{
-    const current = parseInt(runWinsInput.value,10)||0;
-    runWinsInput.value = current + 1;
-    updateResultsDisplay();
+  // Handle Match Count buttons
+  addMatchBtn.addEventListener('click',()=>{
+    const current = parseInt(matchesPlayedInput.value,10)||0;
+    matchesPlayedInput.value = current + 1;
     regenerateOpponentColorSelectors();
   });
 
+  removeMatchBtn.addEventListener('click',()=>{
+    const current = parseInt(matchesPlayedInput.value,10)||0;
+    if(current > 0){
+      matchesPlayedInput.value = current - 1;
+      regenerateOpponentColorSelectors();
+    }
+  });
+
+  // Handle Win buttons
+  addWinBtn.addEventListener('click',()=>{
+    const current = parseInt(runWinsInput.value,10)||0;
+    runWinsInput.value = current + 1;
+    regenerateOpponentColorSelectors();
+  });
+
+  removeWinBtn.addEventListener('click',()=>{
+    const current = parseInt(runWinsInput.value,10)||0;
+    if(current > 0){
+      runWinsInput.value = current - 1;
+      regenerateOpponentColorSelectors();
+    }
+  });
+
+  // Handle Loss buttons
   addLossBtn.addEventListener('click',()=>{
     const current = parseInt(runLossesInput.value,10)||0;
     runLossesInput.value = current + 1;
-    updateResultsDisplay();
     regenerateOpponentColorSelectors();
+  });
+
+  removeLossBtn.addEventListener('click',()=>{
+    const current = parseInt(runLossesInput.value,10)||0;
+    if(current > 0){
+      runLossesInput.value = current - 1;
+      regenerateOpponentColorSelectors();
+    }
   });
 
   matchTypeChoice.addEventListener('click',e=>{
@@ -3757,7 +3824,23 @@
       tdTime.className = 'time-cell';
       tdTime.textContent = formatTimeInQueue(now - p.createdAt);
       const tdName = document.createElement('td');
-      tdName.innerHTML = p.name + (p.status!=='active'
+      // Add deck color identity if available
+      let colorIcons = '';
+      if(p.colorIdentity && p.colorIdentity.length > 0){
+        const pipUrls = {
+          'W': 'https://i.ibb.co/sJpHH9VZ/W.png',
+          'U': 'https://i.ibb.co/0bPLHLk/U.png',
+          'B': 'https://i.ibb.co/nM1ZZz3z/B.png',
+          'R': 'https://i.ibb.co/NnjxnmZv/R.png',
+          'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
+          'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
+        };
+        colorIcons = p.colorIdentity.map(c =>
+          pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 2px;" alt="${c}"/>` : c
+        ).join('');
+        colorIcons = ' ' + colorIcons;
+      }
+      tdName.innerHTML = p.name + colorIcons + (p.status!=='active'
         ? " <span style='color:var(--red);font-size:10px;'>(AFK)</span>"
         : "");
       tdName.style.cursor = 'pointer';
@@ -4717,6 +4800,13 @@
     deckExpandIcon.textContent = isCurrentlyCollapsed ? '▲' : '▼';
   });
 
+  // History log accordion
+  historyHeader.addEventListener('click', () => {
+    const isCurrentlyCollapsed = logEl.style.display === 'none';
+    logEl.style.display = isCurrentlyCollapsed ? '' : 'none';
+    historyExpandIcon.textContent = isCurrentlyCollapsed ? '▼' : '▲';
+  });
+
   // Leaderboard column sorting
   document.querySelectorAll('.sortable-header[data-sort]').forEach(th => {
     th.addEventListener('click', () => {
@@ -5038,9 +5128,6 @@
     currentWinnerMeta = {reason,hits};
     winnerLunaSticker.style.display = isLuna ? 'block' : 'none';
 
-    // Show export button if player has a deck list
-    winnerExportBtn.style.display = hasValidDeckList(player) ? 'inline-block' : 'none';
-
     winnerNameEl.textContent = player.name;
     if(reason==='luna'){
       winnerHeading.textContent = 'LUNA LUCK!';
@@ -5064,34 +5151,32 @@
     winnerOverlay.classList.add('show');
   }
 
-  // Generate dynamic opponent color selectors based on match type and game count
+  // Generate dynamic opponent color selectors based on match type and matches played
   function regenerateOpponentColorSelectors(){
-    const wins = Math.max(0, parseInt(runWinsInput.value, 10) || 0);
-    const losses = Math.max(0, parseInt(runLossesInput.value, 10) || 0);
+    const matchesPlayed = Math.max(0, parseInt(matchesPlayedInput.value, 10) || 0);
     const activeMatchType = matchTypeChoice.querySelector('.queue-chip.active');
     const matchType = activeMatchType ? activeMatchType.dataset.matchType : 'BO3';
-    const totalGames = wins + losses;
 
     // Clear existing content
     opponentColorsContainer.innerHTML = '';
 
-    if(matchType === 'BO1'){
-      // BO1: One opponent color selector per game
-      if(totalGames === 0){
-        opponentColorsContainer.innerHTML = '<div class="finish-label" style="color:var(--muted);font-size:11px;">Add wins/losses to track opponents</div>';
-        return;
-      }
+    if(matchesPlayed === 0){
+      opponentColorsContainer.innerHTML = '<div class="finish-label" style="color:var(--muted);font-size:11px;">Add matches played to enter opponent colors</div>';
+      return;
+    }
 
+    if(matchType === 'BO1'){
+      // BO1: One opponent color selector per game (match = game for BO1)
       // Limit to prevent DOM overflow (max 20 games per BO1 run)
       const MAX_BO1_GAMES = 20;
-      if(totalGames > MAX_BO1_GAMES){
-        opponentColorsContainer.innerHTML = `<div class="finish-label" style="color:var(--muted);font-size:11px;">Max ${MAX_BO1_GAMES} games per BO1 run. Please adjust wins/losses.</div>`;
+      if(matchesPlayed > MAX_BO1_GAMES){
+        opponentColorsContainer.innerHTML = `<div class="finish-label" style="color:var(--muted);font-size:11px;">Max ${MAX_BO1_GAMES} games per BO1 run. Please adjust matches played.</div>`;
         return;
       }
 
       const labelDiv = document.createElement('div');
       labelDiv.className = 'finish-label';
-      labelDiv.textContent = 'Opponent Colors (Optional - one per game)';
+      labelDiv.textContent = 'Opponent Colors (Required - one per game)';
       opponentColorsContainer.appendChild(labelDiv);
 
       // Create scrollable container for opponent groups
@@ -5099,14 +5184,13 @@
       scrollContainer.style.cssText = 'max-height:300px;overflow-y:auto;overflow-x:hidden;margin-top:8px;padding-right:4px;';
       scrollContainer.className = 'opponent-scroll-container';
 
-      for(let i = 0; i < totalGames; i++){
-        const gameLabel = i < wins ? `Win ${i + 1}` : `Loss ${i - wins + 1}`;
+      for(let i = 0; i < matchesPlayed; i++){
         const gameDiv = document.createElement('div');
         gameDiv.className = 'opponent-game-group';
         gameDiv.style.cssText = 'margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:4px;';
 
         const gameLabelDiv = document.createElement('div');
-        gameLabelDiv.textContent = gameLabel;
+        gameLabelDiv.textContent = `Game ${i + 1}`;
         gameLabelDiv.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:4px;';
 
         const chipsDiv = document.createElement('div');
@@ -5130,80 +5214,84 @@
 
       opponentColorsContainer.appendChild(scrollContainer);
     } else {
-      // BO3/BO5: Single opponent color selector for the entire match
-      opponentColorsContainer.innerHTML = '<div class="finish-label">Opponent Colors (Optional)</div>';
+      // BO3/BO5: One opponent color selector per match
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'finish-label';
+      labelDiv.textContent = 'Opponent Colors (Required - one per match)';
+      opponentColorsContainer.appendChild(labelDiv);
 
-      const chipsDiv = document.createElement('div');
-      chipsDiv.className = 'opponent-color-chips';
-      chipsDiv.dataset.gameIndex = 'match'; // Special marker for match-level
-      chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;justify-content:center;';
+      // Create scrollable container for opponent groups
+      const scrollContainer = document.createElement('div');
+      scrollContainer.style.cssText = 'max-height:300px;overflow-y:auto;overflow-x:hidden;margin-top:8px;padding-right:4px;';
+      scrollContainer.className = 'opponent-scroll-container';
 
-      // Create color chips
-      ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
-        const chip = document.createElement('div');
-        chip.className = 'color-chip';
-        chip.dataset.color = color;
-        chip.textContent = color;
-        chipsDiv.appendChild(chip);
-      });
+      for(let i = 0; i < matchesPlayed; i++){
+        const matchDiv = document.createElement('div');
+        matchDiv.className = 'opponent-game-group';
+        matchDiv.style.cssText = 'margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:4px;';
 
-      opponentColorsContainer.appendChild(chipsDiv);
+        const matchLabelDiv = document.createElement('div');
+        matchLabelDiv.textContent = `Match ${i + 1}`;
+        matchLabelDiv.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:4px;';
+
+        const chipsDiv = document.createElement('div');
+        chipsDiv.className = 'opponent-color-chips';
+        chipsDiv.dataset.gameIndex = i;
+        chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;';
+
+        // Create color chips
+        ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
+          const chip = document.createElement('div');
+          chip.className = 'color-chip';
+          chip.dataset.color = color;
+          chip.textContent = color;
+          chipsDiv.appendChild(chip);
+        });
+
+        matchDiv.appendChild(matchLabelDiv);
+        matchDiv.appendChild(chipsDiv);
+        scrollContainer.appendChild(matchDiv);
+      }
+
+      opponentColorsContainer.appendChild(scrollContainer);
     }
   }
 
   function finishRunPrompt(player){
     const evt = currentEvent();
     const hits = (currentWinnerMeta && currentWinnerMeta.hits) || 3;
-    const showBonusChoice = hits === 4 || hits === 5;
     evt.currentRun = {
       playerId: player.id,
-      bonusPerReel: 0
+      bonusHits: hits // Store hits for later bonus prompt
     };
+    // Reset all inputs
+    matchesPlayedInput.value = "0";
     runWinsInput.value = "0";
     runLossesInput.value = "0";
-    updateResultsDisplay();
-
-    // Use stored color identity from player
-    selectedColorSet = new Set();
-    if(player.colorIdentity){
-      for(const c of player.colorIdentity){
-        selectedColorSet.add(c);
-      }
-    }
 
     // Reset match type to BO3
     Array.from(matchTypeChoice.children).forEach(ch=>{
       ch.classList.toggle('active', ch.dataset.matchType === 'BO3');
     });
     regenerateOpponentColorSelectors(); // Generate initial opponent selectors
-    queueReaddChoice = 'yes';
-    Array.from(queueChoice.children).forEach(ch=>{
-      ch.classList.toggle('active', ch.dataset.choice === 'yes');
-    });
-    bonusRewardChoice = 'tickets';
+
+    // Reset bonus choice to tickets
     Array.from(bonusChoice.children).forEach(ch=>{
       ch.classList.toggle('active', ch.dataset.choice === 'tickets');
     });
-    bonusChoiceField.style.display = showBonusChoice ? 'block' : 'none';
+
     finishSaveBtn.disabled = false;
     finishOverlay.classList.add('show');
   }
 
-  winnerPlayBtn.addEventListener('click',()=>{
-    if(!pendingWinner) return;
-    const p=pendingWinner;
-    pendingWinner=null;
-    winnerOverlay.classList.remove('show');
-    hasUnreportedGame = true;
-    unreportedGamePlayer = p;
-    finishRunPrompt(p);
-  });
-
-  winnerExportBtn.addEventListener('click',()=>{
+  winnerExportPlayBtn.addEventListener('click',()=>{
     if(!pendingWinner) return;
     const p = pendingWinner;
-    exportDeckToClipboard(p, winnerExportBtn);
-    // Also trigger report dialog
+    // Export deck to clipboard if available
+    if(hasValidDeckList(p)){
+      exportDeckToClipboard(p, winnerExportPlayBtn);
+    }
+    // Trigger report dialog
     pendingWinner = null;
     winnerOverlay.classList.remove('show');
     hasUnreportedGame = true;
@@ -5213,11 +5301,22 @@
 
   winnerSkipBtn.addEventListener('click',()=>{
     const evt = currentEvent();
-    if(pendingWinner){
-      log(`Winner ${pendingWinner.name} skipped / removed from queue.`);
+    if(!pendingWinner) return;
+
+    // Show prompt: Remove or Mark AFK
+    const choice = confirm(`What would you like to do with ${pendingWinner.name}?\n\nOK = Remove from queue\nCancel = Mark as AFK`);
+
+    if(choice){
+      // Remove player
+      log(`Winner ${pendingWinner.name} removed from queue.`);
       const idx = evt.players.findIndex(x=>x.id===pendingWinner.id);
       if(idx>=0) evt.players.splice(idx,1);
+    } else {
+      // Mark as AFK
+      pendingWinner.status = 'afk';
+      log(`Winner ${pendingWinner.name} marked as AFK.`);
     }
+
     pendingWinner=null;
     hasUnreportedGame = false;
     unreportedGamePlayer = null;
@@ -5235,19 +5334,10 @@
     chip.classList.toggle('active');
   });
 
-  queueChoice.addEventListener('click',e=>{
-    const chip = e.target.closest('.queue-chip');
-    if(!chip) return;
-    queueReaddChoice = chip.dataset.choice;
-    Array.from(queueChoice.children).forEach(ch=>{
-      ch.classList.toggle('active', ch===chip);
-    });
-  });
-
+  // Bonus choice selection in overlay
   bonusChoice.addEventListener('click',e=>{
     const chip = e.target.closest('.queue-chip');
     if(!chip) return;
-    bonusRewardChoice = chip.dataset.choice;
     Array.from(bonusChoice.children).forEach(ch=>{
       ch.classList.toggle('active', ch===chip);
     });
@@ -5278,7 +5368,8 @@
     }
     const wins = Math.max(0,parseInt(runWinsInput.value,10)||0);
     const losses = Math.max(0,parseInt(runLossesInput.value,10)||0);
-    const colors = Array.from(selectedColorSet).join('');  // Keep input order, don't sort
+    const matchesPlayed = Math.max(0,parseInt(matchesPlayedInput.value,10)||0);
+    const colors = player.colorIdentity ? player.colorIdentity.join('') : '';  // Use stored color identity
     const activeMatchType = matchTypeChoice.querySelector('.queue-chip.active');
     const matchType = activeMatchType ? activeMatchType.dataset.matchType : 'BO3';
 
@@ -5375,15 +5466,6 @@
         }
       }
     }
-    const hits = (currentWinnerMeta && currentWinnerMeta.hits) || 3;
-    const bonus = hits>=5 ? 2 : hits===4 ? 1 : 0;
-
-    // Check if this was a 4/5-of-a-kind and they chose extra games
-    if(bonus > 0 && bonusRewardChoice === 'games' && !player.extraGamesRemaining){
-      player.extraGamesRemaining = bonus;
-      log(`${player.name} chose extra games bonus: ${bonus} additional game(s) remaining`);
-    }
-
     // Check if player has extra games remaining
     if(player.extraGamesRemaining && player.extraGamesRemaining > 0){
       player.extraGamesRemaining--;
@@ -5398,44 +5480,9 @@
         saveAll();
         return;
       }else{
-        log(`${player.name} finished all extra games. Re-entering queue.`);
+        log(`${player.name} finished all extra games.`);
         delete player.extraGamesRemaining;
       }
-    }
-
-    if(queueReaddChoice==='yes'){
-      const bonusTickets = (bonus > 0 && bonusRewardChoice === 'tickets') ? bonus : 0;
-      const baseTickets = 1 + bonusTickets;
-      for(let i=0;i<5;i++){
-        let newTickets = baseTickets;
-        if(newTickets > TICKET_CAP){
-          const overflow = newTickets - TICKET_CAP;
-          newTickets = TICKET_CAP;
-          applyOverflowToSparks(player, overflow);
-        }
-        player.tickets[i] = newTickets;
-      }
-      player.sparks = 0;
-      player.createdAt = Date.now();
-      clampPlayer(player);
-      log(`${player.name} re-added to queue with ${baseTickets} ticket(s) per reel.`);
-
-      // When winner re-enters, double all other active players' tickets (patience reward)
-      // EXCEPT for ignited wins - don't double on ignited re-entry to prevent feedback loop
-      const isIgnitedWin = currentWinnerMeta && currentWinnerMeta.reason === 'ignited';
-      if(!isIgnitedWin){
-        for(const other of evt.players){
-          if(other.id === player.id) continue;
-          if(other.status !== 'active') continue;
-          doubleTicketsAllReels(other);
-        }
-        log(`All other players' tickets doubled (patience reward for ${player.name} re-entry).`);
-      }else{
-        log(`Ignited win re-entry: no doubling for others (prevents feedback loop).`);
-      }
-    }else{
-      player.status='afk';
-      log(`${player.name} marked as AFK.`);
     }
     // Convert colors to mana symbol icons
     const pipUrls = {
@@ -5476,8 +5523,12 @@
     }
     const themeName = colors ? getColorThemeName(colors) : '';
     const themeDisplay = themeName ? ` (Theme ${themeName})` : '';
-    log(`Reported run for ${player.name}: ${wins}W/${losses}L, ${colorDisplay}${themeDisplay}${opponentDisplay}, type=${matchType}`);
-    evt.currentRun=null;
+    log(`Reported run for ${player.name}: ${wins}W/${losses}L (${matchesPlayed} matches), ${colorDisplay}${themeDisplay}${opponentDisplay}, type=${matchType}`);
+
+    // Store player info for requeue and bonus overlays
+    evt.currentRun.player = player;
+    evt.currentRun.bonusHits = evt.currentRun.bonusHits || 3;
+
     finishOverlay.classList.remove('show');
     finishSaveBtn.disabled = false;
 
@@ -5485,6 +5536,139 @@
     hasUnreportedGame = false;
     unreportedGamePlayer = null;
 
+    renderLeaderboard();
+    saveAll();
+
+    // Show requeue overlay
+    requeuePlayerName.textContent = player.name;
+    requeueOverlay.classList.add('show');
+  });
+
+  // Requeue overlay handlers
+  requeueYesBtn.addEventListener('click', () => {
+    const evt = currentEvent();
+    if(!evt.currentRun || !evt.currentRun.player) return;
+
+    const player = evt.currentRun.player;
+    const bonusHits = evt.currentRun.bonusHits || 3;
+    requeueOverlay.classList.remove('show');
+
+    // Check if bonus overlay should be shown (4 or 5 symbols)
+    if(bonusHits === 4 || bonusHits === 5){
+      bonusPlayerName.textContent = player.name;
+      bonusHitCount.textContent = bonusHits;
+      bonusRewardOverlay.classList.add('show');
+    } else {
+      // No bonus, just requeue with base tickets
+      for(let i=0;i<5;i++){
+        player.tickets[i] = 1;
+      }
+      player.sparks = 0;
+      player.createdAt = Date.now();
+      clampPlayer(player);
+      log(`${player.name} re-added to queue with 1 ticket per reel.`);
+
+      // When winner re-enters, double all other active players' tickets (patience reward)
+      const isIgnitedWin = currentWinnerMeta && currentWinnerMeta.reason === 'ignited';
+      if(!isIgnitedWin){
+        for(const other of evt.players){
+          if(other.id === player.id) continue;
+          if(other.status !== 'active') continue;
+          doubleTicketsAllReels(other);
+        }
+        log(`All other players' tickets doubled (patience reward).`);
+      }
+
+      evt.currentRun = null;
+      renderLeaderboard();
+      saveAll();
+    }
+  });
+
+  requeueNoBtn.addEventListener('click', () => {
+    const evt = currentEvent();
+    if(!evt.currentRun || !evt.currentRun.player) return;
+
+    const player = evt.currentRun.player;
+    requeueOverlay.classList.remove('show');
+
+    player.status = 'afk';
+    log(`${player.name} marked as AFK.`);
+
+    evt.currentRun = null;
+    renderLeaderboard();
+    saveAll();
+  });
+
+  // Bonus reward overlay handler
+  bonusConfirmBtn.addEventListener('click', () => {
+    const evt = currentEvent();
+    if(!evt.currentRun || !evt.currentRun.player) return;
+
+    const player = evt.currentRun.player;
+    const bonusHits = evt.currentRun.bonusHits || 3;
+    const bonus = bonusHits >= 5 ? 2 : bonusHits === 4 ? 1 : 0;
+
+    // Get selected bonus choice
+    const activeChoice = bonusChoice.querySelector('.queue-chip.active');
+    const choice = activeChoice ? activeChoice.dataset.choice : 'tickets';
+
+    bonusRewardOverlay.classList.remove('show');
+
+    if(choice === 'games'){
+      // Extra games
+      player.extraGamesRemaining = bonus;
+      log(`${player.name} chose extra games bonus: ${bonus} additional game(s)`);
+
+      // Still need to requeue them for now
+      for(let i=0;i<5;i++){
+        player.tickets[i] = 1;
+      }
+      player.sparks = 0;
+      player.createdAt = Date.now();
+      clampPlayer(player);
+      log(`${player.name} re-added to queue with 1 ticket per reel.`);
+
+      // Double other players' tickets
+      const isIgnitedWin = currentWinnerMeta && currentWinnerMeta.reason === 'ignited';
+      if(!isIgnitedWin){
+        for(const other of evt.players){
+          if(other.id === player.id) continue;
+          if(other.status !== 'active') continue;
+          doubleTicketsAllReels(other);
+        }
+        log(`All other players' tickets doubled (patience reward).`);
+      }
+    } else {
+      // Bonus tickets
+      const baseTickets = 1 + bonus;
+      for(let i=0;i<5;i++){
+        let newTickets = baseTickets;
+        if(newTickets > TICKET_CAP){
+          const overflow = newTickets - TICKET_CAP;
+          newTickets = TICKET_CAP;
+          applyOverflowToSparks(player, overflow);
+        }
+        player.tickets[i] = newTickets;
+      }
+      player.sparks = 0;
+      player.createdAt = Date.now();
+      clampPlayer(player);
+      log(`${player.name} re-added to queue with ${baseTickets} ticket(s) per reel (bonus included).`);
+
+      // Double other players' tickets
+      const isIgnitedWin = currentWinnerMeta && currentWinnerMeta.reason === 'ignited';
+      if(!isIgnitedWin){
+        for(const other of evt.players){
+          if(other.id === player.id) continue;
+          if(other.status !== 'active') continue;
+          doubleTicketsAllReels(other);
+        }
+        log(`All other players' tickets doubled (patience reward).`);
+      }
+    }
+
+    evt.currentRun = null;
     renderLeaderboard();
     saveAll();
   });
