@@ -96,6 +96,21 @@
       --theme-glow:rgba(34,197,94,0.6);
       --border:#22c55e;
     }
+    /* Global scrollbar elimination */
+    *{
+      scrollbar-width:none; /* Firefox */
+      -ms-overflow-style:none; /* IE/Edge */
+    }
+    *::-webkit-scrollbar{
+      display:none; /* Chrome/Safari */
+    }
+    html,body{
+      overflow:hidden; /* Prevent browser-level scrolling */
+      height:100vh;
+      width:100vw;
+      margin:0;
+      padding:0;
+    }
     body.theme-gold{
       --bg:#1e1814;
       --panel:#2d2410;
@@ -299,9 +314,9 @@
       width:30px;
       height:30px;
       border-radius:999px;
-      border:1px solid var(--border);
+      border:1px solid rgba(255,255,255,0.1);
       cursor:pointer;
-      opacity:.7;
+      opacity:0.4;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -311,10 +326,21 @@
       background-size:contain;
       color:transparent;
       text-indent:-9999px;
+      filter:grayscale(100%) brightness(0.6);
+      transform:scale(0.95);
+      transition:all 0.2s ease;
     }
     .theme-chip.active{
       opacity:1;
-      box-shadow:0 0 10px rgba(148,163,184,.9);
+      filter:grayscale(0%) brightness(1.1);
+      border:2px solid currentColor;
+      box-shadow:0 0 12px currentColor;
+      transform:scale(1.05);
+      animation:themeIconPulse 2s ease-in-out infinite;
+    }
+    @keyframes themeIconPulse{
+      0%, 100%{box-shadow:0 0 12px currentColor;}
+      50%{box-shadow:0 0 20px currentColor;}
     }
     .theme-chip[data-color="W"]{background-image:url('https://i.ibb.co/sJpHH9VZ/W.png');}
     .theme-chip[data-color="U"]{background-image:url('https://i.ibb.co/0bPLHLk/U.png');}
@@ -704,14 +730,21 @@
       min-height:48px;
       text-align:center;
       box-shadow:0 0 10px rgba(15,23,42,.9);
-      white-space:nowrap;
+      white-space:normal;
       overflow:hidden;
-      text-overflow:ellipsis;
       line-height:1.2;
       display:flex;
       align-items:center;
       justify-content:center;
+      word-wrap:break-word;
+      hyphens:auto;
     }
+    /* Dynamic name scaling based on length */
+    .reel-symbol.name-short{font-size:16px;}
+    .reel-symbol.name-medium{font-size:13px;}
+    .reel-symbol.name-long{font-size:11px;}
+    .reel-symbol.name-very-long{font-size:9px;letter-spacing:0;}
+    .reel-symbol.name-extreme{font-size:8px;letter-spacing:0;line-height:1.1;}
     .reel-symbol.player{
       background:rgba(15,23,42,.95);
       border:1px solid rgba(248,250,252,.25);
@@ -948,6 +981,7 @@
       min-height:0;
     }
     .leaderboard-wrapper::-webkit-scrollbar{
+      display:block !important;
       width:8px;
       height:8px;
     }
@@ -1047,6 +1081,7 @@
       min-height:0;
     }
     .log::-webkit-scrollbar{
+      display:block !important;
       width:8px;
     }
     .log::-webkit-scrollbar-track{
@@ -2168,6 +2203,7 @@
         <section class="leaderboard-panel">
           <div class="side-panel-header">
             <div class="side-panel-section-title">Leaderboard Odds</div>
+            <div id="playerCountHeader" style="font-size:10px;color:var(--muted);margin-top:4px;"></div>
           </div>
           <form class="add-player-form" id="addPlayerForm" autocomplete="off">
             <input type="text" id="playerNameInput" name="player-name-input" placeholder="Add viewer (name / handle)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -2179,6 +2215,7 @@
                 <tr>
                   <th class="sortable-header" data-sort="time">Time <span class="sort-indicator"></span></th>
                   <th>Player</th>
+                  <th class="sortable-header" data-sort="overall">Overall% <span class="sort-indicator"></span></th>
                   <th class="sortable-header" data-sort="total">Total <span class="sort-indicator"></span></th>
                   <th class="sortable-header" data-sort="slotWins">Slot W <span class="sort-indicator"></span></th>
                   <th class="sortable-header" data-sort="winRate">W/L% <span class="sort-indicator"></span></th>
@@ -2465,6 +2502,45 @@
       </div>
     </div>
   </div>
+
+  <!-- SESSION RESUME MODAL -->
+  <div class="overlay" id="sessionResumeOverlay">
+    <div class="finish-card">
+      <div class="finish-title">Previous Session Found</div>
+      <div class="finish-sub">
+        A previous session was detected.<br>
+        Would you like to continue where you left off?
+      </div>
+      <div class="finish-actions" style="margin-top:20px;">
+        <button id="sessionResumeBtn" style="background:var(--ok);color:#000;">Resume Previous Session</button>
+        <button id="sessionNewBtn" style="background:var(--panel);color:var(--text);">Start New Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FACTORY RESET MODAL -->
+  <div class="overlay" id="factoryResetOverlay">
+    <div class="finish-card">
+      <div class="finish-title" style="color:var(--danger);">⚠️ WARNING: Factory Reset</div>
+      <div class="finish-sub">
+        This will permanently delete:<br>
+        • All players and decks<br>
+        • Match history<br>
+        • Session data<br>
+        • Statistics<br><br>
+        <strong>This CANNOT be undone.</strong>
+      </div>
+      <div class="finish-field">
+        <div class="finish-label">Type "RESET" to confirm</div>
+        <input type="text" id="factoryResetInput" placeholder="RESET"
+               style="width:100%;padding:10px;font-size:14px;text-align:center;background:var(--panel);border:2px solid var(--border);border-radius:8px;color:var(--text);text-transform:uppercase;" />
+      </div>
+      <div class="finish-actions" style="margin-top:20px;">
+        <button id="factoryResetCancelBtn" style="background:var(--panel);color:var(--text);">Cancel</button>
+        <button id="factoryResetConfirmBtn" style="background:var(--danger);color:#fff;opacity:0.3;cursor:not-allowed;" disabled>Factory Reset</button>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
 (function(){
@@ -2583,6 +2659,13 @@
   const closeDiagBtn = document.getElementById('closeDiagBtn');
   const runDiagNowBtn = document.getElementById('runDiagNowBtn');
   const diagResult = document.getElementById('diagResult');
+  const sessionResumeOverlay = document.getElementById('sessionResumeOverlay');
+  const sessionResumeBtn = document.getElementById('sessionResumeBtn');
+  const sessionNewBtn = document.getElementById('sessionNewBtn');
+  const factoryResetOverlay = document.getElementById('factoryResetOverlay');
+  const factoryResetInput = document.getElementById('factoryResetInput');
+  const factoryResetCancelBtn = document.getElementById('factoryResetCancelBtn');
+  const factoryResetConfirmBtn = document.getElementById('factoryResetConfirmBtn');
   const themeChips = document.querySelectorAll('.theme-chip');
   const addWinBtn = document.getElementById('addWinBtn');
   const addLossBtn = document.getElementById('addLossBtn');
@@ -2735,6 +2818,21 @@
     const total = p.overallWins + p.overallLosses;
     if(total === 0) return 0;
     return (p.overallWins / total) * 100;
+  }
+  function calculateOverallOdds(player, evt){
+    // Calculate average percentage across all 5 reels
+    if(!evt) return 0;
+    const activePlayers = evt.players.filter(p => p.status === 'active');
+    if(activePlayers.length === 0) return 0;
+
+    let totalPercentage = 0;
+    for(let i = 0; i < 5; i++){
+      const totalForReel = activePlayers.reduce((sum, p) => sum + p.tickets[i], 0);
+      const playerTickets = player.tickets[i];
+      const percentage = totalForReel > 0 ? ((playerTickets / totalForReel) * 100) : 0;
+      totalPercentage += percentage;
+    }
+    return totalPercentage / 5; // Average of 5 reels
   }
   function getColorThemeName(colors){
     if(!colors) return '';
@@ -3482,6 +3580,19 @@
       if(sym.type === 'player'){
         div.className = 'reel-symbol player';
         div.textContent = sym.name;
+        // Dynamic name scaling based on length
+        const nameLen = sym.name.length;
+        if(nameLen <= 4){
+          div.classList.add('name-short');
+        }else if(nameLen <= 8){
+          div.classList.add('name-medium');
+        }else if(nameLen <= 12){
+          div.classList.add('name-long');
+        }else if(nameLen <= 16){
+          div.classList.add('name-very-long');
+        }else{
+          div.classList.add('name-extreme');
+        }
       }else if(sym.type === 'letter'){
         div.className = 'reel-symbol letter';
         div.textContent = sym.letter;
@@ -3590,6 +3701,10 @@
           aVal = a.createdAt;
           bVal = b.createdAt;
           break;
+        case 'overall':
+          aVal = calculateOverallOdds(a, evt);
+          bVal = calculateOverallOdds(b, evt);
+          break;
         case 'total':
           aVal = totalTickets(a);
           bVal = totalTickets(b);
@@ -3647,6 +3762,10 @@
         : "");
       tdName.style.cursor = 'pointer';
       tdName.addEventListener('click',()=>openPlayerCard(p.id));
+      const tdOverall = document.createElement('td');
+      const overallOdds = calculateOverallOdds(p, evt);
+      tdOverall.textContent = overallOdds.toFixed(1) + '%';
+      tdOverall.style.fontWeight = 'bold';
       const tdTotal = document.createElement('td');
       tdTotal.textContent = totalTickets(p);
       const tdSparks = document.createElement('td');
@@ -3675,6 +3794,7 @@
 
       tr1.appendChild(tdTime);
       tr1.appendChild(tdName);
+      tr1.appendChild(tdOverall);
       tr1.appendChild(tdTotal);
       tr1.appendChild(tdSlotWins);
       tr1.appendChild(tdWL);
@@ -3686,6 +3806,14 @@
     if(spinCountEl) spinCountEl.textContent = evt.spinCount;
     if(deadStreakEl) deadStreakEl.textContent = evt.deadSpinStreak;
     if(playerCountEl) playerCountEl.textContent = evt.players.length;
+
+    // Update player count header
+    const playerCountHeader = document.getElementById('playerCountHeader');
+    if(playerCountHeader){
+      const activePlayers = evt.players.filter(p => p.status === 'active');
+      const afkPlayers = evt.players.filter(p => p.status !== 'active');
+      playerCountHeader.textContent = `${activePlayers.length} Active${afkPlayers.length > 0 ? ` | ${afkPlayers.length} AFK` : ''}`;
+    }
   }
 
   function openPlayerCard(playerId){
@@ -5606,8 +5734,43 @@
     importFileInput.value = '';
   });
 
+  // Factory Reset - Show modal
   resetEventBtn.addEventListener('click',()=>{
-    if(!confirm("Factory reset this session? All players and stats will be lost."))return;
+    factoryResetInput.value = '';
+    factoryResetConfirmBtn.disabled = true;
+    factoryResetConfirmBtn.style.opacity = '0.3';
+    factoryResetConfirmBtn.style.cursor = 'not-allowed';
+    factoryResetOverlay.classList.add('show');
+  });
+
+  // Factory Reset - Input validation
+  factoryResetInput.addEventListener('input', (e) => {
+    const isValid = e.target.value.toUpperCase() === 'RESET';
+    factoryResetConfirmBtn.disabled = !isValid;
+    factoryResetConfirmBtn.style.opacity = isValid ? '1' : '0.3';
+    factoryResetConfirmBtn.style.cursor = isValid ? 'pointer' : 'not-allowed';
+  });
+
+  // Factory Reset - Cancel
+  factoryResetCancelBtn.addEventListener('click', () => {
+    factoryResetOverlay.classList.remove('show');
+  });
+
+  // Factory Reset - Confirm and execute
+  factoryResetConfirmBtn.addEventListener('click', () => {
+    if(factoryResetInput.value.toUpperCase() !== 'RESET') return;
+
+    // Clear all commanderPod localStorage keys
+    const keysToRemove = [];
+    for(let i = 0; i < localStorage.length; i++){
+      const key = localStorage.key(i);
+      if(key && key.startsWith('commanderPod_')){
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    // Reset in-memory state
     state.events[state.currentEventIndex]={
       players:[],
       spinCount:0,
@@ -5617,9 +5780,15 @@
       lunaHits:0
     };
     logEl.innerHTML = ''; // Clear history log
-    log('Session reset.');
-    renderLeaderboard();
-    saveAll();
+
+    // Set factory reset flag
+    localStorage.setItem('commanderPod_factory_reset', Date.now().toString());
+
+    log('Factory reset complete. Reloading...');
+    factoryResetOverlay.classList.remove('show');
+
+    // Force reload to ensure clean slate
+    setTimeout(() => window.location.reload(), 500);
   });
 
   runDiagNowBtn.addEventListener('click',()=>{
@@ -5981,6 +6150,44 @@
   }
 
   function init(){
+    // Check if factory reset was just performed
+    const resetFlag = localStorage.getItem('commanderPod_factory_reset');
+    if(resetFlag){
+      localStorage.removeItem('commanderPod_factory_reset');
+      // Skip session check, start fresh
+      initBulbs();
+      setupReelsPlaceholder();
+      renderEvents();
+      renderLeaderboard();
+      loadTheme();
+      timeTimer = setInterval(renderLeaderboard, 30000);
+      return;
+    }
+
+    // Check for existing session
+    const sessionState = localStorage.getItem('commanderPod_session_state');
+    const hasExistingData = localStorage.getItem('carlo_slot_events');
+
+    if(sessionState === 'active' && hasExistingData){
+      // Show resume prompt
+      sessionResumeOverlay.classList.add('show');
+    }else{
+      // Start normally
+      loadAll();
+      initBulbs();
+      setupReelsPlaceholder();
+      renderEvents();
+      renderLeaderboard();
+      loadTheme();
+      timeTimer = setInterval(renderLeaderboard, 30000);
+      // Mark session as active
+      localStorage.setItem('commanderPod_session_state', 'active');
+    }
+  }
+
+  // Session resume handler
+  sessionResumeBtn.addEventListener('click', () => {
+    sessionResumeOverlay.classList.remove('show');
     loadAll();
     initBulbs();
     setupReelsPlaceholder();
@@ -5988,7 +6195,26 @@
     renderLeaderboard();
     loadTheme();
     timeTimer = setInterval(renderLeaderboard, 30000);
-  }
+    log('Session resumed.');
+  });
+
+  // Session new handler
+  sessionNewBtn.addEventListener('click', () => {
+    sessionResumeOverlay.classList.remove('show');
+    // Clear existing data
+    localStorage.removeItem('carlo_slot_events');
+    localStorage.removeItem('carlo_theme_multi');
+    // Start fresh
+    initBulbs();
+    setupReelsPlaceholder();
+    renderEvents();
+    renderLeaderboard();
+    loadTheme();
+    timeTimer = setInterval(renderLeaderboard, 30000);
+    localStorage.setItem('commanderPod_session_state', 'active');
+    log('New session started.');
+  });
+
   init();
 })();
 </script>
