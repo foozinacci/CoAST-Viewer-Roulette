@@ -96,6 +96,21 @@
       --theme-glow:rgba(34,197,94,0.6);
       --border:#22c55e;
     }
+    /* Global scrollbar elimination */
+    *{
+      scrollbar-width:none; /* Firefox */
+      -ms-overflow-style:none; /* IE/Edge */
+    }
+    *::-webkit-scrollbar{
+      display:none; /* Chrome/Safari */
+    }
+    html,body{
+      overflow:hidden; /* Prevent browser-level scrolling */
+      height:100vh;
+      width:100vw;
+      margin:0;
+      padding:0;
+    }
     body.theme-gold{
       --bg:#1e1814;
       --panel:#2d2410;
@@ -117,9 +132,51 @@
       100%{background-position:0% 50%;}
     }
 
+    @keyframes blackLayerShift{
+      0%{background-position:100% 50%;}
+      50%{background-position:0% 50%;}
+      100%{background-position:100% 50%;}
+    }
+
     @keyframes rotate{
       0%{transform:rotate(0deg);}
       100%{transform:rotate(360deg);}
+    }
+
+    @keyframes savePulse{
+      0%{
+        background:var(--theme-color);
+        box-shadow:0 0 12px var(--theme-glow);
+        transform:scale(1);
+      }
+      50%{
+        background:var(--theme-color);
+        box-shadow:0 0 16px var(--theme-glow);
+        transform:scale(1.2);
+      }
+      100%{
+        background:#4b5563;
+        box-shadow:0 0 4px rgba(0,0,0,.8);
+        transform:scale(1);
+      }
+    }
+
+    @keyframes savePulseWUBRG{
+      0%{
+        background:linear-gradient(90deg, #fefce8, #38bdf8, #c084fc, #fb4b4b, #22c55e);
+        box-shadow:0 0 12px rgba(250,204,21,0.8);
+        transform:scale(1);
+      }
+      50%{
+        background:linear-gradient(90deg, #fefce8, #38bdf8, #c084fc, #fb4b4b, #22c55e);
+        box-shadow:0 0 16px rgba(250,204,21,0.9);
+        transform:scale(1.2);
+      }
+      100%{
+        background:#4b5563;
+        box-shadow:0 0 4px rgba(0,0,0,.8);
+        transform:scale(1);
+      }
     }
 
     *{box-sizing:border-box;}
@@ -257,9 +314,9 @@
       width:30px;
       height:30px;
       border-radius:999px;
-      border:1px solid var(--border);
+      border:1px solid rgba(255,255,255,0.1);
       cursor:pointer;
-      opacity:.7;
+      opacity:0.4;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -269,10 +326,21 @@
       background-size:contain;
       color:transparent;
       text-indent:-9999px;
+      filter:grayscale(100%) brightness(0.6);
+      transform:scale(0.95);
+      transition:all 0.2s ease;
     }
     .theme-chip.active{
       opacity:1;
-      box-shadow:0 0 10px rgba(148,163,184,.9);
+      filter:grayscale(0%) brightness(1.1);
+      border:2px solid currentColor;
+      box-shadow:0 0 12px currentColor;
+      transform:scale(1.05);
+      animation:themeIconPulse 2s ease-in-out infinite;
+    }
+    @keyframes themeIconPulse{
+      0%, 100%{box-shadow:0 0 12px currentColor;}
+      50%{box-shadow:0 0 20px currentColor;}
     }
     .theme-chip[data-color="W"]{background-image:url('https://i.ibb.co/sJpHH9VZ/W.png');}
     .theme-chip[data-color="U"]{background-image:url('https://i.ibb.co/0bPLHLk/U.png');}
@@ -291,6 +359,131 @@
       flex-direction:column;
       gap:10px;
       padding:10px;
+    }
+    .bottom-panels-container{
+      display:flex;
+      flex-direction:row;
+      gap:12px;
+      width:100%;
+      max-width:100%;
+      box-sizing:border-box;
+    }
+    .history-panel{
+      flex:1 1 auto;
+      max-width:calc(40% - 4px);
+      background:radial-gradient(circle at top,var(--panel) 0,var(--bg) 50%,#000 100%);
+      border-radius:16px;
+      border:3px solid transparent;
+      background-clip:padding-box;
+      padding:10px;
+      box-shadow:none;
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .history-panel::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
+    }
+    .history-panel::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:100;
+      filter:drop-shadow(0 0 8px var(--theme-glow));
+    }
+    .history-header{
+      text-align:center;
+      font-size:14px;
+      font-weight:700;
+      color:var(--gold);
+      text-shadow:0 0 12px rgba(250,204,21,.6);
+      margin-bottom:8px;
+      text-transform:uppercase;
+      letter-spacing:.15em;
+    }
+    .slot-panel,.leaderboard-panel{
+      background:radial-gradient(circle at top,var(--panel) 0,var(--bg) 50%,#000 100%);
+      border-radius:16px;
+      border:3px solid transparent;
+      background-clip:padding-box;
+      padding:10px;
+      box-shadow:none;
+      position:relative;
+      overflow:hidden;
+    }
+    .leaderboard-panel{
+      flex:0 0 calc(60% - 8px);
+      display:flex;
+      flex-direction:column;
+      order:-1;
+      max-width:calc(60% - 8px);
+    }
+    .slot-panel::before,.leaderboard-panel::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
+    }
+    .slot-panel::after,.leaderboard-panel::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:100;
+      filter:drop-shadow(0 0 12px var(--theme-glow)) drop-shadow(0 0 6px var(--theme-glow));
+    }
+    .slot-header{
+      display:none;
+    }
+    .slot-title{
+      display:none;
+    }
+    #statusText{
+      display:none;
+    }
+    .status-text{
+      display:none;
     }
     @media(max-width:640px){
       #app{
@@ -424,106 +617,6 @@
         overflow-wrap:break-word;
       }
     }
-    .bottom-panels-container{
-      display:flex;
-      gap:12px;
-      width:100%;
-      max-width:100%;
-      box-sizing:border-box;
-    }
-    .history-panel{
-      flex:1 1 auto;
-      max-width:calc(40% - 4px);
-      background:radial-gradient(circle at top,var(--panel) 0,var(--bg) 50%,#000 100%);
-      border-radius:16px;
-      border:3px solid transparent;
-      background-clip:padding-box;
-      padding:10px;
-      box-shadow:none;
-      position:relative;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-    }
-    .history-panel::after{
-      content:'';
-      position:absolute;
-      inset:0;
-      border-radius:16px;
-      padding:3px;
-      background:var(--gradient-border);
-      background-size:var(--gradient-border-size) var(--gradient-border-size);
-      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite:xor;
-      mask-composite:exclude;
-      pointer-events:none;
-      animation:gradientShift 4s ease infinite;
-      z-index:100;
-      filter:drop-shadow(0 0 8px var(--theme-glow));
-    }
-    .history-header{
-      text-align:center;
-      font-size:14px;
-      font-weight:700;
-      color:var(--gold);
-      text-shadow:0 0 12px rgba(250,204,21,.6);
-      margin-bottom:8px;
-      text-transform:uppercase;
-      letter-spacing:.15em;
-    }
-    .slot-panel,.leaderboard-panel{
-      background:radial-gradient(circle at top,var(--panel) 0,var(--bg) 50%,#000 100%);
-      border-radius:16px;
-      border:3px solid transparent;
-      background-clip:padding-box;
-      padding:10px;
-      box-shadow:none;
-      position:relative;
-      overflow:hidden;
-    }
-    .leaderboard-panel{
-      flex:0 0 calc(60% - 8px);
-      display:flex;
-      flex-direction:column;
-      order:-1;
-      max-width:calc(60% - 8px);
-    }
-    .slot-panel::after,.leaderboard-panel::after{
-      content:'';
-      position:absolute;
-      inset:0;
-      border-radius:16px;
-      padding:3px;
-      background:var(--gradient-border);
-      background-size:var(--gradient-border-size) var(--gradient-border-size);
-      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite:xor;
-      mask-composite:exclude;
-      pointer-events:none;
-      animation:gradientShift 4s ease infinite;
-      z-index:100;
-      filter:drop-shadow(0 0 12px var(--theme-glow)) drop-shadow(0 0 6px var(--theme-glow));
-    }
-    .slot-panel::before{
-      content:"";
-      position:absolute;
-      inset:-40%;
-      background:radial-gradient(circle at top,rgba(250,250,250,.04) 0,transparent 55%),radial-gradient(circle at center,rgba(56,189,248,.05) 0,transparent 55%),radial-gradient(circle at bottom,rgba(236,72,153,.07) 0,transparent 60%);
-      opacity:.5;
-      pointer-events:none;
-    }
-    .slot-header{
-      display:none;
-    }
-    .slot-title{
-      display:none;
-    }
-    #statusText{
-      display:none;
-    }
-    .status-text{
-      display:none;
-    }
     .reels-shell{
       position:relative;
       padding:18px 18px 18px 18px;
@@ -557,9 +650,16 @@
       border-radius:999px;
       background:#4b5563;
       box-shadow:0 0 4px rgba(0,0,0,.8);
+      transition:background 0.3s, box-shadow 0.3s, transform 0.3s;
     }
     .bulb.active{
       box-shadow:0 0 10px currentColor;
+    }
+    .bulb.saving{
+      animation:savePulse 0.6s ease-out;
+    }
+    .bulb.saving-wubrg{
+      animation:savePulseWUBRG 0.6s ease-out;
     }
     .reels-box{
       position:relative;
@@ -607,7 +707,11 @@
       justify-content:center;
       overflow:hidden;
       position:relative;
-      box-shadow:inset 0 0 18px rgba(15,23,42,.9),0 0 18px rgba(0,0,0,.9);
+      box-shadow:inset 0 0 18px rgba(15,23,42,.9),0 0 18px rgba(0,0,0,.9),0 0 24px var(--theme-glow);
+    }
+    body.theme-black .reel{
+      background:radial-gradient(circle at top,rgba(192,132,252,0.15) 0,#1a0a2e 70%);
+      box-shadow:inset 0 0 18px rgba(192,132,252,.2),0 0 18px rgba(192,132,252,.4),0 0 32px var(--theme-glow);
     }
     .reel-inner{
       display:flex;
@@ -626,14 +730,21 @@
       min-height:48px;
       text-align:center;
       box-shadow:0 0 10px rgba(15,23,42,.9);
-      white-space:nowrap;
+      white-space:normal;
       overflow:hidden;
-      text-overflow:ellipsis;
       line-height:1.2;
       display:flex;
       align-items:center;
       justify-content:center;
+      word-wrap:break-word;
+      hyphens:auto;
     }
+    /* Dynamic name scaling based on length */
+    .reel-symbol.name-short{font-size:16px;}
+    .reel-symbol.name-medium{font-size:13px;}
+    .reel-symbol.name-long{font-size:11px;}
+    .reel-symbol.name-very-long{font-size:9px;letter-spacing:0;}
+    .reel-symbol.name-extreme{font-size:8px;letter-spacing:0;line-height:1.1;}
     .reel-symbol.player{
       background:rgba(15,23,42,.95);
       border:1px solid rgba(248,250,252,.25);
@@ -669,9 +780,9 @@
       color:#e0f2fe;
     }
     .reel:nth-child(3) .reel-symbol.player{
-      border-color:#4b5563;
-      box-shadow:0 0 12px rgba(15,23,42,.95);
-      color:#f9fafb;
+      border-color:#c084fc;
+      box-shadow:0 0 12px rgba(192,132,252,.9);
+      color:#e9d5ff;
     }
     .reel:nth-child(4) .reel-symbol.player{
       border-color:#fb4b4b;
@@ -870,6 +981,7 @@
       min-height:0;
     }
     .leaderboard-wrapper::-webkit-scrollbar{
+      display:block !important;
       width:8px;
       height:8px;
     }
@@ -916,6 +1028,26 @@
       font-size:10px;
       color:#d1bfa1;
     }
+    .sortable-header{
+      cursor:pointer;
+      user-select:none;
+      transition:color 0.2s ease;
+    }
+    .sortable-header:hover{
+      color:var(--gold);
+    }
+    .sortable-header.active{
+      color:var(--gold);
+      font-weight:900;
+    }
+    .sort-indicator{
+      font-size:8px;
+      margin-left:2px;
+      opacity:0.5;
+    }
+    .sortable-header.active .sort-indicator{
+      opacity:1;
+    }
     .player-row{cursor:pointer;}
     .player-row:hover{background:rgba(17,24,39,.9);}
     .time-cell{
@@ -949,6 +1081,7 @@
       min-height:0;
     }
     .log::-webkit-scrollbar{
+      display:block !important;
       width:8px;
     }
     .log::-webkit-scrollbar-track{
@@ -1005,7 +1138,7 @@
       display:none;
       align-items:center;
       justify-content:center;
-      z-index:50;
+      z-index:1000;
     }
     .overlay.show{display:flex;}
     .winner-card{
@@ -1021,6 +1154,22 @@
       text-align:center;
       position:relative;
       overflow:hidden;
+    }
+    .winner-card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
     }
     .winner-card::after{
       content:'';
@@ -1116,6 +1265,7 @@
     .finish-card{
       width:calc(100% - 20px);
       max-width:460px;
+      max-height:calc(100vh - 40px);
       margin:0 auto;
       border-radius:18px;
       border:3px solid transparent;
@@ -1126,7 +1276,24 @@
       font-size:12px;
       text-align:center;
       position:relative;
-      overflow:hidden;
+      overflow-y:auto;
+      overflow-x:hidden;
+    }
+    .finish-card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
     }
     .finish-card::after{
       content:'';
@@ -1150,6 +1317,8 @@
       margin-bottom:4px;
       position:relative;
       z-index:10;
+      color:var(--gold);
+      text-align:center;
     }
     .finish-sub{
       font-size:11px;
@@ -1157,6 +1326,7 @@
       margin-bottom:10px;
       position:relative;
       z-index:10;
+      text-align:center;
     }
     .finish-field{
       margin-bottom:8px;
@@ -1169,6 +1339,7 @@
       letter-spacing:.12em;
       color:var(--muted);
       margin-bottom:4px;
+      text-align:center;
     }
     .finish-input-row{
       display:flex;
@@ -1378,6 +1549,7 @@
     .player-card{
       width:calc(100% - 20px);
       max-width:640px;
+      max-height:90vh;
       margin:0 auto;
       border-radius:16px;
       border:3px solid transparent;
@@ -1387,12 +1559,37 @@
       box-shadow:0 0 30px rgba(0,0,0,.9);
       font-size:12px;
       position:relative;
-      overflow:hidden;
+      overflow-y:auto;
+      overflow-x:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .player-card::before{
+      content:'';
+      position:absolute;
+      top:-3px;
+      left:-3px;
+      right:-3px;
+      bottom:-3px;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
     }
     .player-card::after{
       content:'';
       position:absolute;
-      inset:0;
+      top:-3px;
+      left:-3px;
+      right:-3px;
+      bottom:-3px;
       border-radius:16px;
       padding:3px;
       background:var(--gradient-border);
@@ -1415,8 +1612,11 @@
     }
     .player-card-name{
       font-weight:700;
-      font-size:14px;
+      font-size:16px;
       text-align:center;
+      color:#facc15;
+      text-shadow:0 0 8px rgba(250, 204, 21, 0.6);
+      letter-spacing:0.02em;
     }
     .player-card-status{
       font-size:11px;
@@ -1502,11 +1702,11 @@
       border:5px solid transparent;
       background:conic-gradient(var(--theme-color) 0% var(--percentage), rgba(0,0,0,.3) var(--percentage) 100%);
       background-clip:padding-box;
-      box-shadow:0 0 24px var(--theme-glow),0 0 48px var(--theme-glow),0 0 12px var(--theme-glow);
+      box-shadow:0 0 8px var(--theme-glow),0 0 16px var(--theme-glow);
       display:flex;
       align-items:center;
       justify-content:center;
-      filter:brightness(1.4);
+      filter:brightness(1.2);
       overflow:hidden;
       transition:all .15s ease-out;
     }
@@ -1604,23 +1804,26 @@
       min-width:300px;
     }
     .deck-table th,.deck-table td{
-      border-bottom:1px solid var(--border);
       padding:3px 4px;
-      text-align:left;
+      text-align:center;
       white-space:nowrap;
+    }
+    .deck-table tr{
+      border-bottom:1px solid var(--border);
     }
     .deck-table th{
       text-transform:uppercase;
       letter-spacing:.1em;
       font-size:10px;
       color:var(--muted);
+      font-weight:900;
     }
     .footer-bar{
       position:sticky;
       bottom:0;
       left:0;
       right:0;
-      padding:8px 10px;
+      padding:12px 14px;
       background:rgba(10,9,8,.95);
       border-top:1px solid var(--border);
       display:flex;
@@ -1631,7 +1834,7 @@
     }
     .footer-buttons{
       display:flex;
-      gap:12px;
+      gap:16px;
       flex-wrap:wrap;
       justify-content:center;
     }
@@ -1642,8 +1845,8 @@
       background-clip:padding-box;
       color:#78350f;
       font-size:10px;
-      font-weight:700;
-      padding:4px 8px;
+      font-weight:900;
+      padding:7px 12px;
       text-transform:uppercase;
       letter-spacing:.1em;
       cursor:pointer;
@@ -1689,6 +1892,22 @@
       max-height:90vh;
       margin:0 10px;
     }
+    .help-card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
+    }
     .help-card::after{
       content:'';
       position:absolute;
@@ -1709,6 +1928,8 @@
       font-size:14px;
       font-weight:700;
       margin-bottom:4px;
+      color:var(--gold);
+      text-align:center;
     }
     .help-section-title{
       font-size:11px;
@@ -1718,25 +1939,120 @@
       margin-top:8px;
       margin-bottom:2px;
     }
+    .help-grid-container{
+      width:calc(100% - 20px);
+      max-width:700px;
+      border-radius:16px;
+      border:3px solid transparent;
+      background:var(--panel);
+      background-clip:padding-box;
+      padding:20px;
+      box-shadow:0 0 30px rgba(0,0,0,.9);
+      position:relative;
+      margin:0 10px;
+    }
+    .help-grid-container::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
+    }
+    .help-grid-container::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:100;
+      filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
+    }
+    .help-grid-title{
+      font-size:16px;
+      font-weight:700;
+      margin-bottom:16px;
+      color:var(--gold);
+      text-align:center;
+      position:relative;
+      z-index:101;
+    }
+    .help-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:12px;
+      margin-bottom:16px;
+      position:relative;
+      z-index:101;
+    }
+    @media (max-width: 650px){
+      .help-grid{
+        grid-template-columns:repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 450px){
+      .help-grid{
+        grid-template-columns:1fr;
+      }
+    }
+    .help-box{
+      background:rgba(0,0,0,0.4);
+      border:1px solid rgba(148,116,72,.3);
+      border-radius:8px;
+      padding:12px;
+      text-align:center;
+      box-shadow:0 2px 8px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05);
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .help-box:hover{
+      transform:translateY(-2px);
+      box-shadow:0 4px 12px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .help-box-title{
+      font-size:13px;
+      font-weight:700;
+      color:var(--gold);
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:0.05em;
+    }
+    .help-box-text{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.5;
+    }
     .spark-progression{
       display:flex;
-      flex-direction:column;
+      flex-direction:row;
       align-items:center;
-      gap:8px;
+      justify-content:center;
+      gap:6px;
       margin:12px 0;
-      padding:12px;
-      background:rgba(0,0,0,0.3);
-      border-radius:8px;
-      border:1px solid rgba(148,116,72,.3);
+      flex-wrap:wrap;
     }
     .spark-bulbs-row{
       display:flex;
-      gap:10px;
+      gap:6px;
       justify-content:center;
     }
     .spark-bulb{
-      width:16px;
-      height:16px;
+      width:24px;
+      height:24px;
       border-radius:50%;
       background:rgba(0,0,0,0.5);
       border:2px solid rgba(148,116,72,.5);
@@ -1746,17 +2062,25 @@
     .spark-bulb.lit{
       background:var(--theme-color);
       border-color:var(--theme-color);
-      box-shadow:0 0 10px var(--theme-glow),0 0 20px var(--theme-glow),inset 0 0 8px var(--theme-glow);
+      box-shadow:0 0 8px var(--theme-glow),0 0 16px var(--theme-glow),inset 0 0 6px var(--theme-glow);
       animation:sparkPulse 1.5s ease-in-out infinite;
     }
     @keyframes sparkPulse{
-      0%, 100%{opacity:1;transform:scale(1);}
-      50%{opacity:0.7;transform:scale(1.1);}
+      0%, 100%{
+        opacity:1;
+        transform:scale(1);
+        box-shadow:0 0 8px var(--theme-glow),0 0 16px var(--theme-glow),inset 0 0 6px var(--theme-glow);
+      }
+      50%{
+        opacity:0.85;
+        transform:scale(1.08);
+        box-shadow:0 0 12px var(--theme-glow),0 0 24px var(--theme-glow),inset 0 0 10px var(--theme-glow);
+      }
     }
     .spark-overflow-bulb{
-      width:80px;
-      height:24px;
-      border-radius:12px;
+      width:60px;
+      height:20px;
+      border-radius:10px;
       background:rgba(0,0,0,0.5);
       border:2px solid rgba(148,116,72,.5);
       display:flex;
@@ -1783,7 +2107,7 @@
       content:'';
       position:absolute;
       inset:-2px;
-      border-radius:12px;
+      border-radius:10px;
       background:linear-gradient(90deg, #fefce8, #38bdf8, #4b5563, #fb4b4b, #22c55e, #fefce8);
       background-size:200% 100%;
       z-index:1;
@@ -1798,9 +2122,9 @@
       50%{box-shadow:0 0 20px rgba(252,211,77,0.8),0 0 40px rgba(56,189,248,0.6),0 0 20px rgba(239,68,68,0.6);}
     }
     .spark-overflow-label{
-      font-size:9px;
+      font-size:8px;
       font-weight:800;
-      letter-spacing:.1em;
+      letter-spacing:.08em;
       color:rgba(255,255,255,0.4);
       text-transform:uppercase;
     }
@@ -1810,6 +2134,11 @@
     .help-body{
       font-size:11px;
       color:var(--muted);
+      text-align:center;
+    }
+    .help-body p{
+      margin:4px 0;
+      line-height:1.4;
     }
     .diag-result{
       margin-top:6px;
@@ -1874,6 +2203,7 @@
         <section class="leaderboard-panel">
           <div class="side-panel-header">
             <div class="side-panel-section-title">Leaderboard Odds</div>
+            <div id="playerCountHeader" style="font-size:10px;color:var(--muted);margin-top:4px;"></div>
           </div>
           <form class="add-player-form" id="addPlayerForm" autocomplete="off">
             <input type="text" id="playerNameInput" name="player-name-input" placeholder="Add viewer (name / handle)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -1883,12 +2213,13 @@
             <table class="leaderboard-table">
               <thead>
                 <tr>
-                  <th>Time</th>
+                  <th class="sortable-header" data-sort="time">Time <span class="sort-indicator"></span></th>
                   <th>Player</th>
-                  <th>Total</th>
-                  <th>Slot W</th>
-                  <th>W/L%</th>
-                  <th>Sparks</th>
+                  <th class="sortable-header" data-sort="overall">Overall% <span class="sort-indicator"></span></th>
+                  <th class="sortable-header" data-sort="total">Total <span class="sort-indicator"></span></th>
+                  <th class="sortable-header" data-sort="slotWins">Slot W <span class="sort-indicator"></span></th>
+                  <th class="sortable-header" data-sort="winRate">W/L% <span class="sort-indicator"></span></th>
+                  <th class="sortable-header" data-sort="sparks">Sparks <span class="sort-indicator"></span></th>
                   <th></th>
                 </tr>
               </thead>
@@ -1922,6 +2253,7 @@
       <div class="winner-meta" id="winnerMeta"></div>
       <div class="winner-actions">
         <button id="winnerPlayBtn">Play Deck</button>
+        <button id="winnerExportBtn" style="display:none;">📋 Export to Arena</button>
         <button id="winnerSkipBtn">Skip / Remove</button>
       </div>
       <div class="winner-luna-sticker" id="winnerLunaSticker" style="display:none;">
@@ -1948,16 +2280,20 @@
         <input type="hidden" id="runWins" value="0"/>
         <input type="hidden" id="runLosses" value="0"/>
       </div>
+      <!-- Deck Color Identity removed - now stored with player during import -->
       <div class="finish-field">
-        <div class="finish-label">Deck Color Identity</div>
-        <div class="color-chips" id="colorChips">
-          <div class="color-chip" data-color="W">W</div>
-          <div class="color-chip" data-color="U">U</div>
-          <div class="color-chip" data-color="B">B</div>
-          <div class="color-chip" data-color="R">R</div>
-          <div class="color-chip" data-color="G">G</div>
-          <div class="color-chip" data-color="C">C</div>
+        <div class="finish-label">Match Format</div>
+        <div class="queue-choice" id="matchTypeChoice">
+          <div class="queue-chip" data-match-type="BO1">BO1</div>
+          <div class="queue-chip active" data-match-type="BO3">BO3</div>
+          <div class="queue-chip" data-match-type="BO5">BO5</div>
         </div>
+        <div style="margin-top:6px;font-size:10px;color:var(--muted);text-align:center;">
+          BO1 = One opponent per game | BO3/BO5 = One opponent per match
+        </div>
+      </div>
+      <div class="finish-field" id="opponentColorsContainer">
+        <!-- Dynamically populated based on match type -->
       </div>
       <div class="finish-field" id="bonusChoiceField" style="display:none;">
         <div class="finish-label">Bonus Reward (4/5-of-a-kind)</div>
@@ -1987,11 +2323,6 @@
         <div class="player-card-name" id="playerCardName"></div>
         <div class="player-card-status" id="playerCardStatus"></div>
       </div>
-      <div class="player-card-actions">
-        <button id="toggleAfkBtn">Toggle AFK</button>
-        <button id="removePlayerBtn">Remove Player</button>
-        <button id="closePlayerCardBtn">Close</button>
-      </div>
       <div class="help-section-title">Reel Probabilities</div>
       <div class="reel-charts-wrapper">
         <div class="reel-charts" id="reelCharts"></div>
@@ -2019,51 +2350,138 @@
           <div class="spark-overflow-label">IGNITED</div>
         </div>
       </div>
-      <div class="help-section-title">Decks (by color identity)</div>
-      <div class="deck-table-wrapper">
+      <div class="help-section-title deck-section-header" id="deckSectionHeader" style="cursor:pointer;user-select:none;">
+        Decks (by color identity) <span id="deckExpandIcon" style="font-size:10px;">▼</span>
+      </div>
+      <div class="deck-table-wrapper" id="deckTableWrapper">
         <table class="deck-table">
           <thead>
             <tr>
-              <th>Colors</th>
-              <th>Matches</th>
-              <th>W/L</th>
-              <th>Win%</th>
-              <th>Last</th>
+              <th class="sortable-header" data-deck-sort="colors">Colors <span class="sort-indicator"></span></th>
+              <th class="sortable-header" data-deck-sort="matches">Matches <span class="sort-indicator"></span></th>
+              <th class="sortable-header" data-deck-sort="wl">W/L <span class="sort-indicator"></span></th>
+              <th class="sortable-header" data-deck-sort="winRate">Win% <span class="sort-indicator"></span></th>
+              <th style="cursor:default;">Matchups</th>
+              <th class="sortable-header" data-deck-sort="last">Last <span class="sort-indicator"></span></th>
+              <th style="cursor:default;text-align:center;">Actions</th>
             </tr>
           </thead>
           <tbody id="deckTableBody"></tbody>
         </table>
       </div>
+      <div class="player-card-actions" style="margin-top:12px;">
+        <button id="exportPlayerDeckBtn" style="display:none;">📋 Export Deck</button>
+        <button id="toggleAfkBtn">Toggle AFK</button>
+        <button id="removePlayerBtn">Remove Player</button>
+        <button id="closePlayerCardBtn">Close</button>
+      </div>
+    </div>
+  </div>
+  <!-- DECK EDITOR OVERLAY -->
+  <div class="overlay" id="deckEditorOverlay">
+    <div class="finish-card">
+      <div class="finish-title">Edit Deck</div>
+      <div class="finish-sub">Correct deck stats and color identity</div>
+
+      <div class="finish-field">
+        <div class="finish-label">Deck Colors</div>
+        <div class="color-chips" id="deckEditorColorChips">
+          <div class="color-chip" data-color="W">W</div>
+          <div class="color-chip" data-color="U">U</div>
+          <div class="color-chip" data-color="B">B</div>
+          <div class="color-chip" data-color="R">R</div>
+          <div class="color-chip" data-color="G">G</div>
+          <div class="color-chip" data-color="C">C</div>
+        </div>
+      </div>
+
+      <div class="finish-field">
+        <div class="finish-label">Wins</div>
+        <div class="finish-controls">
+          <button id="deckEditorWinsDown" class="finish-btn-inc">−</button>
+          <input type="number" id="deckEditorWins" min="0" value="0" class="finish-input"/>
+          <button id="deckEditorWinsUp" class="finish-btn-inc">+</button>
+        </div>
+      </div>
+
+      <div class="finish-field">
+        <div class="finish-label">Losses</div>
+        <div class="finish-controls">
+          <button id="deckEditorLossesDown" class="finish-btn-inc">−</button>
+          <input type="number" id="deckEditorLosses" min="0" value="0" class="finish-input"/>
+          <button id="deckEditorLossesUp" class="finish-btn-inc">+</button>
+        </div>
+      </div>
+
+      <div class="finish-field">
+        <div class="finish-label">Match Type</div>
+        <select id="deckEditorMatchType" class="finish-select">
+          <option value="BO1">Best of 1</option>
+          <option value="BO3" selected>Best of 3</option>
+          <option value="BO5">Best of 5</option>
+        </select>
+      </div>
+
+      <div class="finish-actions">
+        <button id="deckEditorSaveBtn" class="finish-save-btn">Save Changes</button>
+        <button id="deckEditorDeleteBtn" class="finish-cancel-btn" style="background:var(--danger,#dc2626);">Delete Deck</button>
+        <button id="closeDeckEditorBtn" class="finish-cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <!-- DECK IMPORT OVERLAY -->
+  <div class="overlay" id="deckImportOverlay">
+    <div class="finish-card" style="max-width:500px;">
+      <div class="finish-title">Import Deck for <span id="deckImportPlayerName"></span></div>
+      <div class="finish-sub">
+        Select deck color identity. Copy your MTG Arena deck list, then click Import.
+      </div>
+      <div class="finish-field">
+        <div class="finish-label">Deck Color Identity</div>
+        <div class="color-chips" id="deckImportColorChips">
+          <div class="color-chip" data-color="W">W</div>
+          <div class="color-chip" data-color="U">U</div>
+          <div class="color-chip" data-color="B">B</div>
+          <div class="color-chip" data-color="R">R</div>
+          <div class="color-chip" data-color="G">G</div>
+          <div class="color-chip" data-color="C">C</div>
+        </div>
+      </div>
+      <div class="finish-actions">
+        <button id="deckImportSaveBtn" class="finish-save-btn">📋 Import Deck from Clipboard</button>
+        <button id="deckImportSkipBtn" class="finish-cancel-btn">Skip (No Deck)</button>
+      </div>
     </div>
   </div>
   <!-- HELP OVERLAY -->
   <div class="overlay" id="helpOverlay">
-    <div class="help-card">
-      <div class="help-title">How It Works</div>
-      <div class="help-body">
-        <div class="help-section-title">How To Win</div>
-        <p><strong>Get 3, 4, or 5 matches on the reels.</strong></p>
-        <p>Each reel shows a random player's name. If your name appears 3+ times, you win!</p>
-        <p>Winner plays their deck until they lose a match.</p>
-
-        <div class="help-section-title">Tickets (Your Odds)</div>
-        <p><strong>Tickets = your chance to appear on each reel.</strong></p>
-        <p>• You start with 1 ticket per reel (5 total)</p>
-        <p>• When you DON'T appear on a spin: your tickets DOUBLE (max 500 per reel)</p>
-        <p>• When you appear but DON'T win: lose 1 ticket on reels you showed up on</p>
-        <p>• More tickets = better odds of appearing = higher win chance</p>
-
-        <div class="help-section-title">Sparks & Ignition</div>
-        <p><strong>Sparks are earned when tickets overflow past 500.</strong></p>
-        <p>• Every 500 overflow = 1 spark (max 12 sparks)</p>
-        <p>• Get 12 sparks = IGNITED! You're guaranteed to win soon</p>
-        <p>• Ignited players queue up and win one at a time (first in, first out)</p>
-        <p>• When you ignite, you win automatically and sparks reset to 0</p>
-
-        <div class="help-section-title">Luna & CARLO</div>
-        <p><strong>Luna:</strong> Wild card that appears rarely (max 1 per spin). She helps complete your 3-in-a-row wins.</p>
-        <p><strong>CARLO:</strong> Super rare jackpot! If all 5 reels show C-A-R-L-O letters, the streamer plays their own deck.</p>
-
+    <div class="help-grid-container">
+      <div class="help-grid-title">How It Works</div>
+      <div class="help-grid">
+        <div class="help-box">
+          <div class="help-box-title">How To Win</div>
+          <div class="help-box-text">Get 3+ matches on the reels. Winner plays until they lose.</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">Tickets</div>
+          <div class="help-box-text">Your odds per reel. Start at 1, double when you don't appear. Higher tickets = better chances.</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">Sparks</div>
+          <div class="help-box-text">Earned when tickets exceed 500. Get 12 sparks and you're IGNITED – guaranteed win!</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">Luna</div>
+          <div class="help-box-text">Wild card that helps complete wins. Max 1 per spin.</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">CARLO</div>
+          <div class="help-box-text">Jackpot! All 5 reels show C-A-R-L-O letters. Streamer plays their deck.</div>
+        </div>
+        <div class="help-box">
+          <div class="help-box-title">Meta-Tracking</div>
+          <div class="help-box-text">Track deck performance and matchup data. View detailed analytics in Player Diagnostics.</div>
+        </div>
       </div>
       <div class="finish-actions">
         <button id="closeHelpBtn">Close</button>
@@ -2081,6 +2499,45 @@
           <button id="closeDiagBtn">Close</button>
         </div>
         <div class="diag-result" id="diagResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SESSION RESUME MODAL -->
+  <div class="overlay" id="sessionResumeOverlay">
+    <div class="finish-card">
+      <div class="finish-title">Previous Session Found</div>
+      <div class="finish-sub">
+        A previous session was detected.<br>
+        Would you like to continue where you left off?
+      </div>
+      <div class="finish-actions" style="margin-top:20px;">
+        <button id="sessionResumeBtn" style="background:var(--ok);color:#000;">Resume Previous Session</button>
+        <button id="sessionNewBtn" style="background:var(--panel);color:var(--text);">Start New Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FACTORY RESET MODAL -->
+  <div class="overlay" id="factoryResetOverlay">
+    <div class="finish-card">
+      <div class="finish-title" style="color:var(--danger);">⚠️ WARNING: Factory Reset</div>
+      <div class="finish-sub">
+        This will permanently delete:<br>
+        • All players and decks<br>
+        • Match history<br>
+        • Session data<br>
+        • Statistics<br><br>
+        <strong>This CANNOT be undone.</strong>
+      </div>
+      <div class="finish-field">
+        <div class="finish-label">Type "RESET" to confirm</div>
+        <input type="text" id="factoryResetInput" placeholder="RESET"
+               style="width:100%;padding:10px;font-size:14px;text-align:center;background:var(--panel);border:2px solid var(--border);border-radius:8px;color:var(--text);text-transform:uppercase;" />
+      </div>
+      <div class="finish-actions" style="margin-top:20px;">
+        <button id="factoryResetCancelBtn" style="background:var(--panel);color:var(--text);">Cancel</button>
+        <button id="factoryResetConfirmBtn" style="background:var(--danger);color:#fff;opacity:0.3;cursor:not-allowed;" disabled>Factory Reset</button>
       </div>
     </div>
   </div>
@@ -2118,11 +2575,12 @@
 
   // Dead spin guardrail: Guarantee win after too many dead spins
   function getMaxDeadStreakAllowed(activePlayerCount){
-    if(activePlayerCount <= 3) return 12;      // Solo/duo can wait a bit longer
-    if(activePlayerCount <= 5) return 8;       // Small groups - keep it tight
-    if(activePlayerCount <= 10) return 6;      // Medium groups - very tight
-    if(activePlayerCount <= 20) return 5;      // Large groups - maximum engagement
-    return 5;                                   // Never go above 5 dead spins at scale
+    if(activePlayerCount <= 3) return 15;      // Solo/duo - moderate variance
+    if(activePlayerCount <= 7) return 12;      // Small groups - balanced
+    if(activePlayerCount <= 15) return 9;      // Medium groups - tighter flow
+    if(activePlayerCount <= 25) return 7;      // Medium-large - quick engagement
+    if(activePlayerCount <= 40) return 6;      // Large groups - very tight
+    return 6;                                   // Maximum capacity - maintain pace
   }
 
   const reelsEl = document.getElementById('reels');
@@ -2148,12 +2606,14 @@
   const winnerMetaEl = document.getElementById('winnerMeta');
   const winnerPlayBtn = document.getElementById('winnerPlayBtn');
   const winnerSkipBtn = document.getElementById('winnerSkipBtn');
+  const winnerExportBtn = document.getElementById('winnerExportBtn');
   const winnerLunaSticker = document.getElementById('winnerLunaSticker');
   const finishOverlay = document.getElementById('finishOverlay');
   const runWinsInput = document.getElementById('runWins');
   const runLossesInput = document.getElementById('runLosses');
-  const matchTypeSelect = document.getElementById('matchType');
+  const matchTypeChoice = document.getElementById('matchTypeChoice');
   const colorChips = document.getElementById('colorChips');
+  const opponentColorsContainer = document.getElementById('opponentColorsContainer');
   const queueChoice = document.getElementById('queueChoice');
   const bonusChoice = document.getElementById('bonusChoice');
   const bonusChoiceField = document.getElementById('bonusChoiceField');
@@ -2165,7 +2625,28 @@
   const toggleAfkBtn = document.getElementById('toggleAfkBtn');
   const removePlayerBtn = document.getElementById('removePlayerBtn');
   const closePlayerCardBtn = document.getElementById('closePlayerCardBtn');
+  const exportPlayerDeckBtn = document.getElementById('exportPlayerDeckBtn');
   const deckTableBody = document.getElementById('deckTableBody');
+  const deckTableWrapper = document.getElementById('deckTableWrapper');
+  const deckSectionHeader = document.getElementById('deckSectionHeader');
+  const deckExpandIcon = document.getElementById('deckExpandIcon');
+  const deckEditorOverlay = document.getElementById('deckEditorOverlay');
+  const deckEditorColorChips = document.getElementById('deckEditorColorChips');
+  const deckEditorWins = document.getElementById('deckEditorWins');
+  const deckEditorLosses = document.getElementById('deckEditorLosses');
+  const deckEditorWinsUp = document.getElementById('deckEditorWinsUp');
+  const deckEditorWinsDown = document.getElementById('deckEditorWinsDown');
+  const deckEditorLossesUp = document.getElementById('deckEditorLossesUp');
+  const deckEditorLossesDown = document.getElementById('deckEditorLossesDown');
+  const deckEditorMatchType = document.getElementById('deckEditorMatchType');
+  const deckEditorSaveBtn = document.getElementById('deckEditorSaveBtn');
+  const deckEditorDeleteBtn = document.getElementById('deckEditorDeleteBtn');
+  const closeDeckEditorBtn = document.getElementById('closeDeckEditorBtn');
+  const deckImportOverlay = document.getElementById('deckImportOverlay');
+  const deckImportPlayerName = document.getElementById('deckImportPlayerName');
+  const deckImportColorChips = document.getElementById('deckImportColorChips');
+  const deckImportSaveBtn = document.getElementById('deckImportSaveBtn');
+  const deckImportSkipBtn = document.getElementById('deckImportSkipBtn');
   const helpOverlay = document.getElementById('helpOverlay');
   const diagOverlay = document.getElementById('diagOverlay');
   const helpBtn = document.getElementById('helpBtn');
@@ -2178,14 +2659,28 @@
   const closeDiagBtn = document.getElementById('closeDiagBtn');
   const runDiagNowBtn = document.getElementById('runDiagNowBtn');
   const diagResult = document.getElementById('diagResult');
+  const sessionResumeOverlay = document.getElementById('sessionResumeOverlay');
+  const sessionResumeBtn = document.getElementById('sessionResumeBtn');
+  const sessionNewBtn = document.getElementById('sessionNewBtn');
+  const factoryResetOverlay = document.getElementById('factoryResetOverlay');
+  const factoryResetInput = document.getElementById('factoryResetInput');
+  const factoryResetCancelBtn = document.getElementById('factoryResetCancelBtn');
+  const factoryResetConfirmBtn = document.getElementById('factoryResetConfirmBtn');
   const themeChips = document.querySelectorAll('.theme-chip');
   const addWinBtn = document.getElementById('addWinBtn');
   const addLossBtn = document.getElementById('addLossBtn');
   const currentResults = document.getElementById('currentResults');
 
-  const state = {currentEventIndex: 1,events: []};
+  const state = {currentEventIndex: 0,events: []};
   let selectedColors = new Set(); // Multi-select theme colors (empty = white glow default)
   let selectedColorSet = new Set();
+  let deckEditorColorSet = new Set(); // Track deck editor color selections
+  let currentEditingPlayer = null; // Track which player's deck is being edited
+  let currentEditingDeck = null; // Track which deck is being edited
+  let currentSortColumn = 'total'; // Default sort by total tickets (probability)
+  let currentSortDirection = 'desc'; // desc = highest first, asc = lowest first
+  let currentDeckSortColumn = 'winRate'; // Default deck sort by win rate
+  let currentDeckSortDirection = 'desc'; // desc = highest first
   let queueReaddChoice = 'yes';
   let bonusRewardChoice = 'tickets';
   let pendingWinner = null;
@@ -2193,6 +2688,10 @@
   let bulbsTimer = null;
   let timeTimer = null;
   let currentPlayerCardId = null;
+  let pendingImportPlayer = null; // Track player waiting for deck import
+  let deckImportColorSet = new Set(); // Track selected colors for deck import
+  let hasUnreportedGame = false; // Track if there's an unreported game
+  let unreportedGamePlayer = null; // Track which player has unreported game
 
   // Ignition Queue System - FIFO with scaling cooldowns
   let ignitedQueue = []; // Array of player IDs ready for ignition
@@ -2218,12 +2717,23 @@
     const current = parseInt(runWinsInput.value,10)||0;
     runWinsInput.value = current + 1;
     updateResultsDisplay();
+    regenerateOpponentColorSelectors();
   });
 
   addLossBtn.addEventListener('click',()=>{
     const current = parseInt(runLossesInput.value,10)||0;
     runLossesInput.value = current + 1;
     updateResultsDisplay();
+    regenerateOpponentColorSelectors();
+  });
+
+  matchTypeChoice.addEventListener('click',e=>{
+    const chip = e.target.closest('.queue-chip');
+    if(!chip) return;
+    Array.from(matchTypeChoice.children).forEach(ch=>{
+      ch.classList.toggle('active', ch===chip);
+    });
+    regenerateOpponentColorSelectors();
   });
 
   function currentEvent(){
@@ -2308,6 +2818,67 @@
     const total = p.overallWins + p.overallLosses;
     if(total === 0) return 0;
     return (p.overallWins / total) * 100;
+  }
+  function calculateOverallOdds(player, evt){
+    // Calculate average percentage across all 5 reels
+    if(!evt) return 0;
+    const activePlayers = evt.players.filter(p => p.status === 'active');
+    if(activePlayers.length === 0) return 0;
+
+    let totalPercentage = 0;
+    for(let i = 0; i < 5; i++){
+      const totalForReel = activePlayers.reduce((sum, p) => sum + p.tickets[i], 0);
+      const playerTickets = player.tickets[i];
+      const percentage = totalForReel > 0 ? ((playerTickets / totalForReel) * 100) : 0;
+      totalPercentage += percentage;
+    }
+    return totalPercentage / 5; // Average of 5 reels
+  }
+  function getColorThemeName(colors){
+    if(!colors) return '';
+    const sorted = colors.split('').sort().join(''); // Normalize order
+    const themeMap = {
+      // Colorless
+      'C': 'Colorless',
+      // Mono-color
+      'W': 'White',
+      'U': 'Blue',
+      'B': 'Black',
+      'R': 'Red',
+      'G': 'Green',
+      // 2-color (Guilds)
+      'UW': 'Azorius',
+      'BU': 'Dimir',
+      'BR': 'Rakdos',
+      'GR': 'Gruul',
+      'GW': 'Selesnya',
+      'BW': 'Orzhov',
+      'RU': 'Izzet',
+      'BG': 'Golgari',
+      'RW': 'Boros',
+      'GU': 'Simic',
+      // 3-color (Shards)
+      'BUW': 'Esper',
+      'BRU': 'Grixis',
+      'BGR': 'Jund',
+      'GRW': 'Naya',
+      'GUW': 'Bant',
+      // 3-color (Wedges)
+      'BGW': 'Abzan',
+      'RUW': 'Jeskai',
+      'BGU': 'Sultai',
+      'BRW': 'Mardu',
+      'GRU': 'Temur',
+      // 4-color (Nephilim)
+      'BGRU': 'Glint-Eye',
+      'BGRW': 'Dune-Brood',
+      'GRUW': 'Ink-Treader',
+      'BGUW': 'Witch-Maw',
+      'BRUW': 'Yore-Tiller',
+      // 5-color
+      'BGRUW': 'Prismatic'
+    };
+    return themeMap[sorted] || colors;
   }
   function formatTimeInQueue(ms){
     const s = Math.floor(ms/1000);
@@ -2508,7 +3079,163 @@
     });
   }
 
-  function addPlayer(name){
+  // Parse MTG Arena deck list and detect color identity
+  function parseDeckList(deckText){
+    const lines = deckText.split('\n');
+    const cards = [];
+    const colorSet = new Set();
+
+    // Color detection from mana symbols in card names
+    const colorPatterns = {
+      'W': /\{W\}|Plains|white/i,
+      'U': /\{U\}|Island|blue/i,
+      'B': /\{B\}|Swamp|black/i,
+      'R': /\{R\}|Mountain|red/i,
+      'G': /\{G\}|Forest|green/i
+    };
+
+    // Basic land detection
+    const basicLands = {
+      'Plains': 'W',
+      'Island': 'U',
+      'Swamp': 'B',
+      'Mountain': 'R',
+      'Forest': 'G'
+    };
+
+    // Dual/Tri lands and other color indicators
+    const landColorMap = {
+      // Shock lands
+      'Temple Garden': 'GW', 'Hallowed Fountain': 'WU', 'Watery Grave': 'UB',
+      'Blood Crypt': 'BR', 'Stomping Ground': 'RG', 'Godless Shrine': 'WB',
+      'Steam Vents': 'UR', 'Overgrown Tomb': 'BG', 'Sacred Foundry': 'RW',
+      'Breeding Pool': 'UG',
+      // Fast lands
+      'Seachrome Coast': 'WU', 'Darkslick Shores': 'UB', 'Blackcleave Cliffs': 'BR',
+      'Copperline Gorge': 'RG', 'Razorverge Thicket': 'GW', 'Concealed Courtyard': 'WB',
+      'Spirebluff Canal': 'UR', 'Blooming Marsh': 'BG', 'Inspiring Vantage': 'RW',
+      'Botanical Sanctum': 'UG',
+      // Pain lands
+      'Adarkar Wastes': 'WU', 'Underground River': 'UB', 'Sulfurous Springs': 'BR',
+      'Karplusan Forest': 'RG', 'Brushland': 'GW', 'Caves of Koilos': 'WB',
+      'Shivan Reef': 'UR', 'Llanowar Wastes': 'BG', 'Battlefield Forge': 'RW',
+      'Yavimaya Coast': 'UG',
+      // Creature lands
+      'Celestial Colonnade': 'WU', 'Creeping Tar Pit': 'UB', 'Lavaclaw Reaches': 'BR',
+      'Raging Ravine': 'RG', 'Stirring Wildwood': 'GW', 'Shambling Vent': 'WB',
+      'Wandering Fumarole': 'UR', 'Hissing Quagmire': 'BG', 'Needle Spires': 'RW',
+      'Lumbering Falls': 'UG',
+      // Survey lands
+      'Sunlit Marsh': 'WB', 'Shadowy Backstreet': 'UB', 'Raucous Theater': 'BR',
+      'Commercial District': 'RW', 'Lush Portico': 'GW', 'Elegant Parlor': 'WU',
+      'Undercity Sewers': 'BG', 'Thundering Falls': 'UR', 'Hedge Maze': 'GW',
+      'Underground Mortuary': 'BG',
+      // Other common duals
+      'Fabled Passage': '', 'Evolving Wilds': '', 'Terramorphic Expanse': '',
+      'Wastewood Verge': 'BG', 'Starting Town': ''
+    };
+
+    let inSideboard = false;
+    for(const line of lines){
+      const trimmed = line.trim();
+
+      // Skip empty lines
+      if(!trimmed) continue;
+
+      // Check for Sideboard section and skip it
+      if(trimmed.toLowerCase() === 'sideboard'){
+        inSideboard = true;
+        continue;
+      }
+      if(trimmed.toLowerCase() === 'deck'){
+        inSideboard = false;
+        continue;
+      }
+
+      // Skip sideboard cards
+      if(inSideboard) continue;
+
+      // Match format: "4 Lightning Bolt (DOM) 111" or "4x Lightning Bolt"
+      const match = trimmed.match(/^(\d+)x?\s+(.+?)(?:\s+\([\w\d]+\)\s*\d*)?$/i);
+      if(match){
+        const count = parseInt(match[1], 10);
+        const cardName = match[2].trim();
+        cards.push({count, name: cardName});
+
+        // Check for basic lands
+        for(const [land, color] of Object.entries(basicLands)){
+          if(cardName.includes(land)){
+            colorSet.add(color);
+          }
+        }
+
+        // Check dual/tri lands
+        for(const [landName, colors] of Object.entries(landColorMap)){
+          if(cardName.includes(landName)){
+            for(const c of colors){
+              colorSet.add(c);
+            }
+          }
+        }
+
+        // Check for color indicators in card name
+        for(const [color, pattern] of Object.entries(colorPatterns)){
+          if(pattern.test(cardName)){
+            colorSet.add(color);
+          }
+        }
+      }
+    }
+
+    return {
+      cards,
+      colors: Array.from(colorSet).sort((a,b) => {
+        const order = ['W','U','B','R','G'];
+        return order.indexOf(a) - order.indexOf(b);
+      }).join(''),
+      rawText: deckText
+    };
+  }
+
+  // Helper: Check if player has valid deck list
+  function hasValidDeckList(player){
+    return player && player.deckList && player.deckList.trim();
+  }
+
+  // Helper: Export deck to clipboard with visual feedback
+  function exportDeckToClipboard(player, buttonElement){
+    if(!hasValidDeckList(player)){
+      alert('No deck list found for this player.');
+      return;
+    }
+    navigator.clipboard.writeText(player.deckList).then(()=>{
+      log(`Deck exported to clipboard for ${player.name}`);
+      const originalText = buttonElement.textContent;
+      buttonElement.textContent = '✅ Copied!';
+      setTimeout(()=>{
+        buttonElement.textContent = originalText;
+      }, 2000);
+    }).catch(err=>{
+      console.error('Failed to copy:', err);
+      alert('Failed to copy deck to clipboard. Please try again.');
+    });
+  }
+
+  // Show deck import dialog for a player
+  function showDeckImportDialog(player){
+    console.log('🎴 showDeckImportDialog called for:', player.name);
+    pendingImportPlayer = player;
+    deckImportPlayerName.textContent = player.name;
+
+    // Reset color selection
+    deckImportColorSet.clear();
+    Array.from(deckImportColorChips.children).forEach(ch => ch.classList.remove('active'));
+
+    deckImportOverlay.classList.add('show');
+    console.log('🎴 Overlay shown');
+  }
+
+  function addPlayer(name, skipImport = false){
     const evt = currentEvent();
     if(evt.players.length >= MAX_PLAYERS){
       smallStatus.textContent = "Player cap reached for this session.";
@@ -2516,14 +3243,15 @@
     }
     name = name.trim();
     if(!name) return;
-    const existing = evt.players.find(p => p.name.toLowerCase() === name.toLowerCase());
-    if(existing){
-      smallStatus.textContent = "Player already in queue.";
-      return;
-    }
+
+    // Note: Duplicate check happens AFTER color selection in import dialog
+    // This allows same player with different color identities (e.g., Foozi:UB vs Foozi:WB)
+
     const p = {
       id: Date.now() + Math.random().toString(16).slice(2),
-      name,
+      name,  // Will be updated to "Name:Colors" format after import
+      baseName: name,  // Store original name without colors
+      colorIdentity: null,  // Will be set during import
       tickets:[1,1,1,1,1],
       sparks:0,
       slotWins:0,
@@ -2540,6 +3268,15 @@
     const lbWrap = document.querySelector('.leaderboard-wrapper');
     if(lbWrap) lbWrap.scrollTop = lbWrap.scrollHeight;
     saveAll();
+
+    // Show deck import dialog unless skipped
+    console.log('🎴 addPlayer completed for:', name, 'skipImport:', skipImport);
+    if(!skipImport){
+      console.log('🎴 Scheduling showDeckImportDialog in 100ms...');
+      setTimeout(() => showDeckImportDialog(p), 100);
+    } else {
+      console.log('🎴 Skipping deck import dialog (skipImport=true)');
+    }
   }
 
   function randomWeightedPlayer(evt, reelIndex){
@@ -2626,19 +3363,19 @@
           }
         }
       }else{
-        // Player didn't appear: apply scaled penalty based on player count
-        // Small groups get penalty, large groups get small boost (fixes scaling issue)
+        // Player didn't appear: apply scaled ticket growth based on player count
+        // Larger groups need faster ticket escalation for natural wins before guardrail
         let multiplier;
         if (activePlayerCount <= 7) {
-          multiplier = 0.55; // Moderate penalty for small groups
+          multiplier = 0.60; // Moderate penalty for small groups
         } else if (activePlayerCount <= 15) {
-          multiplier = 0.73; // Mild penalty for medium groups
-        } else if (activePlayerCount <= 30) {
-          multiplier = 1.005; // Minimal boost for medium-large groups
-        } else if (activePlayerCount <= 50) {
-          multiplier = 1.012; // Small boost for large groups
+          multiplier = 0.80; // Mild penalty for medium groups
+        } else if (activePlayerCount <= 25) {
+          multiplier = 1.12; // Healthy growth for medium-large (12% per dead spin)
+        } else if (activePlayerCount <= 40) {
+          multiplier = 1.15; // Faster growth for large groups (15% per dead spin)
         } else {
-          multiplier = 1.018; // Small boost for very large groups
+          multiplier = 1.18; // Fastest growth for very large groups (18% per dead spin)
         }
 
         for(let i=0; i<5; i++){
@@ -2843,6 +3580,19 @@
       if(sym.type === 'player'){
         div.className = 'reel-symbol player';
         div.textContent = sym.name;
+        // Dynamic name scaling based on length
+        const nameLen = sym.name.length;
+        if(nameLen <= 4){
+          div.classList.add('name-short');
+        }else if(nameLen <= 8){
+          div.classList.add('name-medium');
+        }else if(nameLen <= 12){
+          div.classList.add('name-long');
+        }else if(nameLen <= 16){
+          div.classList.add('name-very-long');
+        }else{
+          div.classList.add('name-extreme');
+        }
       }else if(sym.type === 'letter'){
         div.className = 'reel-symbol letter';
         div.textContent = sym.letter;
@@ -2941,11 +3691,61 @@
     const evt = currentEvent();
     const players = evt.players;
     leaderboardBody.innerHTML = '';
+
+    // Sort players based on current sort column and direction
     const sorted = players.slice().sort((a,b)=>{
-      const tDiff = totalTickets(b)-totalTickets(a);
-      if(tDiff!==0) return tDiff;
+      let aVal, bVal;
+
+      switch(currentSortColumn){
+        case 'time':
+          aVal = a.createdAt;
+          bVal = b.createdAt;
+          break;
+        case 'overall':
+          aVal = calculateOverallOdds(a, evt);
+          bVal = calculateOverallOdds(b, evt);
+          break;
+        case 'total':
+          aVal = totalTickets(a);
+          bVal = totalTickets(b);
+          break;
+        case 'slotWins':
+          aVal = a.slotWins || 0;
+          bVal = b.slotWins || 0;
+          break;
+        case 'winRate':
+          aVal = overallWinRate(a);
+          bVal = overallWinRate(b);
+          break;
+        case 'sparks':
+          aVal = a.sparks || 0;
+          bVal = b.sparks || 0;
+          break;
+        default:
+          aVal = totalTickets(a);
+          bVal = totalTickets(b);
+      }
+
+      // Apply sort direction
+      const diff = currentSortDirection === 'desc' ? bVal - aVal : aVal - bVal;
+      if(diff !== 0) return diff;
+
+      // Tiebreaker: created time
       return a.createdAt - b.createdAt;
     });
+
+    // Update header indicators
+    document.querySelectorAll('.sortable-header').forEach(th => {
+      const indicator = th.querySelector('.sort-indicator');
+      if(th.dataset.sort === currentSortColumn){
+        th.classList.add('active');
+        indicator.textContent = currentSortDirection === 'desc' ? '▼' : '▲';
+      }else{
+        th.classList.remove('active');
+        indicator.textContent = '';
+      }
+    });
+
     const now = Date.now();
     for(const p of sorted){
       clampPlayer(p);
@@ -2962,6 +3762,10 @@
         : "");
       tdName.style.cursor = 'pointer';
       tdName.addEventListener('click',()=>openPlayerCard(p.id));
+      const tdOverall = document.createElement('td');
+      const overallOdds = calculateOverallOdds(p, evt);
+      tdOverall.textContent = overallOdds.toFixed(1) + '%';
+      tdOverall.style.fontWeight = 'bold';
       const tdTotal = document.createElement('td');
       tdTotal.textContent = totalTickets(p);
       const tdSparks = document.createElement('td');
@@ -2990,6 +3794,7 @@
 
       tr1.appendChild(tdTime);
       tr1.appendChild(tdName);
+      tr1.appendChild(tdOverall);
       tr1.appendChild(tdTotal);
       tr1.appendChild(tdSlotWins);
       tr1.appendChild(tdWL);
@@ -2998,9 +3803,17 @@
 
       leaderboardBody.appendChild(tr1);
     }
-    spinCountEl.textContent = evt.spinCount;
-    deadStreakEl.textContent = evt.deadSpinStreak;
-    playerCountEl.textContent = evt.players.length;
+    if(spinCountEl) spinCountEl.textContent = evt.spinCount;
+    if(deadStreakEl) deadStreakEl.textContent = evt.deadSpinStreak;
+    if(playerCountEl) playerCountEl.textContent = evt.players.length;
+
+    // Update player count header
+    const playerCountHeader = document.getElementById('playerCountHeader');
+    if(playerCountHeader){
+      const activePlayers = evt.players.filter(p => p.status === 'active');
+      const afkPlayers = evt.players.filter(p => p.status !== 'active');
+      playerCountHeader.textContent = `${activePlayers.length} Active${afkPlayers.length > 0 ? ` | ${afkPlayers.length} AFK` : ''}`;
+    }
   }
 
   function openPlayerCard(playerId){
@@ -3156,19 +3969,709 @@
       tdWL.textContent = `${d.wins}/${d.losses}`;
       const tdWinRate = document.createElement('td');
       tdWinRate.textContent = `${winRate.toFixed(1)}%`;
+
+      // Render matchup data
+      const tdMatchups = document.createElement('td');
+      tdMatchups.style.fontSize = '10px';
+      tdMatchups.style.color = 'var(--muted)';
+      if(d.matchups && Object.keys(d.matchups).length > 0){
+        tdMatchups.style.cursor = 'pointer';
+        tdMatchups.style.userSelect = 'none';
+        tdMatchups.title = 'Click to view match history';
+
+        const pipUrls = {
+          'W': 'https://i.ibb.co/sJpHH9VZ/W.png',
+          'U': 'https://i.ibb.co/0bPLHLk/U.png',
+          'B': 'https://i.ibb.co/nM1ZZz3z/B.png',
+          'R': 'https://i.ibb.co/NnjxnmZv/R.png',
+          'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
+          'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
+        };
+
+        // Render collapsed summary view
+        const matchupLines = [];
+        for(const [oppColors, stats] of Object.entries(d.matchups)){
+          // Render opponent color pips
+          let colorPips = '';
+          for(const letter of oppColors){
+            if(pipUrls[letter]){
+              colorPips += `<img src="${pipUrls[letter]}" style="width:12px;height:12px;vertical-align:middle;margin:0 1px;" alt="${letter}"/>`;
+            }
+          }
+          const matchupTotal = stats.wins + stats.losses;
+          const matchupWinRate = matchupTotal > 0 ? ((stats.wins / matchupTotal) * 100).toFixed(0) : 0;
+          matchupLines.push(`vs. ${colorPips}: ${stats.wins}-${stats.losses} (${matchupWinRate}%)`);
+        }
+
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'matchup-summary';
+        summaryDiv.innerHTML = matchupLines.join('<br/>') + ' <span style="color:var(--theme-color);font-size:9px;">▼</span>';
+        tdMatchups.appendChild(summaryDiv);
+
+        // Create expanded detail view (initially hidden)
+        const detailDiv = document.createElement('div');
+        detailDiv.className = 'matchup-detail';
+        detailDiv.style.display = 'none';
+        detailDiv.style.marginTop = '8px';
+        detailDiv.style.paddingTop = '8px';
+        detailDiv.style.borderTop = '1px solid rgba(255,255,255,0.1)';
+
+        // Collect all match history across all opponents
+        const allMatches = [];
+        const seenMatchIds = new Set(); // Prevent duplicate matches
+        for(const [oppColors, stats] of Object.entries(d.matchups)){
+          if(!stats || typeof stats !== 'object') continue; // Skip invalid stats
+          if(stats.history && Array.isArray(stats.history) && stats.history.length > 0){
+            stats.history.forEach(match => {
+              // Validate match data and check for duplicates
+              if(!match || !match.id || !match.timestamp) return;
+              if(seenMatchIds.has(match.id)) return; // Skip duplicates
+              seenMatchIds.add(match.id);
+              if(!match.opponentColors) match.opponentColors = oppColors; // Fallback
+              allMatches.push({...match, oppColors: oppColors});
+            });
+          }
+        }
+
+        // Sort by timestamp descending (most recent first)
+        allMatches.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        // Group by opponent color and render
+        const groupedByOpponent = {};
+        allMatches.forEach(match => {
+          if(!groupedByOpponent[match.opponentColors]){
+            groupedByOpponent[match.opponentColors] = [];
+          }
+          groupedByOpponent[match.opponentColors].push(match);
+        });
+
+        // Render each opponent group (in order of first appearance in sorted list)
+        const processedOpponents = new Set();
+        allMatches.forEach(match => {
+          if(processedOpponents.has(match.opponentColors)) return;
+          processedOpponents.add(match.opponentColors);
+
+          const oppColors = match.opponentColors;
+          const oppMatches = groupedByOpponent[oppColors];
+          const stats = d.matchups[oppColors];
+
+          // Opponent group header
+          const groupHeader = document.createElement('div');
+          groupHeader.style.cssText = 'font-weight:600;margin-bottom:4px;color:var(--text);';
+          let colorPips = '';
+          for(const letter of oppColors){
+            if(pipUrls[letter]){
+              colorPips += `<img src="${pipUrls[letter]}" style="width:12px;height:12px;vertical-align:middle;margin:0 1px;" alt="${letter}"/>`;
+            }
+          }
+          const matchupTotal = stats.wins + stats.losses;
+          const matchupWinRate = matchupTotal > 0 ? ((stats.wins / matchupTotal) * 100).toFixed(0) : 0;
+          groupHeader.innerHTML = `vs. ${colorPips}`;
+          detailDiv.appendChild(groupHeader);
+
+          // Calculate match type breakdown
+          const bo1Count = oppMatches.filter(m => m.matchType === 'BO1').length;
+          const bo3Count = oppMatches.filter(m => m.matchType === 'BO3').length;
+          const bo5Count = oppMatches.filter(m => m.matchType === 'BO5').length;
+
+          // Statistics table with column headers
+          const statsTable = document.createElement('div');
+          statsTable.style.cssText = 'margin:6px 0;font-size:9px;';
+
+          const statsHeader = document.createElement('div');
+          statsHeader.style.cssText = 'display:grid;grid-template-columns:45px 30px 30px 30px 70px 70px 50px auto;gap:4px;padding:3px 4px;background:rgba(255,255,255,0.05);border-radius:2px;font-weight:700;color:var(--muted);text-align:center;';
+          statsHeader.innerHTML = `<span>Total</span><span>BO1</span><span>BO3</span><span>BO5</span><span>Wins</span><span>Loss</span><span>W/L%</span><span></span>`;
+          statsTable.appendChild(statsHeader);
+
+          const statsRow = document.createElement('div');
+          statsRow.style.cssText = 'display:grid;grid-template-columns:45px 30px 30px 30px 70px 70px 50px auto;gap:4px;padding:3px 4px;align-items:center;';
+
+          // Total, BO1, BO3, BO5 (read-only)
+          const totalSpan = document.createElement('span');
+          totalSpan.style.cssText = 'text-align:center;';
+          totalSpan.textContent = matchupTotal;
+
+          const bo1Span = document.createElement('span');
+          bo1Span.style.cssText = 'text-align:center;';
+          bo1Span.textContent = bo1Count;
+
+          const bo3Span = document.createElement('span');
+          bo3Span.style.cssText = 'text-align:center;';
+          bo3Span.textContent = bo3Count;
+
+          const bo5Span = document.createElement('span');
+          bo5Span.style.cssText = 'text-align:center;';
+          bo5Span.textContent = bo5Count;
+
+          // Wins with +/- controls
+          const winsCell = document.createElement('div');
+          winsCell.style.cssText = 'display:flex;gap:2px;align-items:center;justify-content:center;';
+          const winsMinusBtn = document.createElement('button');
+          winsMinusBtn.textContent = '-';
+          winsMinusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+          const winsSpan = document.createElement('span');
+          winsSpan.textContent = stats.wins;
+          winsSpan.style.cssText = 'min-width:20px;text-align:center;';
+          const winsPlusBtn = document.createElement('button');
+          winsPlusBtn.textContent = '+';
+          winsPlusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+
+          winsMinusBtn.onclick = (e) => {
+            e.stopPropagation();
+            if(stats.wins > 0) {
+              stats.wins--;
+              openPlayerCard(p.id);
+              saveAll();
+            }
+          };
+          winsPlusBtn.onclick = (e) => {
+            e.stopPropagation();
+            stats.wins++;
+            openPlayerCard(p.id);
+            saveAll();
+          };
+
+          winsCell.appendChild(winsMinusBtn);
+          winsCell.appendChild(winsSpan);
+          winsCell.appendChild(winsPlusBtn);
+
+          // Losses with +/- controls
+          const lossesCell = document.createElement('div');
+          lossesCell.style.cssText = 'display:flex;gap:2px;align-items:center;justify-content:center;';
+          const lossesMinusBtn = document.createElement('button');
+          lossesMinusBtn.textContent = '-';
+          lossesMinusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+          const lossesSpan = document.createElement('span');
+          lossesSpan.textContent = stats.losses;
+          lossesSpan.style.cssText = 'min-width:20px;text-align:center;';
+          const lossesPlusBtn = document.createElement('button');
+          lossesPlusBtn.textContent = '+';
+          lossesPlusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+
+          lossesMinusBtn.onclick = (e) => {
+            e.stopPropagation();
+            if(stats.losses > 0) {
+              stats.losses--;
+              openPlayerCard(p.id);
+              saveAll();
+            }
+          };
+          lossesPlusBtn.onclick = (e) => {
+            e.stopPropagation();
+            stats.losses++;
+            openPlayerCard(p.id);
+            saveAll();
+          };
+
+          lossesCell.appendChild(lossesMinusBtn);
+          lossesCell.appendChild(lossesSpan);
+          lossesCell.appendChild(lossesPlusBtn);
+
+          // Win rate (read-only)
+          const winRateSpan = document.createElement('span');
+          winRateSpan.style.cssText = 'text-align:center;';
+          winRateSpan.textContent = matchupWinRate + '%';
+
+          // Edit opponent colors button
+          const editOppBtn = document.createElement('button');
+          editOppBtn.textContent = 'Edit Opp';
+          editOppBtn.style.cssText = 'font-size:9px;padding:2px 6px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;white-space:nowrap;';
+          editOppBtn.onclick = (e) => {
+            e.stopPropagation();
+            openOpponentColorEditDialog(p, d, oppColors, stats);
+          };
+
+          statsRow.appendChild(totalSpan);
+          statsRow.appendChild(bo1Span);
+          statsRow.appendChild(bo3Span);
+          statsRow.appendChild(bo5Span);
+          statsRow.appendChild(winsCell);
+          statsRow.appendChild(lossesCell);
+          statsRow.appendChild(winRateSpan);
+          statsRow.appendChild(editOppBtn);
+          statsTable.appendChild(statsRow);
+
+          detailDiv.appendChild(statsTable);
+
+          // Match history section title
+          const historyTitle = document.createElement('div');
+          historyTitle.style.cssText = 'font-size:9px;font-weight:600;color:var(--muted);margin:8px 0 4px 0;';
+          historyTitle.textContent = 'Match History';
+          detailDiv.appendChild(historyTitle);
+
+          // Match history column headers
+          const matchHistoryHeader = document.createElement('div');
+          matchHistoryHeader.style.cssText = 'display:grid;grid-template-columns:50px 35px 1fr;gap:8px;padding:3px 8px;background:rgba(255,255,255,0.05);border-radius:2px;font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px;';
+          matchHistoryHeader.innerHTML = `<span>Result</span><span>Type</span><span>Date/Time</span>`;
+          detailDiv.appendChild(matchHistoryHeader);
+
+          // Individual matches - limit initial render for performance
+          const INITIAL_MATCH_LIMIT = 10;
+          const matchContainer = document.createElement('div');
+          matchContainer.className = 'match-history-container';
+
+          const renderMatches = (matches, container, start = 0, limit = INITIAL_MATCH_LIMIT) => {
+            const end = Math.min(start + limit, matches.length);
+            for(let idx = start; idx < end; idx++){
+              const m = matches[idx];
+              const matchDiv = document.createElement('div');
+              matchDiv.style.cssText = 'padding:4px 8px;margin:2px 0;background:rgba(255,255,255,0.02);border-radius:3px;font-size:9px;display:grid;grid-template-columns:50px 35px 1fr;gap:8px;align-items:center;';
+              matchDiv.dataset.matchId = m.id;
+              matchDiv.dataset.deckColor = d.color;
+
+              // Column 1: Result/Score (fixed width)
+              const resultSpan = document.createElement('span');
+              resultSpan.style.cssText = 'font-weight:600;text-align:left;';
+              if(m.matchType === 'BO1'){
+                const result = m.result || 'unknown';
+                const resultColor = result === 'win' ? 'var(--theme-color)' : 'var(--muted)';
+                resultSpan.style.color = resultColor;
+                resultSpan.textContent = result.toUpperCase();
+              } else {
+                const wins = m.wins || 0;
+                const losses = m.losses || 0;
+                resultSpan.textContent = `${wins}W-${losses}L`;
+              }
+
+              // Column 2: Match Type (fixed width)
+              const typeSpan = document.createElement('span');
+              typeSpan.style.cssText = 'color:var(--muted);text-align:left;';
+              typeSpan.textContent = m.matchType || 'BO1';
+
+              // Column 3: Date/Time
+              const dateSpan = document.createElement('span');
+              dateSpan.style.cssText = 'color:var(--muted);';
+              const date = new Date(m.timestamp || Date.now());
+              const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+              dateSpan.textContent = dateStr;
+
+              matchDiv.appendChild(resultSpan);
+              matchDiv.appendChild(typeSpan);
+              matchDiv.appendChild(dateSpan);
+              container.appendChild(matchDiv);
+            }
+            return end;
+          };
+
+          let currentRenderedCount = renderMatches(oppMatches, matchContainer);
+          detailDiv.appendChild(matchContainer);
+
+          // Show "Load More" button if there are more matches
+          if(currentRenderedCount < oppMatches.length){
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.textContent = `Show ${Math.min(10, oppMatches.length - currentRenderedCount)} More (${oppMatches.length - currentRenderedCount} remaining)`;
+            loadMoreBtn.style.cssText = 'font-size:9px;padding:4px 10px;background:rgba(255,255,255,0.1);border:1px solid var(--theme-color);border-radius:3px;color:var(--theme-color);cursor:pointer;margin:4px 0;width:100%;';
+            loadMoreBtn.onclick = (e) => {
+              e.stopPropagation();
+              currentRenderedCount = renderMatches(oppMatches, matchContainer, currentRenderedCount, 10);
+              if(currentRenderedCount >= oppMatches.length){
+                loadMoreBtn.remove();
+              } else {
+                loadMoreBtn.textContent = `Show ${Math.min(10, oppMatches.length - currentRenderedCount)} More (${oppMatches.length - currentRenderedCount} remaining)`;
+              }
+            };
+            detailDiv.appendChild(loadMoreBtn);
+          }
+
+          // Add spacing between groups
+          const spacer = document.createElement('div');
+          spacer.style.height = '8px';
+          detailDiv.appendChild(spacer);
+        });
+
+        tdMatchups.appendChild(detailDiv);
+
+        // Toggle expansion on click
+        tdMatchups.addEventListener('click', (e) => {
+          if(e.target.tagName === 'BUTTON') return; // Don't toggle if clicking edit button
+          const isExpanded = detailDiv.style.display !== 'none';
+          detailDiv.style.display = isExpanded ? 'none' : 'block';
+          summaryDiv.querySelector('span').textContent = isExpanded ? '▼' : '▲';
+        });
+      }else{
+        tdMatchups.textContent = '-';
+      }
+
       const tdLast = document.createElement('td');
       tdLast.textContent = d.lastBestOf || '-';
+
+      // Actions column with edit button
+      const tdActions = document.createElement('td');
+      tdActions.style.textAlign = 'center';
+      const editBtn = document.createElement('button');
+      editBtn.innerHTML = '✏️ Edit';
+      editBtn.title = 'Edit deck stats and colors';
+      editBtn.style.cssText = 'background:rgba(255,255,255,0.1);border:1px solid var(--border);cursor:pointer;font-size:11px;padding:4px 8px;border-radius:4px;color:var(--text);opacity:0.8;transition:all 0.2s;';
+      editBtn.onmouseover = () => {
+        editBtn.style.opacity = '1';
+        editBtn.style.background = 'rgba(255,255,255,0.15)';
+      };
+      editBtn.onmouseout = () => {
+        editBtn.style.opacity = '0.8';
+        editBtn.style.background = 'rgba(255,255,255,0.1)';
+      };
+      editBtn.onclick = (e) => {
+        e.stopPropagation();
+        openDeckEditor(p, d);
+      };
+      tdActions.appendChild(editBtn);
+
       tr.appendChild(tdColor);
       tr.appendChild(tdMatches);
       tr.appendChild(tdWL);
       tr.appendChild(tdWinRate);
+      tr.appendChild(tdMatchups);
       tr.appendChild(tdLast);
-      rows.push({winRate, tr});
+      tr.appendChild(tdActions);
+
+      rows.push({
+        deck: d,
+        winRate,
+        total,
+        wins: d.wins,
+        losses: d.losses,
+        color: d.color || '',
+        last: d.lastBestOf || '',
+        tr
+      });
     });
-    rows.sort((a,b)=>b.winRate-a.winRate);
-    rows.forEach(r=>deckTableBody.appendChild(r.tr));
+
+    // Sort decks based on current sort column and direction
+    rows.sort((a,b)=>{
+      let aVal, bVal;
+      switch(currentDeckSortColumn){
+        case 'colors':
+          aVal = a.color;
+          bVal = b.color;
+          // String comparison
+          return currentDeckSortDirection === 'desc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+        case 'matches':
+          aVal = a.total;
+          bVal = b.total;
+          break;
+        case 'wl':
+          // Sort by wins, then losses
+          aVal = a.wins;
+          bVal = b.wins;
+          if(aVal !== bVal){
+            return currentDeckSortDirection === 'desc' ? bVal - aVal : aVal - bVal;
+          }
+          // Tiebreaker: losses (fewer is better)
+          aVal = a.losses;
+          bVal = b.losses;
+          return currentDeckSortDirection === 'desc' ? aVal - bVal : bVal - aVal;
+        case 'winRate':
+          aVal = a.winRate;
+          bVal = b.winRate;
+          break;
+        case 'last':
+          aVal = a.last;
+          bVal = b.last;
+          // String comparison for match type
+          return currentDeckSortDirection === 'desc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+        default:
+          aVal = a.winRate;
+          bVal = b.winRate;
+      }
+
+      // Apply numeric sort direction
+      const diff = currentDeckSortDirection === 'desc' ? bVal - aVal : aVal - bVal;
+      if(diff !== 0) return diff;
+
+      // Tiebreaker: total matches
+      return b.total - a.total;
+    });
+
+    // By default, show only the first (most recent/highest win rate) deck
+    // Mark additional rows as collapsible
+    rows.forEach((r, index) => {
+      if(index > 0){
+        r.tr.classList.add('deck-row-collapsed');
+        r.tr.style.display = 'none';
+      }
+      deckTableBody.appendChild(r.tr);
+    });
+
+    // Update expand icon based on current state
+    if(rows.length <= 1){
+      deckSectionHeader.style.cursor = 'default';
+      deckExpandIcon.style.display = 'none';
+    }else{
+      deckSectionHeader.style.cursor = 'pointer';
+      deckExpandIcon.style.display = 'inline';
+      deckExpandIcon.textContent = '▼';
+    }
+
+    // Update deck table sort indicators
+    const deckHeaders = deckTableWrapper.querySelectorAll('.sortable-header[data-deck-sort]');
+    deckHeaders.forEach(th => {
+      const indicator = th.querySelector('.sort-indicator');
+      if(th.dataset.deckSort === currentDeckSortColumn){
+        th.classList.add('active');
+        indicator.textContent = currentDeckSortDirection === 'desc' ? '▼' : '▲';
+      }else{
+        th.classList.remove('active');
+        indicator.textContent = '';
+      }
+    });
+
+    // Show/hide export deck button based on whether player has a deck list
+    exportPlayerDeckBtn.style.display = hasValidDeckList(p) ? 'inline-block' : 'none';
+
     playerOverlay.classList.add('show');
   }
+
+  // Inline editing for match opponent colors
+  function openOpponentColorEditDialog(player, deck, oldOppColors, stats){
+    const dialogContainer = document.createElement('div');
+    dialogContainer.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);border:2px solid var(--theme-color);border-radius:8px;padding:20px;z-index:100000;max-width:400px;box-shadow:0 8px 24px rgba(0,0,0,0.8);';
+
+    const title = document.createElement('div');
+    title.style.cssText = 'font-weight:700;font-size:14px;margin-bottom:12px;color:var(--text);';
+    title.textContent = 'Edit Opponent Colors';
+    dialogContainer.appendChild(title);
+
+    const instruction = document.createElement('div');
+    instruction.style.cssText = 'font-size:11px;color:var(--muted);margin-bottom:12px;';
+    instruction.textContent = 'This will update ALL matches against this opponent to new colors.';
+    dialogContainer.appendChild(instruction);
+
+    const colorChipsDiv = document.createElement('div');
+    colorChipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;';
+
+    const currentColors = new Set(oldOppColors.split(''));
+    ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
+      const chip = document.createElement('div');
+      chip.className = 'color-chip';
+      if(currentColors.has(color)) chip.classList.add('active');
+      chip.dataset.color = color;
+      chip.textContent = color;
+      chip.style.cssText = 'cursor:pointer;padding:8px 12px;font-size:12px;';
+      chip.onclick = () => chip.classList.toggle('active');
+      colorChipsDiv.appendChild(chip);
+    });
+    dialogContainer.appendChild(colorChipsDiv);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'font-size:11px;padding:6px 12px;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;';
+    cancelBtn.onclick = () => {
+      document.body.removeChild(dialogContainer);
+      document.body.removeChild(overlay);
+    };
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save';
+    saveBtn.style.cssText = 'font-size:11px;padding:6px 12px;background:var(--theme-color);border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:600;';
+    saveBtn.onclick = () => {
+      const activeChips = colorChipsDiv.querySelectorAll('.color-chip.active');
+      const newOppColors = Array.from(activeChips).map(c => c.dataset.color).sort().join('');
+
+      if(newOppColors && newOppColors !== oldOppColors){
+        const evt = currentEvent();
+        const p = evt.players.find(x => x.id === player.id);
+        if(!p) return;
+        const d = p.decks.find(x => x.color === deck.color);
+        if(!d) return;
+
+        // Move all matches from old opponent to new opponent
+        if(d.matchups[oldOppColors]){
+          const oldMatchups = d.matchups[oldOppColors];
+
+          // Create new opponent group if doesn't exist
+          if(!d.matchups[newOppColors]){
+            d.matchups[newOppColors] = {wins: 0, losses: 0, history: []};
+          }
+
+          // Transfer stats and history
+          d.matchups[newOppColors].wins += oldMatchups.wins;
+          d.matchups[newOppColors].losses += oldMatchups.losses;
+
+          if(oldMatchups.history){
+            oldMatchups.history.forEach(match => {
+              match.opponentColors = newOppColors;
+              d.matchups[newOppColors].history.push(match);
+            });
+          }
+
+          // Delete old matchup group
+          delete d.matchups[oldOppColors];
+
+          openPlayerCard(p.id);
+          saveAll();
+        }
+      }
+
+      document.body.removeChild(dialogContainer);
+      document.body.removeChild(overlay);
+    };
+
+    btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(saveBtn);
+    dialogContainer.appendChild(btnRow);
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:99999;';
+    overlay.onclick = () => {
+      document.body.removeChild(dialogContainer);
+      document.body.removeChild(overlay);
+    };
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(dialogContainer);
+  }
+
+  function openMatchEditDialog(player, deck, match){
+    const pipUrls = {
+      'W': 'https://i.ibb.co/sJpHH9VZ/W.png',
+      'U': 'https://i.ibb.co/0bPLHLk/U.png',
+      'B': 'https://i.ibb.co/nM1ZZz3z/B.png',
+      'R': 'https://i.ibb.co/NnjxnmZv/R.png',
+      'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
+      'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
+    };
+
+    // Find the match div
+    const matchDiv = document.querySelector(`[data-match-id="${match.id}"][data-deck-color="${deck.color}"]`);
+    if(!matchDiv) return;
+
+    const originalHTML = matchDiv.innerHTML;
+    const oldOpponentColors = match.opponentColors;
+
+    // Create inline editing UI
+    matchDiv.innerHTML = '';
+    matchDiv.style.flexDirection = 'column';
+    matchDiv.style.gap = '6px';
+
+    const instructionDiv = document.createElement('div');
+    instructionDiv.style.cssText = 'font-size:9px;color:var(--muted);';
+    instructionDiv.textContent = 'Select new opponent colors:';
+    matchDiv.appendChild(instructionDiv);
+
+    const colorChipsDiv = document.createElement('div');
+    colorChipsDiv.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;';
+
+    // Create color chips
+    const currentColors = new Set(oldOpponentColors.split(''));
+    ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
+      const chip = document.createElement('div');
+      chip.className = 'color-chip';
+      if(currentColors.has(color)) chip.classList.add('active');
+      chip.dataset.color = color;
+      chip.textContent = color;
+      chip.style.cssText = 'cursor:pointer;padding:4px 8px;font-size:10px;';
+      chip.onclick = () => chip.classList.toggle('active');
+      colorChipsDiv.appendChild(chip);
+    });
+    matchDiv.appendChild(colorChipsDiv);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:6px;margin-top:4px;';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save';
+    saveBtn.style.cssText = 'font-size:9px;padding:3px 8px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;';
+    saveBtn.onclick = () => {
+      // Collect new opponent colors
+      const activeChips = colorChipsDiv.querySelectorAll('.color-chip.active');
+      const newOpponentColors = Array.from(activeChips).map(c => c.dataset.color).sort().join('');
+
+      if(newOpponentColors === oldOpponentColors){
+        // No change, just restore
+        matchDiv.innerHTML = originalHTML;
+        matchDiv.style.flexDirection = '';
+        matchDiv.style.gap = '';
+        return;
+      }
+
+      // Update matchup data
+      const evt = currentEvent();
+      const p = evt.players.find(x => x.id === player.id);
+      if(!p) return;
+      const d = p.decks.find(x => x.color === deck.color);
+      if(!d) return;
+
+      // Remove from old opponent group
+      if(d.matchups[oldOpponentColors]){
+        const history = d.matchups[oldOpponentColors].history;
+        const matchIndex = history.findIndex(m => m.id === match.id);
+        if(matchIndex >= 0){
+          const removedMatch = history.splice(matchIndex, 1)[0];
+
+          // Update wins/losses counts for old opponent
+          if(removedMatch.matchType === 'BO1'){
+            if(removedMatch.result === 'win'){
+              d.matchups[oldOpponentColors].wins = Math.max(0, d.matchups[oldOpponentColors].wins - 1);
+            } else {
+              d.matchups[oldOpponentColors].losses = Math.max(0, d.matchups[oldOpponentColors].losses - 1);
+            }
+          } else {
+            d.matchups[oldOpponentColors].wins = Math.max(0, d.matchups[oldOpponentColors].wins - removedMatch.wins);
+            d.matchups[oldOpponentColors].losses = Math.max(0, d.matchups[oldOpponentColors].losses - removedMatch.losses);
+          }
+
+          // Clean up empty matchup group
+          if(d.matchups[oldOpponentColors].wins === 0 && d.matchups[oldOpponentColors].losses === 0){
+            delete d.matchups[oldOpponentColors];
+          }
+        }
+      }
+
+      // Add to new opponent group (or skip if empty)
+      if(newOpponentColors){
+        if(!d.matchups[newOpponentColors]){
+          d.matchups[newOpponentColors] = {wins: 0, losses: 0, history: []};
+        }
+
+        // Update match data
+        match.opponentColors = newOpponentColors;
+
+        // Add to new opponent's history
+        d.matchups[newOpponentColors].history.push(match);
+
+        // Update wins/losses counts for new opponent
+        if(match.matchType === 'BO1'){
+          if(match.result === 'win'){
+            d.matchups[newOpponentColors].wins += 1;
+          } else {
+            d.matchups[newOpponentColors].losses += 1;
+          }
+        } else {
+          d.matchups[newOpponentColors].wins += match.wins;
+          d.matchups[newOpponentColors].losses += match.losses;
+        }
+      }
+
+      // Save and refresh
+      saveAll();
+      openPlayerCard(player.id); // Refresh the entire player card
+      log(`Updated match opponent colors from ${oldOpponentColors || 'none'} to ${newOpponentColors || 'none'} for ${player.name}'s ${deck.color} deck`);
+    };
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'font-size:9px;padding:3px 8px;background:rgba(255,255,255,0.1);border:none;border-radius:3px;color:var(--text);cursor:pointer;';
+    cancelBtn.onclick = () => {
+      matchDiv.innerHTML = originalHTML;
+      matchDiv.style.flexDirection = '';
+      matchDiv.style.gap = '';
+    };
+
+    btnRow.appendChild(saveBtn);
+    btnRow.appendChild(cancelBtn);
+    matchDiv.appendChild(btnRow);
+  }
+
+  exportPlayerDeckBtn.addEventListener('click',()=>{
+    if(currentPlayerCardId===null) return;
+    const evt = currentEvent();
+    const p = evt.players.find(x=>x.id===currentPlayerCardId);
+    if(!p) return;
+    exportDeckToClipboard(p, exportPlayerDeckBtn);
+  });
 
   toggleAfkBtn.addEventListener('click',()=>{
     if(currentPlayerCardId===null) return;
@@ -3197,6 +4700,322 @@
   closePlayerCardBtn.addEventListener('click',()=>{
     playerOverlay.classList.remove('show');
     currentPlayerCardId=null;
+    saveAll();
+  });
+
+  // Toggle deck list expand/collapse
+  deckSectionHeader.addEventListener('click', () => {
+    const collapsedRows = deckTableBody.querySelectorAll('.deck-row-collapsed');
+    if(collapsedRows.length === 0) return; // No rows to expand
+
+    const isCurrentlyCollapsed = collapsedRows[0].style.display === 'none';
+
+    collapsedRows.forEach(row => {
+      row.style.display = isCurrentlyCollapsed ? '' : 'none';
+    });
+
+    deckExpandIcon.textContent = isCurrentlyCollapsed ? '▲' : '▼';
+  });
+
+  // Leaderboard column sorting
+  document.querySelectorAll('.sortable-header[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const sortColumn = th.dataset.sort;
+
+      // If clicking the same column, toggle direction
+      if(currentSortColumn === sortColumn){
+        currentSortDirection = currentSortDirection === 'desc' ? 'asc' : 'desc';
+      }else{
+        // New column: default to descending (highest first)
+        currentSortColumn = sortColumn;
+        currentSortDirection = 'desc';
+      }
+
+      renderLeaderboard();
+    });
+  });
+
+  // Deck table column sorting
+  document.addEventListener('click', (e) => {
+    const th = e.target.closest('.sortable-header[data-deck-sort]');
+    if(!th) return;
+
+    const sortColumn = th.dataset.deckSort;
+
+    // If clicking the same column, toggle direction
+    if(currentDeckSortColumn === sortColumn){
+      currentDeckSortDirection = currentDeckSortDirection === 'desc' ? 'asc' : 'desc';
+    }else{
+      // New column: default to descending (highest first)
+      currentDeckSortColumn = sortColumn;
+      currentDeckSortDirection = 'desc';
+    }
+
+    // Refresh the currently open player card to apply new sorting
+    if(currentPlayerCardId !== null){
+      const evt = currentEvent();
+      const p = evt.players.find(x => x.id === currentPlayerCardId);
+      if(p) openPlayerCard(p.id);
+    }
+  });
+
+  // Open deck editor
+  function openDeckEditor(player, deck){
+    currentEditingPlayer = player;
+    currentEditingDeck = deck;
+
+    // Set color chips
+    deckEditorColorSet.clear();
+    Array.from(deckEditorColorChips.children).forEach(ch => ch.classList.remove('active'));
+    if(deck.color){
+      for(const c of deck.color){
+        deckEditorColorSet.add(c);
+        const chip = Array.from(deckEditorColorChips.children).find(ch => ch.dataset.color === c);
+        if(chip) chip.classList.add('active');
+      }
+    }
+
+    // Set wins/losses
+    deckEditorWins.value = deck.wins;
+    deckEditorLosses.value = deck.losses;
+
+    // Set match type
+    if(deck.lastBestOf){
+      deckEditorMatchType.value = deck.lastBestOf;
+    }
+
+    deckEditorOverlay.classList.add('show');
+  }
+
+  // Deck editor color chip toggling
+  deckEditorColorChips.addEventListener('click', e => {
+    const chip = e.target.closest('.color-chip');
+    if(!chip) return;
+    const c = chip.dataset.color;
+    if(deckEditorColorSet.has(c)){
+      deckEditorColorSet.delete(c);
+      chip.classList.remove('active');
+    }else{
+      deckEditorColorSet.add(c);
+      chip.classList.add('active');
+    }
+  });
+
+  // Deck editor +/- buttons
+  deckEditorWinsUp.addEventListener('click', () => {
+    deckEditorWins.value = Math.max(0, parseInt(deckEditorWins.value, 10) || 0) + 1;
+  });
+  deckEditorWinsDown.addEventListener('click', () => {
+    deckEditorWins.value = Math.max(0, (parseInt(deckEditorWins.value, 10) || 0) - 1);
+  });
+  deckEditorLossesUp.addEventListener('click', () => {
+    deckEditorLosses.value = Math.max(0, parseInt(deckEditorLosses.value, 10) || 0) + 1;
+  });
+  deckEditorLossesDown.addEventListener('click', () => {
+    deckEditorLosses.value = Math.max(0, (parseInt(deckEditorLosses.value, 10) || 0) - 1);
+  });
+
+  // Save deck changes
+  deckEditorSaveBtn.addEventListener('click', () => {
+    if(!currentEditingPlayer || !currentEditingDeck) return;
+
+    const newColors = Array.from(deckEditorColorSet).join('');
+    const newWins = Math.max(0, parseInt(deckEditorWins.value, 10) || 0);
+    const newLosses = Math.max(0, parseInt(deckEditorLosses.value, 10) || 0);
+    const newMatchType = deckEditorMatchType.value;
+
+    // Calculate the delta for overall stats
+    const winsDelta = newWins - currentEditingDeck.wins;
+    const lossesDelta = newLosses - currentEditingDeck.losses;
+
+    // Update overall stats
+    currentEditingPlayer.overallWins += winsDelta;
+    currentEditingPlayer.overallLosses += lossesDelta;
+
+    // If colors changed, we need to move the deck
+    if(newColors !== currentEditingDeck.color){
+      // Remove old deck
+      const idx = currentEditingPlayer.decks.indexOf(currentEditingDeck);
+      if(idx >= 0){
+        currentEditingPlayer.decks.splice(idx, 1);
+      }
+
+      // Find or create deck with new colors
+      let targetDeck = currentEditingPlayer.decks.find(d => d.color === newColors);
+      if(!targetDeck){
+        targetDeck = {color: newColors, wins: 0, losses: 0, lastBestOf: null, matchups: {}};
+        currentEditingPlayer.decks.push(targetDeck);
+      }
+      targetDeck.wins += newWins;
+      targetDeck.losses += newLosses;
+      targetDeck.lastBestOf = newMatchType;
+
+      log(`${currentEditingPlayer.name}: Moved deck ${currentEditingDeck.color} → ${newColors} (${newWins}W/${newLosses}L)`);
+    }else{
+      // Just update the existing deck
+      currentEditingDeck.wins = newWins;
+      currentEditingDeck.losses = newLosses;
+      currentEditingDeck.lastBestOf = newMatchType;
+
+      log(`${currentEditingPlayer.name}: Updated deck ${currentEditingDeck.color} to ${newWins}W/${newLosses}L`);
+    }
+
+    deckEditorOverlay.classList.remove('show');
+    currentEditingPlayer = null;
+    currentEditingDeck = null;
+    renderLeaderboard();
+    saveAll();
+
+    // Refresh player card if it's still open
+    if(currentPlayerCardId !== null){
+      const evt = currentEvent();
+      const p = evt.players.find(x => x.id === currentPlayerCardId);
+      if(p) showPlayerCard(p);
+    }
+  });
+
+  // Delete deck
+  deckEditorDeleteBtn.addEventListener('click', () => {
+    if(!currentEditingPlayer || !currentEditingDeck) return;
+    if(!confirm(`Delete ${currentEditingDeck.color} deck (${currentEditingDeck.wins}W/${currentEditingDeck.losses}L)?`)) return;
+
+    // Update overall stats
+    currentEditingPlayer.overallWins -= currentEditingDeck.wins;
+    currentEditingPlayer.overallLosses -= currentEditingDeck.losses;
+
+    // Remove deck
+    const idx = currentEditingPlayer.decks.indexOf(currentEditingDeck);
+    if(idx >= 0){
+      currentEditingPlayer.decks.splice(idx, 1);
+      log(`${currentEditingPlayer.name}: Deleted deck ${currentEditingDeck.color}`);
+    }
+
+    deckEditorOverlay.classList.remove('show');
+    currentEditingPlayer = null;
+    currentEditingDeck = null;
+    renderLeaderboard();
+    saveAll();
+
+    // Refresh player card if it's still open
+    if(currentPlayerCardId !== null){
+      const evt = currentEvent();
+      const p = evt.players.find(x => x.id === currentPlayerCardId);
+      if(p) showPlayerCard(p);
+    }
+  });
+
+  // Close deck editor
+  closeDeckEditorBtn.addEventListener('click', () => {
+    deckEditorOverlay.classList.remove('show');
+    currentEditingPlayer = null;
+    currentEditingDeck = null;
+    saveAll();
+  });
+
+  // Close deck editor when clicking outside
+  deckEditorOverlay.addEventListener('click', (e) => {
+    if(e.target === deckEditorOverlay){
+      deckEditorOverlay.classList.remove('show');
+      currentEditingPlayer = null;
+      currentEditingDeck = null;
+    }
+  });
+
+  // Deck Import - Color chip selection
+  deckImportColorChips.addEventListener('click', e => {
+    const chip = e.target.closest('.color-chip');
+    if(!chip) return;
+    const c = chip.dataset.color;
+    if(deckImportColorSet.has(c)){
+      deckImportColorSet.delete(c);
+      chip.classList.remove('active');
+    }else{
+      deckImportColorSet.add(c);
+      chip.classList.add('active');
+    }
+  });
+
+  // Deck Import - Import from clipboard
+  deckImportSaveBtn.addEventListener('click', async () => {
+    if(!pendingImportPlayer) return;
+
+    // Must select at least one color
+    if(deckImportColorSet.size === 0){
+      alert('Please select at least one color for the deck identity.');
+      return;
+    }
+
+    // Read deck list from clipboard
+    let deckText = '';
+    try {
+      deckText = await navigator.clipboard.readText();
+    } catch(err) {
+      console.error('Failed to read clipboard:', err);
+      alert('Failed to read from clipboard. Please ensure you have copied your deck list.');
+      return;
+    }
+
+    if(!deckText || deckText.trim().length === 0){
+      alert('Clipboard is empty. Please copy your MTG Arena deck list first.');
+      return;
+    }
+
+    const evt = currentEvent();
+    const player = evt.players.find(p => p.id === pendingImportPlayer.id);
+    if(!player) return;
+
+    // Get selected colors in WUBRG order
+    const colors = Array.from(deckImportColorSet).sort((a,b) => {
+      const order = ['W','U','B','R','G','C'];
+      return order.indexOf(a) - order.indexOf(b);
+    }).join('');
+
+    // Check for duplicate name:color combination
+    const fullName = `${player.baseName}:${colors}`;
+    const duplicate = evt.players.find(p =>
+      p.id !== player.id && p.name.toLowerCase() === fullName.toLowerCase()
+    );
+    if(duplicate){
+      alert(`${fullName} is already in the queue. Please use a different color identity or player name.`);
+      return;
+    }
+
+    // Update player with color identity
+    player.name = fullName;
+    player.colorIdentity = colors;
+    player.deckList = deckText.trim();
+
+    // Create initial deck entry
+    player.decks.push({
+      color: colors,
+      wins: 0,
+      losses: 0,
+      matchups: {},
+      lastBestOf: 'BO3'
+    });
+
+    log(`Imported ${colors} deck for ${player.baseName}`);
+
+    deckImportOverlay.classList.remove('show');
+    pendingImportPlayer = null;
+    renderLeaderboard();
+    saveAll();
+  });
+
+  // Deck Import - Skip (removes player from queue)
+  deckImportSkipBtn.addEventListener('click', () => {
+    if(pendingImportPlayer){
+      const evt = currentEvent();
+      const idx = evt.players.findIndex(p => p.id === pendingImportPlayer.id);
+      if(idx >= 0){
+        const removed = evt.players.splice(idx, 1)[0];
+        log(`${removed.baseName || removed.name} skipped deck import and was removed.`);
+      }
+    }
+    deckImportOverlay.classList.remove('show');
+    pendingImportPlayer = null;
+    renderLeaderboard();
+    saveAll();
   });
 
   // Close player card when clicking outside
@@ -3218,6 +5037,10 @@
     pendingWinner = player;
     currentWinnerMeta = {reason,hits};
     winnerLunaSticker.style.display = isLuna ? 'block' : 'none';
+
+    // Show export button if player has a deck list
+    winnerExportBtn.style.display = hasValidDeckList(player) ? 'inline-block' : 'none';
+
     winnerNameEl.textContent = player.name;
     if(reason==='luna'){
       winnerHeading.textContent = 'LUNA LUCK!';
@@ -3241,6 +5064,93 @@
     winnerOverlay.classList.add('show');
   }
 
+  // Generate dynamic opponent color selectors based on match type and game count
+  function regenerateOpponentColorSelectors(){
+    const wins = Math.max(0, parseInt(runWinsInput.value, 10) || 0);
+    const losses = Math.max(0, parseInt(runLossesInput.value, 10) || 0);
+    const activeMatchType = matchTypeChoice.querySelector('.queue-chip.active');
+    const matchType = activeMatchType ? activeMatchType.dataset.matchType : 'BO3';
+    const totalGames = wins + losses;
+
+    // Clear existing content
+    opponentColorsContainer.innerHTML = '';
+
+    if(matchType === 'BO1'){
+      // BO1: One opponent color selector per game
+      if(totalGames === 0){
+        opponentColorsContainer.innerHTML = '<div class="finish-label" style="color:var(--muted);font-size:11px;">Add wins/losses to track opponents</div>';
+        return;
+      }
+
+      // Limit to prevent DOM overflow (max 20 games per BO1 run)
+      const MAX_BO1_GAMES = 20;
+      if(totalGames > MAX_BO1_GAMES){
+        opponentColorsContainer.innerHTML = `<div class="finish-label" style="color:var(--muted);font-size:11px;">Max ${MAX_BO1_GAMES} games per BO1 run. Please adjust wins/losses.</div>`;
+        return;
+      }
+
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'finish-label';
+      labelDiv.textContent = 'Opponent Colors (Optional - one per game)';
+      opponentColorsContainer.appendChild(labelDiv);
+
+      // Create scrollable container for opponent groups
+      const scrollContainer = document.createElement('div');
+      scrollContainer.style.cssText = 'max-height:300px;overflow-y:auto;overflow-x:hidden;margin-top:8px;padding-right:4px;';
+      scrollContainer.className = 'opponent-scroll-container';
+
+      for(let i = 0; i < totalGames; i++){
+        const gameLabel = i < wins ? `Win ${i + 1}` : `Loss ${i - wins + 1}`;
+        const gameDiv = document.createElement('div');
+        gameDiv.className = 'opponent-game-group';
+        gameDiv.style.cssText = 'margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:4px;';
+
+        const gameLabelDiv = document.createElement('div');
+        gameLabelDiv.textContent = gameLabel;
+        gameLabelDiv.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:4px;';
+
+        const chipsDiv = document.createElement('div');
+        chipsDiv.className = 'opponent-color-chips';
+        chipsDiv.dataset.gameIndex = i;
+        chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;';
+
+        // Create color chips
+        ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
+          const chip = document.createElement('div');
+          chip.className = 'color-chip';
+          chip.dataset.color = color;
+          chip.textContent = color;
+          chipsDiv.appendChild(chip);
+        });
+
+        gameDiv.appendChild(gameLabelDiv);
+        gameDiv.appendChild(chipsDiv);
+        scrollContainer.appendChild(gameDiv);
+      }
+
+      opponentColorsContainer.appendChild(scrollContainer);
+    } else {
+      // BO3/BO5: Single opponent color selector for the entire match
+      opponentColorsContainer.innerHTML = '<div class="finish-label">Opponent Colors (Optional)</div>';
+
+      const chipsDiv = document.createElement('div');
+      chipsDiv.className = 'opponent-color-chips';
+      chipsDiv.dataset.gameIndex = 'match'; // Special marker for match-level
+      chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;justify-content:center;';
+
+      // Create color chips
+      ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
+        const chip = document.createElement('div');
+        chip.className = 'color-chip';
+        chip.dataset.color = color;
+        chip.textContent = color;
+        chipsDiv.appendChild(chip);
+      });
+
+      opponentColorsContainer.appendChild(chipsDiv);
+    }
+  }
+
   function finishRunPrompt(player){
     const evt = currentEvent();
     const hits = (currentWinnerMeta && currentWinnerMeta.hits) || 3;
@@ -3252,8 +5162,20 @@
     runWinsInput.value = "0";
     runLossesInput.value = "0";
     updateResultsDisplay();
+
+    // Use stored color identity from player
     selectedColorSet = new Set();
-    Array.from(colorChips.children).forEach(ch=>ch.classList.remove('active'));
+    if(player.colorIdentity){
+      for(const c of player.colorIdentity){
+        selectedColorSet.add(c);
+      }
+    }
+
+    // Reset match type to BO3
+    Array.from(matchTypeChoice.children).forEach(ch=>{
+      ch.classList.toggle('active', ch.dataset.matchType === 'BO3');
+    });
+    regenerateOpponentColorSelectors(); // Generate initial opponent selectors
     queueReaddChoice = 'yes';
     Array.from(queueChoice.children).forEach(ch=>{
       ch.classList.toggle('active', ch.dataset.choice === 'yes');
@@ -3272,6 +5194,20 @@
     const p=pendingWinner;
     pendingWinner=null;
     winnerOverlay.classList.remove('show');
+    hasUnreportedGame = true;
+    unreportedGamePlayer = p;
+    finishRunPrompt(p);
+  });
+
+  winnerExportBtn.addEventListener('click',()=>{
+    if(!pendingWinner) return;
+    const p = pendingWinner;
+    exportDeckToClipboard(p, winnerExportBtn);
+    // Also trigger report dialog
+    pendingWinner = null;
+    winnerOverlay.classList.remove('show');
+    hasUnreportedGame = true;
+    unreportedGamePlayer = p;
     finishRunPrompt(p);
   });
 
@@ -3283,22 +5219,20 @@
       if(idx>=0) evt.players.splice(idx,1);
     }
     pendingWinner=null;
+    hasUnreportedGame = false;
+    unreportedGamePlayer = null;
     winnerOverlay.classList.remove('show');
     renderLeaderboard();
     saveAll();
   });
 
-  colorChips.addEventListener('click',e=>{
+  // Color chip selection removed - color identity now stored with player during import
+
+  // Event delegation for dynamically generated opponent color chips
+  opponentColorsContainer.addEventListener('click',e=>{
     const chip = e.target.closest('.color-chip');
     if(!chip) return;
-    const c = chip.dataset.color;
-    if(selectedColorSet.has(c)){
-      selectedColorSet.delete(c);
-      chip.classList.remove('active');
-    }else{
-      selectedColorSet.add(c);
-      chip.classList.add('active');
-    }
+    chip.classList.toggle('active');
   });
 
   queueChoice.addEventListener('click',e=>{
@@ -3321,6 +5255,9 @@
 
   finishCancelBtn.addEventListener('click',()=>{
     finishOverlay.classList.remove('show');
+    // Note: Don't clear hasUnreportedGame here - user still needs to report
+    // The unreported game check will re-trigger on next spin attempt
+    saveAll();
   });
 
   finishSaveBtn.addEventListener('click',()=>{
@@ -3342,7 +5279,20 @@
     const wins = Math.max(0,parseInt(runWinsInput.value,10)||0);
     const losses = Math.max(0,parseInt(runLossesInput.value,10)||0);
     const colors = Array.from(selectedColorSet).join('');  // Keep input order, don't sort
-    const matchType = matchTypeSelect ? matchTypeSelect.value : 'BO3';
+    const activeMatchType = matchTypeChoice.querySelector('.queue-chip.active');
+    const matchType = activeMatchType ? activeMatchType.dataset.matchType : 'BO3';
+
+    // Collect opponent colors from dynamic selectors
+    let opponentColorsByGame = []; // Array for BO1, single element for BO3/BO5
+    const opponentChipGroups = opponentColorsContainer.querySelectorAll('.opponent-color-chips');
+    opponentChipGroups.forEach(group => {
+      const activeChips = Array.from(group.querySelectorAll('.color-chip.active'));
+      const gameColors = activeChips.map(chip => chip.dataset.color).sort().join('');
+      if(gameColors){
+        opponentColorsByGame.push(gameColors);
+      }
+    });
+
     player.overallWins += wins;
     player.overallLosses += losses;
     if(colors){
@@ -3365,12 +5315,65 @@
             log(`${player.name} reached 32 deck limit. Removed deck ${toRemove.color} (lowest win rate).`);
           }
         }
-        deck = {color:colors,wins:0,losses:0,lastBestOf:null};
+        deck = {color:colors,wins:0,losses:0,lastBestOf:null,matchups:{}};
         player.decks.push(deck);
       }
       deck.wins += wins;
       deck.losses += losses;
       deck.lastBestOf = matchType;
+
+      // Track matchup data against opponent colors if provided
+      if(opponentColorsByGame.length > 0){
+        if(!deck.matchups) deck.matchups = {};  // Initialize if old deck doesn't have matchups
+        const timestamp = Date.now();
+
+        if(matchType === 'BO1'){
+          // BO1: Track each game individually
+          opponentColorsByGame.forEach((oppColors, index) => {
+            if(!deck.matchups[oppColors]){
+              deck.matchups[oppColors] = {wins:0, losses:0, history:[]};
+            }
+            if(!deck.matchups[oppColors].history) deck.matchups[oppColors].history = []; // Migrate old data
+
+            // First 'wins' games are wins, remaining are losses
+            const isWin = index < wins;
+            if(isWin){
+              deck.matchups[oppColors].wins += 1;
+            } else {
+              deck.matchups[oppColors].losses += 1;
+            }
+
+            // Record individual game in history
+            deck.matchups[oppColors].history.push({
+              id: `${timestamp}_${index}`,
+              timestamp: timestamp + index, // Slight offset to maintain order
+              result: isWin ? 'win' : 'loss',
+              matchType: matchType,
+              opponentColors: oppColors
+            });
+          });
+        } else {
+          // BO3/BO5: Track entire match against single opponent
+          const opponentColors = opponentColorsByGame[0]; // Only one opponent for match
+          if(!deck.matchups[opponentColors]){
+            deck.matchups[opponentColors] = {wins:0, losses:0, history:[]};
+          }
+          if(!deck.matchups[opponentColors].history) deck.matchups[opponentColors].history = []; // Migrate old data
+
+          deck.matchups[opponentColors].wins += wins;
+          deck.matchups[opponentColors].losses += losses;
+
+          // Record match in history (single entry for entire match)
+          deck.matchups[opponentColors].history.push({
+            id: `${timestamp}`,
+            timestamp: timestamp,
+            wins: wins,
+            losses: losses,
+            matchType: matchType,
+            opponentColors: opponentColors
+          });
+        }
+      }
     }
     const hits = (currentWinnerMeta && currentWinnerMeta.hits) || 3;
     const bonus = hits>=5 ? 2 : hits===4 ? 1 : 0;
@@ -3434,16 +5437,73 @@
       player.status='afk';
       log(`${player.name} marked as AFK.`);
     }
-    log(`Reported run for ${player.name}: ${wins}W/${losses}L, colors=${colors||'none'}, type=${matchType}`);
+    // Convert colors to mana symbol icons
+    const pipUrls = {
+      'W': 'https://i.ibb.co/sJpHH9VZ/W.png',
+      'U': 'https://i.ibb.co/0bPLHLk/U.png',
+      'B': 'https://i.ibb.co/nM1ZZz3z/B.png',
+      'R': 'https://i.ibb.co/NnjxnmZv/R.png',
+      'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
+      'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
+    };
+    let colorDisplay = 'none';
+    if(colors){
+      const colorIcons = colors.split('').map(c =>
+        pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 1px;" alt="${c}"/>` : c
+      ).join('');
+      colorDisplay = colorIcons;
+    }
+    let opponentDisplay = '';
+    if(opponentColorsByGame.length > 0){
+      if(matchType === 'BO1'){
+        // Show each game's opponent for BO1
+        const gameOppDisplays = opponentColorsByGame.map((oppColors, index) => {
+          const oppColorIcons = oppColors.split('').map(c =>
+            pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 1px;" alt="${c}"/>` : c
+          ).join('');
+          const gameLabel = index < wins ? `W${index + 1}` : `L${index - wins + 1}`;
+          return `${gameLabel}:${oppColorIcons}`;
+        }).join(', ');
+        opponentDisplay = ` vs. [${gameOppDisplays}]`;
+      } else {
+        // Show single opponent for BO3/BO5
+        const oppColors = opponentColorsByGame[0];
+        const oppColorIcons = oppColors.split('').map(c =>
+          pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 1px;" alt="${c}"/>` : c
+        ).join('');
+        opponentDisplay = ` vs. ${oppColorIcons}`;
+      }
+    }
+    const themeName = colors ? getColorThemeName(colors) : '';
+    const themeDisplay = themeName ? ` (Theme ${themeName})` : '';
+    log(`Reported run for ${player.name}: ${wins}W/${losses}L, ${colorDisplay}${themeDisplay}${opponentDisplay}, type=${matchType}`);
     evt.currentRun=null;
     finishOverlay.classList.remove('show');
     finishSaveBtn.disabled = false;
+
+    // Clear unreported game flag
+    hasUnreportedGame = false;
+    unreportedGamePlayer = null;
+
     renderLeaderboard();
     saveAll();
   });
 
   function performSpin(){
     const evt = currentEvent();
+
+    // Reset sort to default (highest probability at top)
+    currentSortColumn = 'total';
+    currentSortDirection = 'desc';
+
+    // Check for unreported game before allowing spin
+    if(hasUnreportedGame && unreportedGamePlayer){
+      smallStatus.textContent = "Please report previous game results first.";
+      log(`<span style="color:var(--gold);">⚠️ Unreported game detected - please report ${unreportedGamePlayer.name}'s results before spinning again.</span>`);
+      finishRunPrompt(unreportedGamePlayer);
+      return;
+    }
+
     if(evt.currentRun){
       smallStatus.textContent = "Finish current run before next spin.";
       finishOverlay.classList.add('show');
@@ -3479,17 +5539,11 @@
       return;
     }
 
-    // Back-to-back cooldown: Force dead spin after winner (ultra-rare exception: 1/2500)
-    let forceDead = false;
-    if(evt.lastSpinWasWinner){
-      const backToBackChance = 1/2500;
-      if(Math.random() >= backToBackChance){
-        forceDead = true;
-      }
-    }
-
     // Dead spin guardrail - guarantee natural-looking win after too many dead spins
-    const maxDeadStreak = getMaxDeadStreakAllowed(activePlayers.length);
+    // Add variance (±1-2 spins) to prevent predictable patterns
+    const baseMaxDeadStreak = getMaxDeadStreakAllowed(activePlayers.length);
+    const variance = activePlayers.length <= 15 ? 1 : 2; // Larger groups get more variance
+    const maxDeadStreak = baseMaxDeadStreak + Math.floor(Math.random() * (variance * 2 + 1)) - variance;
     const guaranteeWin = evt.deadSpinStreak >= maxDeadStreak;
 
     spinBtn.disabled=true;
@@ -3498,7 +5552,7 @@
     smallStatus.textContent="Spinning…";
 
     // Build spin result immediately (for timing calculation)
-    const symbols = buildSpinResult(evt, guaranteeWin, forceDead);
+    const symbols = buildSpinResult(evt, guaranteeWin, false);
     const isCarlo = detectCarlo(symbols);
     let isLunaWin = false;
     const lunaPick = detectLunaWinner(evt,symbols);
@@ -3518,8 +5572,7 @@
       // Log Luna appearances (regardless of win/loss)
       const lunaCount = symbols.filter(s => s.type === 'luna').length;
       if(lunaCount > 0){
-        const appearanceText = lunaCount === 1 ? 'appearance' : 'appearances';
-        log(`<span style="color:#f973fa;font-weight:600;">Luna made ${lunaCount} ${appearanceText}</span>`);
+        log(`<span style="color:#f973fa;font-weight:600;">Luna has appeared</span>`);
       }
 
       const reelPlayers=[];
@@ -3620,9 +5673,9 @@
   });
 
   helpBtn.addEventListener('click',()=>helpOverlay.classList.add('show'));
-  closeHelpBtn.addEventListener('click',()=>helpOverlay.classList.remove('show'));
+  closeHelpBtn.addEventListener('click',()=>{helpOverlay.classList.remove('show');saveAll();});
   diagBtn.addEventListener('click',()=>diagOverlay.classList.add('show'));
-  closeDiagBtn.addEventListener('click',()=>diagOverlay.classList.remove('show'));
+  closeDiagBtn.addEventListener('click',()=>{diagOverlay.classList.remove('show');saveAll();});
   exportBtn.addEventListener('click',()=>{
     const exportData = {
       version: '1.0',
@@ -3668,6 +5721,7 @@
             applyTheme(colorMap[themeMatch[1]]);
           }
         }
+        logEl.innerHTML = ''; // Clear history log before import
         log('Session imported successfully.');
         renderEvents();
         renderLeaderboard();
@@ -3680,8 +5734,43 @@
     importFileInput.value = '';
   });
 
+  // Factory Reset - Show modal
   resetEventBtn.addEventListener('click',()=>{
-    if(!confirm("Factory reset this session? All players and stats will be lost."))return;
+    factoryResetInput.value = '';
+    factoryResetConfirmBtn.disabled = true;
+    factoryResetConfirmBtn.style.opacity = '0.3';
+    factoryResetConfirmBtn.style.cursor = 'not-allowed';
+    factoryResetOverlay.classList.add('show');
+  });
+
+  // Factory Reset - Input validation
+  factoryResetInput.addEventListener('input', (e) => {
+    const isValid = e.target.value.toUpperCase() === 'RESET';
+    factoryResetConfirmBtn.disabled = !isValid;
+    factoryResetConfirmBtn.style.opacity = isValid ? '1' : '0.3';
+    factoryResetConfirmBtn.style.cursor = isValid ? 'pointer' : 'not-allowed';
+  });
+
+  // Factory Reset - Cancel
+  factoryResetCancelBtn.addEventListener('click', () => {
+    factoryResetOverlay.classList.remove('show');
+  });
+
+  // Factory Reset - Confirm and execute
+  factoryResetConfirmBtn.addEventListener('click', () => {
+    if(factoryResetInput.value.toUpperCase() !== 'RESET') return;
+
+    // Clear all commanderPod localStorage keys
+    const keysToRemove = [];
+    for(let i = 0; i < localStorage.length; i++){
+      const key = localStorage.key(i);
+      if(key && key.startsWith('commanderPod_')){
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    // Reset in-memory state
     state.events[state.currentEventIndex]={
       players:[],
       spinCount:0,
@@ -3690,9 +5779,16 @@
       carloHits:0,
       lunaHits:0
     };
-    log('Session reset.');
-    renderLeaderboard();
-    saveAll();
+    logEl.innerHTML = ''; // Clear history log
+
+    // Set factory reset flag
+    localStorage.setItem('commanderPod_factory_reset', Date.now().toString());
+
+    log('Factory reset complete. Reloading...');
+    factoryResetOverlay.classList.remove('show');
+
+    // Force reload to ensure clean slate
+    setTimeout(() => window.location.reload(), 500);
   });
 
   runDiagNowBtn.addEventListener('click',()=>{
@@ -3703,21 +5799,35 @@
       return;
     }
     const sim = runDiagnosticsSimulation(evt,300);
-    const passWins = sim.wins>=100;
-    const passCarlo = sim.carlo>=4;
-    const passLuna = sim.luna>=10;
-    const passFourKind = sim.fourKind>=2;
-    const passFiveKind = sim.fiveKind>=1;
+    // Dynamic thresholds based on player count and dead spin guardrails
+    const playerCount = players.length;
+    const maxDeadStreak = getMaxDeadStreakAllowed(playerCount);
+
+    // Expected wins: With faster ticket growth, expect more natural wins + guardrail baseline
+    // For 20-25 players: maxDeadStreak=7, so ~42 guardrail wins + natural wins = ~50-60 total
+    const minWinsFromGuardrail = Math.floor(300 / maxDeadStreak);
+    const expectedWins = Math.max(30, Math.floor(minWinsFromGuardrail * 1.3)); // 30% buffer for natural wins
+
+    const expectedCarlos = 0; // CARLO is extremely rare - bonus jackpot, not balance requirement
+    const expectedLuna = Math.max(3, Math.floor(playerCount * 0.2)); // Reduced from 0.25
+    const expectedFourKind = Math.max(1, Math.floor(playerCount * 0.12)); // Increased for better scaling
+    const expectedFiveKind = playerCount <= 15 ? 0 : 1; // Only expect 5oak with larger groups
+
+    const passWins = sim.wins >= expectedWins;
+    const passCarlo = sim.carlo >= expectedCarlos; // Always pass - CARLO is a bonus jackpot
+    const passLuna = sim.luna >= expectedLuna;
+    const passFourKind = sim.fourKind >= expectedFourKind;
+    const passFiveKind = sim.fiveKind >= expectedFiveKind;
     const ignitedRate = (sim.ignitedWins / 300 * 100).toFixed(1);
     const passIgnited = sim.ignitedWins <= 30; // Less than 10% is good
     const allPass = passWins && passCarlo && passLuna && passFourKind && passFiveKind && passIgnited;
     diagResult.innerHTML = `
       <div><strong>Simulated 300 spins (Hypergeometric):</strong></div>
-      <div>Total wins: ${sim.wins} ${passWins?'<span class="pass">(≥100 ✓)</span>':'<span class="warn">(Need ≥100)</span>'}</div>
-      <div>CARLO jackpots: ${sim.carlo} ${passCarlo?'<span class="pass">(≥4 ✓)</span>':'<span class="warn">(Need ≥4)</span>'}</div>
-      <div>Luna Luck wins: ${sim.luna} ${passLuna?'<span class="pass">(≥10 ✓)</span>':'<span class="warn">(Need ≥10)</span>'}</div>
-      <div>4-of-a-kind: ${sim.fourKind} ${passFourKind?'<span class="pass">(≥2 ✓)</span>':'<span class="warn">(Need ≥2)</span>'}</div>
-      <div>5-of-a-kind: ${sim.fiveKind} ${passFiveKind?'<span class="pass">(≥1 ✓)</span>':'<span class="warn">(Need ≥1)</span>'}</div>
+      <div>Total wins: ${sim.wins} ${passWins?'<span class="pass">(≥'+expectedWins+' ✓)</span>':'<span class="warn">(Need ≥'+expectedWins+')</span>'}</div>
+      <div>CARLO jackpots: ${sim.carlo} ${passCarlo?'<span class="pass">(≥'+expectedCarlos+' ✓)</span>':'<span class="warn">(Need ≥'+expectedCarlos+')</span>'}</div>
+      <div>Luna Luck wins: ${sim.luna} ${passLuna?'<span class="pass">(≥'+expectedLuna+' ✓)</span>':'<span class="warn">(Need ≥'+expectedLuna+')</span>'}</div>
+      <div>4-of-a-kind: ${sim.fourKind} ${passFourKind?'<span class="pass">(≥'+expectedFourKind+' ✓)</span>':'<span class="warn">(Need ≥'+expectedFourKind+')</span>'}</div>
+      <div>5-of-a-kind: ${sim.fiveKind} ${passFiveKind?'<span class="pass">(≥'+expectedFiveKind+' ✓)</span>':'<span class="warn">(Need ≥'+expectedFiveKind+')</span>'}</div>
       <div>Ignited wins: ${sim.ignitedWins} (${ignitedRate}%) ${passIgnited?'<span class="pass">(≤10% ✓)</span>':'<span class="warn">(>10% - too many)</span>'}</div>
       <div style="margin-top:8px;font-weight:700;">${allPass?'<span class="pass">All checks PASSED ✓</span>':'<span class="warn">Some checks FAILED</span>'}</div>
     `;
@@ -3862,15 +5972,26 @@
 
     // Save to localStorage
     localStorage.setItem('carlo_theme_multi', JSON.stringify(Array.from(selectedColors)));
+    saveAll();
   }
 
   // MTG Color Identity Mappings - Proper ordering for all combinations
+  // Theme gradient colors for animated borders (visible colors)
   const COLOR_HEX = {
-    'W': '#fefce8',
-    'U': '#38bdf8',
-    'B': '#4b5563',
-    'R': '#fb4b4b',
-    'G': '#22c55e'
+    'W': '#fefce8',  // White/cream
+    'U': '#38bdf8',  // Blue
+    'B': '#c084fc',  // Purple (B theme color)
+    'R': '#fb4b4b',  // Red
+    'G': '#22c55e'   // Green
+  };
+
+  // Shadow colors for independent moving shadow animation layer
+  const SHADOW_HEX = {
+    'W': '#ffffff',  // White shadow
+    'U': '#0ea5e9',  // Blue shadow (darker)
+    'B': '#000000',  // Black shadow
+    'R': '#dc2626',  // Red shadow (darker)
+    'G': '#16a34a'   // Green shadow (darker)
   };
 
   const MTG_COLOR_ORDERS = {
@@ -3926,7 +6047,9 @@
     // No colors selected - default to white glow
     if(selectedColors.size === 0){
       const whiteGradient = 'linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff)';
+      const whiteShadow = 'linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff)';
       document.documentElement.style.setProperty('--gradient-border', whiteGradient);
+      document.documentElement.style.setProperty('--gradient-shadow', whiteShadow);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
       document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg, #ffffff 0deg 60deg, transparent 60deg 120deg, #ffffff 120deg 180deg, transparent 180deg 240deg, #ffffff 240deg 300deg, transparent 300deg 360deg)`);
       document.documentElement.style.setProperty('--theme-glow', 'rgba(255,255,255,0.4)');
@@ -3938,12 +6061,15 @@
     const identityKey = getColorIdentityKey(selectedColors);
     const colorOrder = MTG_COLOR_ORDERS[identityKey] || Array.from(selectedColors);
     const colors = colorOrder.map(code => COLOR_HEX[code]);
+    const shadows = colorOrder.map(code => SHADOW_HEX[code]);
 
     // All 5 selected = gold with WUBRG order
     if(selectedColors.size === 5){
       const allColors = colors.join(', ');
+      const allShadows = shadows.join(', ');
       document.documentElement.style.setProperty('--multi-theme-gradient', '#fcd34d');
       document.documentElement.style.setProperty('--gradient-border', `linear-gradient(90deg, ${allColors}, ${allColors})`);
+      document.documentElement.style.setProperty('--gradient-shadow', `linear-gradient(90deg, ${allShadows}, ${allShadows})`);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
       document.documentElement.style.setProperty('--button-text-color', `linear-gradient(90deg, ${allColors})`);
       document.documentElement.style.setProperty('--button-text-is-gradient', '1');
@@ -3963,13 +6089,18 @@
     // Create animated gradient with proper MTG color order
     if(colors.length > 1){
       const gradient = `linear-gradient(90deg, ${colors.join(', ')}, ${colors.join(', ')})`;
+      const shadowGradient = `linear-gradient(90deg, ${shadows.join(', ')}, ${shadows.join(', ')})`;
       document.documentElement.style.setProperty('--multi-theme-gradient', gradient);
       document.documentElement.style.setProperty('--gradient-border', gradient);
+      document.documentElement.style.setProperty('--gradient-shadow', shadowGradient);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
     } else {
-      const singleColorGradient = `linear-gradient(90deg, ${colors[0]}, ${colors[0]}, ${colors[0]})`;
+      // Mono-colored theme: animate from theme color to black and back
+      const singleColorGradient = `linear-gradient(90deg, ${colors[0]}, ${colors[0]}, #000000, #000000, ${colors[0]}, ${colors[0]})`;
+      const singleShadowGradient = `linear-gradient(90deg, ${shadows[0]}, ${shadows[0]}, #000000, #000000, ${shadows[0]}, ${shadows[0]})`;
       document.documentElement.style.setProperty('--multi-theme-gradient', singleColorGradient);
       document.documentElement.style.setProperty('--gradient-border', singleColorGradient);
+      document.documentElement.style.setProperty('--gradient-shadow', singleShadowGradient);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
     }
 
@@ -4019,6 +6150,44 @@
   }
 
   function init(){
+    // Check if factory reset was just performed
+    const resetFlag = localStorage.getItem('commanderPod_factory_reset');
+    if(resetFlag){
+      localStorage.removeItem('commanderPod_factory_reset');
+      // Skip session check, start fresh
+      initBulbs();
+      setupReelsPlaceholder();
+      renderEvents();
+      renderLeaderboard();
+      loadTheme();
+      timeTimer = setInterval(renderLeaderboard, 30000);
+      return;
+    }
+
+    // Check for existing session
+    const sessionState = localStorage.getItem('commanderPod_session_state');
+    const hasExistingData = localStorage.getItem('carlo_slot_events');
+
+    if(sessionState === 'active' && hasExistingData){
+      // Show resume prompt
+      sessionResumeOverlay.classList.add('show');
+    }else{
+      // Start normally
+      loadAll();
+      initBulbs();
+      setupReelsPlaceholder();
+      renderEvents();
+      renderLeaderboard();
+      loadTheme();
+      timeTimer = setInterval(renderLeaderboard, 30000);
+      // Mark session as active
+      localStorage.setItem('commanderPod_session_state', 'active');
+    }
+  }
+
+  // Session resume handler
+  sessionResumeBtn.addEventListener('click', () => {
+    sessionResumeOverlay.classList.remove('show');
     loadAll();
     initBulbs();
     setupReelsPlaceholder();
@@ -4026,7 +6195,26 @@
     renderLeaderboard();
     loadTheme();
     timeTimer = setInterval(renderLeaderboard, 30000);
-  }
+    log('Session resumed.');
+  });
+
+  // Session new handler
+  sessionNewBtn.addEventListener('click', () => {
+    sessionResumeOverlay.classList.remove('show');
+    // Clear existing data
+    localStorage.removeItem('carlo_slot_events');
+    localStorage.removeItem('carlo_theme_multi');
+    // Start fresh
+    initBulbs();
+    setupReelsPlaceholder();
+    renderEvents();
+    renderLeaderboard();
+    loadTheme();
+    timeTimer = setInterval(renderLeaderboard, 30000);
+    localStorage.setItem('commanderPod_session_state', 'active');
+    log('New session started.');
+  });
+
   init();
 })();
 </script>
