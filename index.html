@@ -6226,16 +6226,25 @@
   }
 
   function applyGradientGlow(){
-    // No colors selected - default to white glow
+    // No colors selected - activate Luna pink gradient mode
     if(selectedColors.size === 0){
-      const whiteGradient = 'linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff)';
-      const whiteShadow = 'linear-gradient(90deg, #ffffff, #e5e7eb, #d1d5db, #ffffff)';
-      document.documentElement.style.setProperty('--gradient-border', whiteGradient);
-      document.documentElement.style.setProperty('--gradient-shadow', whiteShadow);
+      const lunaColors = ['#fdf2ff', '#fb7185', '#a855f7', '#f973fa'];
+      const lunaGradient = `linear-gradient(90deg, ${lunaColors.join(', ')}, ${lunaColors.join(', ')})`;
+      const lunaShadow = 'linear-gradient(90deg, #fdf2ff, #fb7185, #a855f7, #f973fa, #fdf2ff, #fb7185)';
+      document.documentElement.style.setProperty('--gradient-border', lunaGradient);
+      document.documentElement.style.setProperty('--gradient-shadow', lunaShadow);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
-      document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg, #ffffff 0deg 60deg, transparent 60deg 120deg, #ffffff 120deg 180deg, transparent 180deg 240deg, #ffffff 240deg 300deg, transparent 300deg 360deg)`);
-      document.documentElement.style.setProperty('--theme-glow', 'rgba(255,255,255,0.4)');
-      document.documentElement.style.setProperty('--theme-color', '#ffffff');
+      // Luna conic gradient for logo ring
+      const lunaSegments = lunaColors.map((c, i) => {
+        const start = i * 90;
+        const end = start + 45;
+        return `${c} ${start}deg ${end}deg, transparent ${end}deg ${(i + 1) * 90}deg`;
+      }).join(', ');
+      document.documentElement.style.setProperty('--logo-ring-gradient', `conic-gradient(from 0deg, ${lunaSegments})`);
+      document.documentElement.style.setProperty('--theme-glow', 'rgba(249, 115, 250, 0.5)');
+      document.documentElement.style.setProperty('--theme-color', '#f973fa');
+      document.documentElement.style.setProperty('--button-text-color', '#ffffff');
+      document.documentElement.style.setProperty('--button-text-is-gradient', '0');
       return;
     }
 
