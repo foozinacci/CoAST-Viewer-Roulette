@@ -2981,7 +2981,7 @@
   }
 
   const BULB_COLORS = ['#fefce8','#38bdf8','#020617','#ef4444','#22c55e'];
-  const BULB_LUNA_COLORS = ['#fdf2ff','#fb7185','#a855f7','#f973fa'];
+  const BULB_LUNA_COLORS = ['#fdf2ff','#fb7185','#ec4899','#f973fa'];
   function startBulbsAnimation(isLunaWin){
     stopBulbsAnimation();
     const top = bulbRowTop.querySelectorAll('.bulb');
@@ -6228,9 +6228,9 @@
   function applyGradientGlow(){
     // No colors selected - activate Luna pink gradient mode
     if(selectedColors.size === 0){
-      const lunaColors = ['#fdf2ff', '#fb7185', '#a855f7', '#f973fa'];
+      const lunaColors = ['#fdf2ff', '#fb7185', '#ec4899', '#f973fa'];
       const lunaGradient = `linear-gradient(90deg, ${lunaColors.join(', ')}, ${lunaColors.join(', ')})`;
-      const lunaShadow = 'linear-gradient(90deg, #fdf2ff, #fb7185, #a855f7, #f973fa, #fdf2ff, #fb7185)';
+      const lunaShadow = 'linear-gradient(90deg, #fdf2ff, #fb7185, #ec4899, #f973fa, #fdf2ff, #fb7185)';
       document.documentElement.style.setProperty('--gradient-border', lunaGradient);
       document.documentElement.style.setProperty('--gradient-shadow', lunaShadow);
       document.documentElement.style.setProperty('--gradient-border-size', '200%');
