@@ -3833,7 +3833,9 @@
           'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
           'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
         };
-        colorIcons = p.colorIdentity.map(c =>
+        // Ensure colorIdentity is an array (convert string to array if needed)
+        const colorArray = Array.isArray(p.colorIdentity) ? p.colorIdentity : Array.from(p.colorIdentity);
+        colorIcons = colorArray.map(c =>
           pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 2px;" alt="${c}"/>` : c
         ).join('');
         colorIcons = ' ' + colorIcons;
