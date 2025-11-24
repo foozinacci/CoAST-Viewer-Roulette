@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>CARLO Viewer Slot Machine</title>
+  <title>CoAST Viewer Slot Machine</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&display=swap');
@@ -2157,7 +2157,7 @@
   <header>
     <div class="header-top">
       <div class="logo">
-        <img src="https://i.ibb.co/PvbYChDZ/G0-Gsi-Gv-XIAEk-Rf1-removebg-preview.png" alt="CARLO"/>
+        <img src="https://i.ibb.co/bRQkqqG5/Chat-GPT-Image-Nov-17-2025-08-45-44-AM-removebg-preview.png" alt="CoAST"/>
       </div>
       <div class="title-block">
         <div class="title">Viewer Roulette</div>
@@ -2507,8 +2507,8 @@
           <div class="help-box-text">Wild card that helps complete wins. Max 1 per spin.</div>
         </div>
         <div class="help-box">
-          <div class="help-box-title">CARLO</div>
-          <div class="help-box-text">Jackpot! All 5 reels show C-A-R-L-O letters. Streamer plays their deck.</div>
+          <div class="help-box-title">CoAST</div>
+          <div class="help-box-text">Jackpot! All 5 reels show C-o-A-S-T letters. Streamer plays their deck.</div>
         </div>
         <div class="help-box">
           <div class="help-box-title">Meta-Tracking</div>
@@ -2525,7 +2525,7 @@
     <div class="help-card">
       <div class="help-title">Hypergeometric Diagnostic</div>
       <div class="help-body">
-        <p>Simulates 300 spins with the current player list & weights (no changes to the live event). Checks for balanced win rates, CARLO/Luna frequency, 4oak/5oak occurrences, and Ignition rates.</p>
+        <p>Simulates 300 spins with the current player list & weights (no changes to the live event). Checks for balanced win rates, CoAST/Luna frequency, 4oak/5oak occurrences, and Ignition rates.</p>
         <div class="finish-actions">
           <button id="runDiagNowBtn">Run Simulation</button>
           <button id="closeDiagBtn">Close</button>
@@ -2583,6 +2583,15 @@
   const MAX_SPARKS = 12;
   const LUNA_BASE_ODDS = 1/30; // Base odds for 1-5 players
   const CARLO_LETTER_ODDS = 1/75; // Base odds for 1-3 players
+
+  // Letter image URLs for CoAST
+  const LETTER_IMAGES = {
+    'C': 'https://i.ibb.co/7xmFbNBL/ei-1764001300945-removebg-preview-ezgif-com-crop.png',
+    'o': 'https://i.ibb.co/MyMbbYfP/ei-1764001300945-removebg-preview1-ezgif-com-crop.png',
+    'A': 'https://i.ibb.co/HT1kdLY5/ei-1764001300945-removebg-preview3-ezgif-com-crop.png',
+    'S': 'https://i.ibb.co/mrGHHC5Y/ei-1764001300945-removebg-preview5-ezgif-com-crop.png',
+    'T': 'https://i.ibb.co/Mk08w1jh/ei-1764002393914-removebg-preview-ezgif-com-crop.png'
+  };
 
   // DYNAMIC PROBABILITY SCALING - Adjusts game balance based on active player count
 
@@ -3036,6 +3045,7 @@
 
   function setupReelsPlaceholder(){
     reelsEl.innerHTML = '';
+    const letters = ['C','o','A','S','T'];
     for(let i=0;i<5;i++){
       const reel = document.createElement('div');
       reel.className = 'reel';
@@ -3043,7 +3053,10 @@
       inner.className = 'reel-inner';
       const sym = document.createElement('div');
       sym.className = 'reel-symbol letter';
-      sym.textContent = "CARLO"[i];
+      const img = document.createElement('img');
+      img.src = LETTER_IMAGES[letters[i]];
+      img.alt = letters[i];
+      sym.appendChild(img);
       inner.appendChild(sym);
       reel.appendChild(inner);
       reelsEl.appendChild(reel);
@@ -3055,7 +3068,7 @@
   function spinAnimationStart(){
     const evt = currentEvent();
     const reelEls = reelsEl.querySelectorAll('.reel');
-    const letters = ['C','A','R','L','O'];
+    const letters = ['C','o','A','S','T'];
     const allPlayers = evt.players.filter(p => p.status === 'active');
 
     // Clear any existing intervals
@@ -3091,7 +3104,7 @@
           }else{
             // Letter
             div.className = 'reel-symbol letter';
-            div.textContent = letters[idx];
+            div.innerHTML = `<img src="${LETTER_IMAGES[letters[idx]]}" alt="${letters[idx]}">`;
           }
         }, 100); // Change every 100ms
 
@@ -3660,7 +3673,10 @@
         }
       }else if(sym.type === 'letter'){
         div.className = 'reel-symbol letter';
-        div.textContent = sym.letter;
+        const img = document.createElement('img');
+        img.src = LETTER_IMAGES[sym.letter] || '';
+        img.alt = sym.letter;
+        div.appendChild(img);
       }else if(sym.type === 'luna'){
         div.className = 'reel-symbol luna';
         const img = document.createElement('img');
@@ -3680,10 +3696,10 @@
   function detectCarlo(symbols){
     return (
       symbols[0].type==='letter' && symbols[0].letter==='C' &&
-      symbols[1].type==='letter' && symbols[1].letter==='A' &&
-      symbols[2].type==='letter' && symbols[2].letter==='R' &&
-      symbols[3].type==='letter' && symbols[3].letter==='L' &&
-      symbols[4].type==='letter' && symbols[4].letter==='O'
+      symbols[1].type==='letter' && symbols[1].letter==='o' &&
+      symbols[2].type==='letter' && symbols[2].letter==='A' &&
+      symbols[3].type==='letter' && symbols[3].letter==='S' &&
+      symbols[4].type==='letter' && symbols[4].letter==='T'
     );
   }
 
@@ -5134,8 +5150,8 @@
       winnerHeading.textContent = 'IGNITED!';
       winnerMetaEl.textContent = `${player.name} has ${MAX_SPARKS} sparks & has been Ignited.`;
     }else if(reason==='carlo'){
-      winnerHeading.textContent = 'CARLO PICK';
-      winnerMetaEl.textContent = `CARLO hit – streamer plays their own deck this round.`;
+      winnerHeading.textContent = 'CoAST PICK';
+      winnerMetaEl.textContent = `CoAST hit – streamer plays their own deck this round.`;
     }else{
       winnerHeading.textContent = 'WINNER';
       if(hits>=5){
@@ -5765,13 +5781,13 @@
       let reason='normal';
       let hits=3;
       if(isCarlo){
-        // CARLO: Bulbs already running, wait a bit more then show banner
+        // CoAST: Bulbs already running, wait a bit more then show banner
         setTimeout(()=>{
           stopBulbsAnimation();
           evt.carloHits++;
           winnerOverlay.classList.add('show');
-          winnerHeading.textContent='CARLO!';
-          winnerNameEl.textContent='CARLO';
+          winnerHeading.textContent='CoAST!';
+          winnerNameEl.textContent='CoAST';
           winnerMetaEl.textContent='Streamer plays their own deck this round.';
           winnerLunaSticker.style.display='none';
           pendingWinner=null;
@@ -5990,13 +6006,13 @@
     const minWinsFromGuardrail = Math.floor(300 / maxDeadStreak);
     const expectedWins = Math.max(30, Math.floor(minWinsFromGuardrail * 1.3)); // 30% buffer for natural wins
 
-    const expectedCarlos = 0; // CARLO is extremely rare - bonus jackpot, not balance requirement
+    const expectedCarlos = 0; // CoAST is extremely rare - bonus jackpot, not balance requirement
     const expectedLuna = Math.max(3, Math.floor(playerCount * 0.2)); // Reduced from 0.25
     const expectedFourKind = Math.max(1, Math.floor(playerCount * 0.12)); // Increased for better scaling
     const expectedFiveKind = playerCount <= 15 ? 0 : 1; // Only expect 5oak with larger groups
 
     const passWins = sim.wins >= expectedWins;
-    const passCarlo = sim.carlo >= expectedCarlos; // Always pass - CARLO is a bonus jackpot
+    const passCarlo = sim.carlo >= expectedCarlos; // Always pass - CoAST is a bonus jackpot
     const passLuna = sim.luna >= expectedLuna;
     const passFourKind = sim.fourKind >= expectedFourKind;
     const passFiveKind = sim.fiveKind >= expectedFiveKind;
@@ -6006,7 +6022,7 @@
     diagResult.innerHTML = `
       <div><strong>Simulated 300 spins (Hypergeometric):</strong></div>
       <div>Total wins: ${sim.wins} ${passWins?'<span class="pass">(≥'+expectedWins+' ✓)</span>':'<span class="warn">(Need ≥'+expectedWins+')</span>'}</div>
-      <div>CARLO jackpots: ${sim.carlo} ${passCarlo?'<span class="pass">(≥'+expectedCarlos+' ✓)</span>':'<span class="warn">(Need ≥'+expectedCarlos+')</span>'}</div>
+      <div>CoAST jackpots: ${sim.carlo} ${passCarlo?'<span class="pass">(≥'+expectedCarlos+' ✓)</span>':'<span class="warn">(Need ≥'+expectedCarlos+')</span>'}</div>
       <div>Luna Luck wins: ${sim.luna} ${passLuna?'<span class="pass">(≥'+expectedLuna+' ✓)</span>':'<span class="warn">(Need ≥'+expectedLuna+')</span>'}</div>
       <div>4-of-a-kind: ${sim.fourKind} ${passFourKind?'<span class="pass">(≥'+expectedFourKind+' ✓)</span>':'<span class="warn">(Need ≥'+expectedFourKind+')</span>'}</div>
       <div>5-of-a-kind: ${sim.fiveKind} ${passFiveKind?'<span class="pass">(≥'+expectedFiveKind+' ✓)</span>':'<span class="warn">(Need ≥'+expectedFiveKind+')</span>'}</div>
