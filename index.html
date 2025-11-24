@@ -65,7 +65,7 @@
       --text:#e9d5ff;
       --muted:#d8b4fe;
       --theme-color:#c084fc;
-      --theme-glow:rgba(192,132,252,0.7);
+      --theme-glow:rgba(192,132,252,0.5);
       --border:#c084fc;
     }
     body.theme-red{
@@ -275,8 +275,8 @@
       z-index:1;
     }
     .logo img{
-      width:80%;
-      height:80%;
+      width:94%;
+      height:94%;
       object-fit:contain;
       filter:none;
       position:relative;
@@ -500,8 +500,8 @@
         height:75px;
       }
       .logo img{
-        width:70%;
-        height:70%;
+        width:88%;
+        height:88%;
       }
       .title{
         font-size:18px;
@@ -799,6 +799,10 @@
       border-color:#22c55e;
       box-shadow:0 0 12px rgba(34,197,94,.9);
       color:#dcfce7;
+    }
+    .reel.glow-idle{
+      box-shadow:0 0 22px var(--theme-glow),inset 0 0 16px rgba(255,255,255,.05);
+      border-color:var(--theme-color);
     }
     .reel.glow-win{
       box-shadow:0 0 28px rgba(250,204,21,.8),inset 0 0 20px rgba(250,250,250,.1);
@@ -2294,7 +2298,7 @@
           <button type="button" class="adjust-btn" id="addMatchBtn">+</button>
         </div>
       </div>
-      <div class="finish-field">
+      <div class="finish-field" style="display:none;">
         <div class="finish-label">Wins and Losses</div>
         <div style="display:flex;gap:12px;justify-content:center;align-items:center;margin-top:8px;">
           <div style="text-align:center;">
@@ -2816,6 +2820,37 @@
     regenerateOpponentColorSelectors();
   });
 
+  // Handle opponent color chip and result chip clicks
+  opponentColorsContainer.addEventListener('click', e => {
+    // Handle color chip clicks
+    const colorChip = e.target.closest('.color-chip');
+    if(colorChip){
+      const parent = colorChip.parentElement;
+      // Toggle active state - allow multiple selections
+      colorChip.classList.toggle('active');
+      return;
+    }
+
+    // Handle result chip clicks (Win/Loss)
+    const resultChip = e.target.closest('.result-chip');
+    if(resultChip){
+      const gameIndex = resultChip.dataset.gameIndex;
+      const allResultChipsInGame = opponentColorsContainer.querySelectorAll(`.result-chip[data-game-index="${gameIndex}"]`);
+
+      // Remove active class from all result chips in this game
+      allResultChipsInGame.forEach(chip => {
+        chip.classList.remove('active');
+        chip.style.fontWeight = 'normal';
+        chip.style.opacity = '0.7';
+      });
+
+      // Add active class to clicked chip
+      resultChip.classList.add('active');
+      resultChip.style.fontWeight = 'bold';
+      resultChip.style.opacity = '1';
+    }
+  });
+
   function currentEvent(){
     if(!state.events[state.currentEventIndex]){
       state.events[state.currentEventIndex] = {
@@ -3054,7 +3089,7 @@
     const letters = ['C','o','A','S','T'];
     for(let i=0;i<5;i++){
       const reel = document.createElement('div');
-      reel.className = 'reel';
+      reel.className = 'reel glow-idle';
       const inner = document.createElement('div');
       inner.className = 'reel-inner';
       const sym = document.createElement('div');
@@ -3083,7 +3118,7 @@
 
     reelEls.forEach((r, idx)=>{
       r.classList.add('spinning');
-      r.classList.remove('glow-win','glow-carlo','glow-luna');
+      r.classList.remove('glow-win','glow-carlo','glow-luna','glow-idle');
 
       // Create single symbol that will cycle content
       const inner = r.querySelector('.reel-inner');
@@ -5216,7 +5251,7 @@
         const chipsDiv = document.createElement('div');
         chipsDiv.className = 'opponent-color-chips';
         chipsDiv.dataset.gameIndex = i;
-        chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;';
+        chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;';
 
         // Create color chips
         ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
@@ -5227,8 +5262,30 @@
           chipsDiv.appendChild(chip);
         });
 
+        // Add result selector (Win/Loss)
+        const resultDiv = document.createElement('div');
+        resultDiv.style.cssText = 'display:flex;gap:6px;justify-content:center;margin-top:4px;';
+
+        const winChip = document.createElement('div');
+        winChip.className = 'result-chip';
+        winChip.dataset.result = 'win';
+        winChip.dataset.gameIndex = i;
+        winChip.textContent = 'Win';
+        winChip.style.cssText = 'padding:4px 12px;background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.5);border-radius:4px;cursor:pointer;font-size:11px;color:#22c55e;';
+
+        const lossChip = document.createElement('div');
+        lossChip.className = 'result-chip';
+        lossChip.dataset.result = 'loss';
+        lossChip.dataset.gameIndex = i;
+        lossChip.textContent = 'Loss';
+        lossChip.style.cssText = 'padding:4px 12px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);border-radius:4px;cursor:pointer;font-size:11px;color:#ef4444;';
+
+        resultDiv.appendChild(winChip);
+        resultDiv.appendChild(lossChip);
+
         gameDiv.appendChild(gameLabelDiv);
         gameDiv.appendChild(chipsDiv);
+        gameDiv.appendChild(resultDiv);
         scrollContainer.appendChild(gameDiv);
       }
 
@@ -5257,7 +5314,7 @@
         const chipsDiv = document.createElement('div');
         chipsDiv.className = 'opponent-color-chips';
         chipsDiv.dataset.gameIndex = i;
-        chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;';
+        chipsDiv.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;';
 
         // Create color chips
         ['W', 'U', 'B', 'R', 'G', 'C'].forEach(color => {
@@ -5268,8 +5325,30 @@
           chipsDiv.appendChild(chip);
         });
 
+        // Add result selector (Win/Loss)
+        const resultDiv = document.createElement('div');
+        resultDiv.style.cssText = 'display:flex;gap:6px;justify-content:center;margin-top:4px;';
+
+        const winChip = document.createElement('div');
+        winChip.className = 'result-chip';
+        winChip.dataset.result = 'win';
+        winChip.dataset.gameIndex = i;
+        winChip.textContent = 'Win';
+        winChip.style.cssText = 'padding:4px 12px;background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.5);border-radius:4px;cursor:pointer;font-size:11px;color:#22c55e;';
+
+        const lossChip = document.createElement('div');
+        lossChip.className = 'result-chip';
+        lossChip.dataset.result = 'loss';
+        lossChip.dataset.gameIndex = i;
+        lossChip.textContent = 'Loss';
+        lossChip.style.cssText = 'padding:4px 12px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);border-radius:4px;cursor:pointer;font-size:11px;color:#ef4444;';
+
+        resultDiv.appendChild(winChip);
+        resultDiv.appendChild(lossChip);
+
         matchDiv.appendChild(matchLabelDiv);
         matchDiv.appendChild(chipsDiv);
+        matchDiv.appendChild(resultDiv);
         scrollContainer.appendChild(matchDiv);
       }
 
@@ -5386,23 +5465,34 @@
       finishSaveBtn.disabled = false;
       return;
     }
-    const wins = Math.max(0,parseInt(runWinsInput.value,10)||0);
-    const losses = Math.max(0,parseInt(runLossesInput.value,10)||0);
     const matchesPlayed = Math.max(0,parseInt(matchesPlayedInput.value,10)||0);
     const colors = player.colorIdentity ? player.colorIdentity.join('') : '';  // Use stored color identity
     const activeMatchType = matchTypeChoice.querySelector('.queue-chip.active');
     const matchType = activeMatchType ? activeMatchType.dataset.matchType : 'BO3';
 
-    // Collect opponent colors from dynamic selectors
+    // Collect opponent colors and results from dynamic selectors
     let opponentColorsByGame = []; // Array for BO1, single element for BO3/BO5
+    let resultsByGame = []; // Array of 'win'/'loss' results per game
     const opponentChipGroups = opponentColorsContainer.querySelectorAll('.opponent-color-chips');
-    opponentChipGroups.forEach(group => {
+    opponentChipGroups.forEach((group, index) => {
       const activeChips = Array.from(group.querySelectorAll('.color-chip.active'));
       const gameColors = activeChips.map(chip => chip.dataset.color).sort().join('');
       if(gameColors){
         opponentColorsByGame.push(gameColors);
       }
+
+      // Get the result for this game/match
+      const resultChip = opponentColorsContainer.querySelector(`.result-chip.active[data-game-index="${index}"]`);
+      if(resultChip){
+        resultsByGame.push(resultChip.dataset.result);
+      } else {
+        resultsByGame.push(null); // No result selected
+      }
     });
+
+    // Calculate total wins and losses from result chips
+    const wins = resultsByGame.filter(r => r === 'win').length;
+    const losses = resultsByGame.filter(r => r === 'loss').length;
 
     player.overallWins += wins;
     player.overallLosses += losses;
@@ -5446,42 +5536,51 @@
             }
             if(!deck.matchups[oppColors].history) deck.matchups[oppColors].history = []; // Migrate old data
 
-            // First 'wins' games are wins, remaining are losses
-            const isWin = index < wins;
-            if(isWin){
+            // Get the actual result for this game
+            const result = resultsByGame[index];
+            if(result === 'win'){
               deck.matchups[oppColors].wins += 1;
-            } else {
+            } else if(result === 'loss'){
               deck.matchups[oppColors].losses += 1;
             }
 
-            // Record individual game in history
-            deck.matchups[oppColors].history.push({
-              id: `${timestamp}_${index}`,
-              timestamp: timestamp + index, // Slight offset to maintain order
-              result: isWin ? 'win' : 'loss',
-              matchType: matchType,
-              opponentColors: oppColors
-            });
+            // Record individual game in history (only if result was selected)
+            if(result){
+              deck.matchups[oppColors].history.push({
+                id: `${timestamp}_${index}`,
+                timestamp: timestamp + index, // Slight offset to maintain order
+                result: result,
+                matchType: matchType,
+                opponentColors: oppColors
+              });
+            }
           });
         } else {
-          // BO3/BO5: Track entire match against single opponent
-          const opponentColors = opponentColorsByGame[0]; // Only one opponent for match
-          if(!deck.matchups[opponentColors]){
-            deck.matchups[opponentColors] = {wins:0, losses:0, history:[]};
-          }
-          if(!deck.matchups[opponentColors].history) deck.matchups[opponentColors].history = []; // Migrate old data
+          // BO3/BO5: Track each match individually with its opponent and result
+          opponentColorsByGame.forEach((oppColors, index) => {
+            if(!deck.matchups[oppColors]){
+              deck.matchups[oppColors] = {wins:0, losses:0, history:[]};
+            }
+            if(!deck.matchups[oppColors].history) deck.matchups[oppColors].history = []; // Migrate old data
 
-          deck.matchups[opponentColors].wins += wins;
-          deck.matchups[opponentColors].losses += losses;
+            // Get the actual result for this match
+            const result = resultsByGame[index];
+            if(result === 'win'){
+              deck.matchups[oppColors].wins += 1;
+            } else if(result === 'loss'){
+              deck.matchups[oppColors].losses += 1;
+            }
 
-          // Record match in history (single entry for entire match)
-          deck.matchups[opponentColors].history.push({
-            id: `${timestamp}`,
-            timestamp: timestamp,
-            wins: wins,
-            losses: losses,
-            matchType: matchType,
-            opponentColors: opponentColors
+            // Record match in history (only if result was selected)
+            if(result){
+              deck.matchups[oppColors].history.push({
+                id: `${timestamp}_${index}`,
+                timestamp: timestamp + index,
+                result: result,
+                matchType: matchType,
+                opponentColors: oppColors
+              });
+            }
           });
         }
       }
