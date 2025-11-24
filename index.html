@@ -6129,8 +6129,12 @@
     const classes = ['theme-white','theme-blue','theme-black','theme-red','theme-green','theme-gold'];
     document.body.classList.remove(...classes);
 
+    // If no colors selected, Luna mode (no theme class needed, gradient handles it)
+    if(selectedColors.size === 0){
+      // Luna mode - no theme class, gradients applied in applyGradientGlow()
+    }
     // If all 5 colors selected, use gold
-    if(selectedColors.size === 5){
+    else if(selectedColors.size === 5){
       document.body.classList.add('theme-gold');
     }else{
       // Use the first selected color as primary theme
@@ -6141,7 +6145,7 @@
       else if(primary==='B') cls='theme-black';
       else if(primary==='R') cls='theme-red';
       else if(primary==='G') cls='theme-green';
-      document.body.classList.add(cls);
+      if(cls) document.body.classList.add(cls);
     }
 
     // Update active chips
