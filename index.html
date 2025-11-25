@@ -2271,7 +2271,7 @@
         <button id="winnerSkipBtn">Skip and Remove</button>
       </div>
       <div class="winner-luna-sticker" id="winnerLunaSticker" style="display:none;">
-        <img src="https://i.ibb.co/23vVSmXN/LunaGG.png" alt="Luna">
+        <img src="https://i.ibb.co/N2qKQ6dZ/Picsart-25-11-25-04-42-43-109.png" alt="Krark">
       </div>
     </div>
   </div>
@@ -2513,7 +2513,7 @@
           <div class="help-box-text">Earned when tickets exceed 500. Get 12 sparks and you're IGNITED – guaranteed win!</div>
         </div>
         <div class="help-box">
-          <div class="help-box-title">Luna</div>
+          <div class="help-box-title">Krark</div>
           <div class="help-box-text">Wild card that helps complete wins. Max 1 per spin.</div>
         </div>
         <div class="help-box">
@@ -2535,7 +2535,7 @@
     <div class="help-card">
       <div class="help-title">Hypergeometric Diagnostic</div>
       <div class="help-body">
-        <p>Simulates 300 spins with the current player list & weights (no changes to the live event). Checks for balanced win rates, CoAST/Luna frequency, 4oak/5oak occurrences, and Ignition rates.</p>
+        <p>Simulates 300 spins with the current player list & weights (no changes to the live event). Checks for balanced win rates, CoAST/Krark frequency, 4oak/5oak occurrences, and Ignition rates.</p>
         <div class="finish-actions">
           <button id="runDiagNowBtn">Run Simulation</button>
           <button id="closeDiagBtn">Close</button>
@@ -2605,7 +2605,7 @@
 
   // DYNAMIC PROBABILITY SCALING - Adjusts game balance based on active player count
 
-  // Dynamic CARLO letter odds: Lower odds = MORE player symbols = HIGHER win rates
+  // Dynamic CoAST letter odds: Lower odds = MORE player symbols = HIGHER win rates
   function getCarloLetterOdds(activePlayerCount){
     if(activePlayerCount <= 3) return 1/75;     // Original odds (1.33% per reel)
     if(activePlayerCount <= 5) return 1/85;     // Slightly lower (1.18% per reel)
@@ -2615,7 +2615,7 @@
     return 1/150;                                // Minimal for maximum capacity (0.67% per reel)
   }
 
-  // Dynamic Luna spawn odds: Higher frequency at high player counts to compensate for dilution
+  // Dynamic Krark spawn odds: Higher frequency at high player counts to compensate for dilution
   function getLunaBaseOdds(activePlayerCount){
     if(activePlayerCount <= 5) return 1/30;    // Original odds (~3.33% per spin)
     if(activePlayerCount <= 10) return 1/25;   // 20% more frequent (~4% per spin)
@@ -3031,7 +3031,7 @@
   }
 
   const BULB_COLORS = ['#fefce8','#38bdf8','#020617','#ef4444','#22c55e'];
-  const BULB_LUNA_COLORS = ['#fdf2ff','#fb7185','#ec4899','#f973fa'];
+  const BULB_LUNA_COLORS = ['#FFD700','#FFA500','#DFFF00','#C7EA46'];
   function startBulbsAnimation(isLunaWin){
     stopBulbsAnimation();
     const top = bulbRowTop.querySelectorAll('.bulb');
@@ -3049,7 +3049,7 @@
     let t = 0;
     const trailLength = 8; // Number of bulbs to light up in the trail
     bulbsTimer = setInterval(()=>{
-      // For Luna wins: use pink colors. For others: randomly cycle all non-pink colors
+      // For Krark wins: use pink colors. For others: randomly cycle all non-pink colors
       const availableColors = isLunaWin ? BULB_LUNA_COLORS : BULB_COLORS;
 
       // Turn off all bulbs first
@@ -3139,9 +3139,9 @@
             div.textContent = p.name;
             div.innerHTML = p.name;
           }else if(rand < 0.5){
-            // Luna (rare)
+            // Krark (rare)
             div.className = 'reel-symbol luna';
-            div.innerHTML = `<img src="https://i.ibb.co/8g6ZQM5C/IMG-2604.png" alt="Luna">`;
+            div.innerHTML = `<img src="https://i.ibb.co/93nD0v9K/ei-1764062708622-removebg-preview.png" alt="Krark">`;
           }else{
             // Letter
             div.className = 'reel-symbol letter';
@@ -3658,7 +3658,7 @@
         }
       }
     }else if(forceDead){
-      // Force a dead spin: all CARLO letters (no matches)
+      // Force a dead spin: all CoAST letters (no matches)
       for(let i=0;i<5;i++){
         symbols.push({type:'letter', letter:letters[i]});
       }
@@ -3721,8 +3721,8 @@
       }else if(sym.type === 'luna'){
         div.className = 'reel-symbol luna';
         const img = document.createElement('img');
-        img.src = "https://i.ibb.co/8g6ZQM5C/IMG-2604.png";
-        img.alt = "Luna";
+        img.src = "https://i.ibb.co/93nD0v9K/ei-1764062708622-removebg-preview.png";
+        img.alt = "Krark";
         div.appendChild(img);
       }else{
         div.className = 'reel-symbol letter';
@@ -5185,8 +5185,8 @@
 
     winnerNameEl.textContent = player.name;
     if(reason==='luna'){
-      winnerHeading.textContent = 'LUNA LUCK!';
-      winnerMetaEl.textContent = `${player.name} wins with Luna Luck!`;
+      winnerHeading.textContent = 'KRARK LUCK!';
+      winnerMetaEl.textContent = `${player.name} wins with Krark Luck!`;
     }else if(reason==='ignited'){
       winnerHeading.textContent = 'IGNITED!';
       winnerMetaEl.textContent = `${player.name} has ${MAX_SPARKS} sparks & has been Ignited.`;
@@ -5872,10 +5872,10 @@
       leverEl.classList.remove('pull');
       renderSpinResult(symbols);
 
-      // Log Luna appearances (regardless of win/loss)
+      // Log Krark appearances (regardless of win/loss)
       const lunaCount = symbols.filter(s => s.type === 'luna').length;
       if(lunaCount > 0){
-        log(`<span style="color:#f973fa;font-weight:600;">Luna has appeared</span>`);
+        log(`<span style="color:#f973fa;font-weight:600;">Krark has appeared</span>`);
       }
 
       const reelPlayers=[];
@@ -5924,7 +5924,7 @@
       if(winner){
         // Winner found: Bulbs already running, handle tickets then show banner
         handleWinTickets(evt,winner,symbols,reelPlayers);
-        // Color code: pink for Luna wins, green for regular wins
+        // Color code: pink for Krark wins, green for regular wins
         const winColor = isLunaWin ? '#f973fa' : '#22c55e';
         log(`<span style="color:${winColor};font-weight:600;">${winner.name} wins the slot (${reason}, hits=${hits}).</span>`);
         // Short delay after last reel stops before showing winner banner
@@ -6128,7 +6128,7 @@
       <div><strong>Simulated 300 spins (Hypergeometric):</strong></div>
       <div>Total wins: ${sim.wins} ${passWins?'<span class="pass">(≥'+expectedWins+' ✓)</span>':'<span class="warn">(Need ≥'+expectedWins+')</span>'}</div>
       <div>CoAST jackpots: ${sim.carlo} ${passCarlo?'<span class="pass">(≥'+expectedCarlos+' ✓)</span>':'<span class="warn">(Need ≥'+expectedCarlos+')</span>'}</div>
-      <div>Luna Luck wins: ${sim.luna} ${passLuna?'<span class="pass">(≥'+expectedLuna+' ✓)</span>':'<span class="warn">(Need ≥'+expectedLuna+')</span>'}</div>
+      <div>Krark Luck wins: ${sim.luna} ${passLuna?'<span class="pass">(≥'+expectedLuna+' ✓)</span>':'<span class="warn">(Need ≥'+expectedLuna+')</span>'}</div>
       <div>4-of-a-kind: ${sim.fourKind} ${passFourKind?'<span class="pass">(≥'+expectedFourKind+' ✓)</span>':'<span class="warn">(Need ≥'+expectedFourKind+')</span>'}</div>
       <div>5-of-a-kind: ${sim.fiveKind} ${passFiveKind?'<span class="pass">(≥'+expectedFiveKind+' ✓)</span>':'<span class="warn">(Need ≥'+expectedFiveKind+')</span>'}</div>
       <div>Ignited wins: ${sim.ignitedWins} (${ignitedRate}%) ${passIgnited?'<span class="pass">(≤10% ✓)</span>':'<span class="warn">(>10% - too many)</span>'}</div>
@@ -6250,9 +6250,9 @@
     const classes = ['theme-white','theme-blue','theme-black','theme-red','theme-green','theme-gold'];
     document.body.classList.remove(...classes);
 
-    // If no colors selected, Luna mode (no theme class needed, gradient handles it)
+    // If no colors selected, Krark mode (no theme class needed, gradient handles it)
     if(selectedColors.size === 0){
-      // Luna mode - no theme class, gradients applied in applyGradientGlow()
+      // Krark mode - no theme class, gradients applied in applyGradientGlow()
     }
     // If all 5 colors selected, use gold
     else if(selectedColors.size === 5){
@@ -6351,9 +6351,9 @@
   }
 
   function applyGradientGlow(){
-    // No colors selected - activate Luna pink gradient mode (animates to black like mono-colored themes)
+    // No colors selected - activate Krark pink gradient mode (animates to black like mono-colored themes)
     if(selectedColors.size === 0){
-      const lunaColor = '#f973fa'; // Luna's signature hot pink
+      const lunaColor = '#f973fa'; // Krark's signature hot pink
       const lunaShadowColor = '#e91e8c'; // Darker pink for shadow layer
       const lunaGradient = `linear-gradient(90deg, ${lunaColor}, ${lunaColor}, #000000, #000000, ${lunaColor}, ${lunaColor})`;
       const lunaShadow = `linear-gradient(90deg, ${lunaShadowColor}, ${lunaShadowColor}, #000000, #000000, ${lunaShadowColor}, ${lunaShadowColor})`;
