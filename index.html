@@ -143,6 +143,11 @@
       100%{transform:rotate(360deg);}
     }
 
+    @keyframes rotateSlow{
+      0%{transform:rotate(0deg);}
+      100%{transform:rotate(360deg);}
+    }
+
     @keyframes savePulse{
       0%{
         background:var(--theme-color);
@@ -281,6 +286,7 @@
       filter:none;
       position:relative;
       z-index:2;
+      animation:rotateSlow 6s linear infinite;
     }
     .title-block{
       display:flex;
@@ -596,6 +602,21 @@
       .reel-chart-label{
         font-size:9px;
       }
+      .log{
+        font-size:10px;
+        padding:6px;
+        overflow-x:hidden;
+        word-wrap:break-word;
+        overflow-wrap:break-word;
+      }
+      .reel-symbol{
+        padding:6px 4px;
+      }
+      .reel-symbol.name-short{font-size:14px;}
+      .reel-symbol.name-medium{font-size:11px;}
+      .reel-symbol.name-long{font-size:9px;}
+      .reel-symbol.name-very-long{font-size:8px;}
+      .reel-symbol.name-extreme{font-size:7px;}
       .ticket-btn{
         width:20px;
         height:20px;
@@ -2190,7 +2211,7 @@
   <header>
     <div class="header-top">
       <div class="logo">
-        <img src="https://i.ibb.co/bRQkqqG5/Chat-GPT-Image-Nov-17-2025-08-45-44-AM-removebg-preview.png" alt="CoAST"/>
+        <img src="https://i.ibb.co/217nYbnD/ei-1764070131751-removebg-preview.png" alt="CoAST"/>
       </div>
       <div class="title-block">
         <div class="title">Viewer Roulette</div>
@@ -2899,6 +2920,22 @@
     return state.events[state.currentEventIndex];
   }
 
+  // Helper function to convert color codes to mana symbol icons
+  function colorToIcons(colorString){
+    if(!colorString || colorString === 'none') return colorString;
+    const pipUrls = {
+      'W': 'https://i.ibb.co/sJpHH9VZ/W.png',
+      'U': 'https://i.ibb.co/0bPLHLk/U.png',
+      'B': 'https://i.ibb.co/nM1ZZz3z/B.png',
+      'R': 'https://i.ibb.co/NnjxnmZv/R.png',
+      'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
+      'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
+    };
+    return colorString.split('').map(c =>
+      pipUrls[c.toUpperCase()] ? `<img src="${pipUrls[c.toUpperCase()]}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin:0 1px;" alt="${c}"/>` : c
+    ).join('');
+  }
+
   function log(msg){
     const time = new Date().toLocaleTimeString();
     const div = document.createElement('div');
@@ -3371,7 +3408,11 @@
       return;
     }
     navigator.clipboard.writeText(player.deckList).then(()=>{
-      log(`Deck exported to clipboard for ${player.name}`);
+      const displayName = player.baseName || player.name;
+      const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+        ? ':' + colorToIcons(player.colorIdentity.join(''))
+        : '';
+      log(`Deck exported to clipboard for ${displayName}${colorIcons}`);
       const originalText = buttonElement.textContent;
       buttonElement.textContent = '✅ Copied!';
       setTimeout(()=>{
@@ -3746,6 +3787,12 @@
         div.className = 'reel-symbol player';
         // Use baseName if available, fallback to full name
         const displayName = sym.baseName || sym.name;
+
+        // Split name into primary and secondary (if space exists)
+        const nameParts = displayName.trim().split(/\s+/);
+        const primaryName = nameParts[0] || displayName;
+        const secondaryName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
         div.textContent = displayName;
 
         // Add color identity icons below name if available
@@ -3761,11 +3808,25 @@
           const colorIcons = sym.colorIdentity.map(c =>
             pipUrls[c] ? `<img src="${pipUrls[c]}" style="width:12px;height:12px;display:inline-block;margin:0 1px;" alt="${c}"/>` : ''
           ).join('');
-          div.innerHTML = `<div style="line-height:1.2;">${displayName}</div><div style="margin-top:2px;">${colorIcons}</div>`;
+
+          // Build HTML with primary name, optional secondary name, and color icons
+          let nameHTML = `<div style="line-height:1.1;font-size:inherit;word-wrap:break-word;">${primaryName}</div>`;
+          if(secondaryName){
+            nameHTML += `<div style="line-height:1.1;font-size:0.85em;margin-top:1px;word-wrap:break-word;">(${secondaryName})</div>`;
+          }
+          nameHTML += `<div style="margin-top:2px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:1px;">${colorIcons}</div>`;
+          div.innerHTML = nameHTML;
+        }else{
+          // No color icons, just show primary and optional secondary name
+          let nameHTML = `<div style="line-height:1.1;font-size:inherit;word-wrap:break-word;">${primaryName}</div>`;
+          if(secondaryName){
+            nameHTML += `<div style="line-height:1.1;font-size:0.85em;margin-top:1px;word-wrap:break-word;">(${secondaryName})</div>`;
+          }
+          div.innerHTML = nameHTML;
         }
 
-        // Dynamic name scaling based on length
-        const nameLen = displayName.length;
+        // Dynamic name scaling based on primary name length
+        const nameLen = primaryName.length;
         if(nameLen <= 4){
           div.classList.add('name-short');
         }else if(nameLen <= 8){
@@ -4853,7 +4914,9 @@
       // Save and refresh
       saveAll();
       openPlayerCard(player.id); // Refresh the entire player card
-      log(`Updated match opponent colors from ${oldOpponentColors || 'none'} to ${newOpponentColors || 'none'} for ${player.name}'s ${deck.color} deck`);
+      const playerDisplay = player.baseName || player.name;
+      const deckColorDisplay = colorToIcons(deck.color);
+      log(`Updated match opponent colors from ${oldOpponentColors || 'none'} to ${newOpponentColors || 'none'} for ${playerDisplay}'s ${deckColorDisplay} deck`);
     };
 
     const cancelBtn = document.createElement('button');
@@ -5068,14 +5131,16 @@
       targetDeck.losses += newLosses;
       targetDeck.lastBestOf = newMatchType;
 
-      log(`${currentEditingPlayer.name}: Moved deck ${currentEditingDeck.color} → ${newColors} (${newWins}W/${newLosses}L)`);
+      const playerDisplay = currentEditingPlayer.baseName || currentEditingPlayer.name;
+      log(`${playerDisplay}: Moved deck ${colorToIcons(currentEditingDeck.color)} → ${colorToIcons(newColors)} (${newWins}W/${newLosses}L)`);
     }else{
       // Just update the existing deck
       currentEditingDeck.wins = newWins;
       currentEditingDeck.losses = newLosses;
       currentEditingDeck.lastBestOf = newMatchType;
 
-      log(`${currentEditingPlayer.name}: Updated deck ${currentEditingDeck.color} to ${newWins}W/${newLosses}L`);
+      const playerDisplay = currentEditingPlayer.baseName || currentEditingPlayer.name;
+      log(`${playerDisplay}: Updated deck ${colorToIcons(currentEditingDeck.color)} to ${newWins}W/${newLosses}L`);
     }
 
     deckEditorOverlay.classList.remove('show');
@@ -5105,7 +5170,8 @@
     const idx = currentEditingPlayer.decks.indexOf(currentEditingDeck);
     if(idx >= 0){
       currentEditingPlayer.decks.splice(idx, 1);
-      log(`${currentEditingPlayer.name}: Deleted deck ${currentEditingDeck.color}`);
+      const playerDisplay = currentEditingPlayer.baseName || currentEditingPlayer.name;
+      log(`${playerDisplay}: Deleted deck ${colorToIcons(currentEditingDeck.color)}`);
     }
 
     deckEditorOverlay.classList.remove('show');
@@ -5336,14 +5402,14 @@
         winChip.className = 'result-chip';
         winChip.dataset.result = 'win';
         winChip.dataset.gameIndex = i;
-        winChip.textContent = 'Win';
+        winChip.textContent = '+Win';
         winChip.style.cssText = 'padding:4px 12px;background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.5);border-radius:4px;cursor:pointer;font-size:11px;color:#22c55e;';
 
         const lossChip = document.createElement('div');
         lossChip.className = 'result-chip';
         lossChip.dataset.result = 'loss';
         lossChip.dataset.gameIndex = i;
-        lossChip.textContent = 'Loss';
+        lossChip.textContent = '-Loss';
         lossChip.style.cssText = 'padding:4px 12px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);border-radius:4px;cursor:pointer;font-size:11px;color:#ef4444;';
 
         resultDiv.appendChild(winChip);
@@ -5399,14 +5465,14 @@
         winChip.className = 'result-chip';
         winChip.dataset.result = 'win';
         winChip.dataset.gameIndex = i;
-        winChip.textContent = 'Win';
+        winChip.textContent = '+Win';
         winChip.style.cssText = 'padding:4px 12px;background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.5);border-radius:4px;cursor:pointer;font-size:11px;color:#22c55e;';
 
         const lossChip = document.createElement('div');
         lossChip.className = 'result-chip';
         lossChip.dataset.result = 'loss';
         lossChip.dataset.gameIndex = i;
-        lossChip.textContent = 'Loss';
+        lossChip.textContent = '-Loss';
         lossChip.style.cssText = 'padding:4px 12px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);border-radius:4px;cursor:pointer;font-size:11px;color:#ef4444;';
 
         resultDiv.appendChild(winChip);
@@ -5603,7 +5669,8 @@
           const idx = player.decks.indexOf(toRemove);
           if(idx >= 0){
             player.decks.splice(idx, 1);
-            log(`${player.name} reached 32 deck limit. Removed deck ${toRemove.color} (lowest win rate).`);
+            const playerDisplay = player.baseName || player.name;
+            log(`${playerDisplay} reached 32 deck limit. Removed deck ${colorToIcons(toRemove.color)} (lowest win rate).`);
           }
         }
         deck = {color:colors,wins:0,losses:0,lastBestOf:null,matchups:{}};
