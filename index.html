@@ -5368,7 +5368,18 @@
       ? colorToIcons(player.colorIdentity.join(''))
       : '';
 
-    winnerNameEl.innerHTML = displayName + (colorIcons ? ' ' + colorIcons : '');
+    // Display name with color icons below (vertical layout)
+    winnerNameEl.innerHTML = '';
+    const nameDiv = document.createElement('div');
+    nameDiv.textContent = displayName;
+    winnerNameEl.appendChild(nameDiv);
+
+    if(colorIcons){
+      const iconsDiv = document.createElement('div');
+      iconsDiv.innerHTML = colorIcons;
+      iconsDiv.style.marginTop = '8px';
+      winnerNameEl.appendChild(iconsDiv);
+    }
     if(reason==='luna'){
       winnerHeading.textContent = 'KRARK LUCK!';
       winnerMetaEl.textContent = `${displayName} wins with Krark Luck!`;
