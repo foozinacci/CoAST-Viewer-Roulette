@@ -3581,7 +3581,11 @@
     const newTotal = totalTickets(player);
     const newSparks = player.sparks;
     if(newSparks > oldSparks){
-      log(`${player.name}: tickets ${oldTotal}→${newTotal}, sparks ${oldSparks}→${newSparks} (+${newSparks-oldSparks})`);
+      const displayName = player.baseName || player.name;
+      const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+        ? ':' + colorToIcons(player.colorIdentity.join(''))
+        : '';
+      log(`${displayName}${colorIcons}: tickets ${oldTotal}→${newTotal}, sparks ${oldSparks}→${newSparks} (+${newSparks-oldSparks})`);
     }
   }
 
@@ -3675,7 +3679,11 @@
     for(const p of readyPlayers){
       if(!ignitedQueue.includes(p.id)){
         ignitedQueue.push(p.id);
-        log(`<span style="color:#fcd34d;font-weight:600;">${p.name} has reached 12 sparks and is queued for ignition!</span>`);
+        const displayName = p.baseName || p.name;
+        const colorIcons = Array.isArray(p.colorIdentity) && p.colorIdentity.length > 0
+          ? colorToIcons(p.colorIdentity.join(''))
+          : '';
+        log(`<span style="color:#fcd34d;font-weight:600;">${displayName}${colorIcons ? ' ' + colorIcons : ''} has reached 12 sparks and is queued for ignition!</span>`);
       }
     }
 
@@ -5013,7 +5021,11 @@
     const p = evt.players.find(x=>x.id===currentPlayerCardId);
     if(!p) return;
     p.status = (p.status==='active' ? 'afk' : 'active');
-    log(`${p.name} is now ${p.status.toUpperCase()}.`);
+    const displayName = p.baseName || p.name;
+    const colorIcons = Array.isArray(p.colorIdentity) && p.colorIdentity.length > 0
+      ? ' ' + colorToIcons(p.colorIdentity.join(''))
+      : '';
+    log(`${displayName}${colorIcons} is now ${p.status.toUpperCase()}.`);
     playerOverlay.classList.remove('show');
     renderLeaderboard();
     saveAll();
@@ -5024,7 +5036,11 @@
     const idx = evt.players.findIndex(x=>x.id===currentPlayerCardId);
     if(idx>=0){
       const removed = evt.players.splice(idx,1)[0];
-      log(`Removed ${removed.name} from the session.`);
+      const displayName = removed.baseName || removed.name;
+      const colorIcons = Array.isArray(removed.colorIdentity) && removed.colorIdentity.length > 0
+        ? ' ' + colorToIcons(removed.colorIdentity.join(''))
+        : '';
+      log(`Removed ${displayName}${colorIcons} from the session.`);
     }
     playerOverlay.classList.remove('show');
     currentPlayerCardId = null;
@@ -5337,7 +5353,8 @@
       lastBestOf: 'BO3'
     });
 
-    log(`Imported ${colors.join('')} deck for ${player.baseName}`);
+    const colorIcons = colorToIcons(colors.join(''));
+    log(`Imported ${colorIcons} deck for ${player.baseName}`);
 
     deckImportOverlay.classList.remove('show');
     pendingImportPlayer = null;
@@ -5730,17 +5747,24 @@
     if(!pendingWinner) return;
 
     // Show prompt: Remove or Mark AFK
-    const choice = confirm(`What would you like to do with ${pendingWinner.name}?\n\nOK = Remove from queue\nCancel = Mark as AFK`);
+    const displayName = pendingWinner.baseName || pendingWinner.name;
+    const choice = confirm(`What would you like to do with ${displayName}?\n\nOK = Remove from queue\nCancel = Mark as AFK`);
 
     if(choice){
       // Remove player
-      log(`Winner ${pendingWinner.name} removed from queue.`);
+      const colorIcons = Array.isArray(pendingWinner.colorIdentity) && pendingWinner.colorIdentity.length > 0
+        ? ' ' + colorToIcons(pendingWinner.colorIdentity.join(''))
+        : '';
+      log(`Winner ${displayName}${colorIcons} removed from queue.`);
       const idx = evt.players.findIndex(x=>x.id===pendingWinner.id);
       if(idx>=0) evt.players.splice(idx,1);
     } else {
       // Mark as AFK
       pendingWinner.status = 'afk';
-      log(`Winner ${pendingWinner.name} marked as AFK.`);
+      const colorIcons = Array.isArray(pendingWinner.colorIdentity) && pendingWinner.colorIdentity.length > 0
+        ? ' ' + colorToIcons(pendingWinner.colorIdentity.join(''))
+        : '';
+      log(`Winner ${displayName}${colorIcons} marked as AFK.`);
     }
 
     pendingWinner=null;
@@ -5941,7 +5965,11 @@
     if(player.extraGamesRemaining && player.extraGamesRemaining > 0){
       player.extraGamesRemaining--;
       if(player.extraGamesRemaining > 0){
-        log(`${player.name} finished game. ${player.extraGamesRemaining} extra game(s) remaining.`);
+        const displayName = player.baseName || player.name;
+        const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+          ? ' ' + colorToIcons(player.colorIdentity.join(''))
+          : '';
+        log(`${displayName}${colorIcons} finished game. ${player.extraGamesRemaining} extra game(s) remaining.`);
         evt.currentRun=null;
         finishOverlay.classList.remove('show');
         finishSaveBtn.disabled = false;
@@ -5951,7 +5979,11 @@
         saveAll();
         return;
       }else{
-        log(`${player.name} finished all extra games.`);
+        const displayName = player.baseName || player.name;
+        const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+          ? ' ' + colorToIcons(player.colorIdentity.join(''))
+          : '';
+        log(`${displayName}${colorIcons} finished all extra games.`);
         delete player.extraGamesRemaining;
       }
     }
