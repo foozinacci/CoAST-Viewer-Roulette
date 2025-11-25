@@ -107,9 +107,11 @@
     html,body{
       overflow:hidden; /* Prevent browser-level scrolling */
       height:100vh;
+      height:100dvh; /* Dynamic viewport height for mobile browsers */
       width:100vw;
       margin:0;
       padding:0;
+      padding-bottom:env(safe-area-inset-bottom); /* Safe area for mobile notches */
     }
     body.theme-gold{
       --bg:#1e1814;
@@ -219,6 +221,8 @@
       flex-direction:column;
       overflow:hidden;
       position:relative;
+      height:calc(100vh - 16px); /* Account for margins */
+      height:calc(100dvh - 16px); /* Dynamic viewport for mobile */
     }
     header{
       padding:12px 16px;
@@ -319,6 +323,28 @@
       gap:6px;
       margin-top:4px;
     }
+    .theme-settings-cog{
+      display:none; /* Hidden by default on desktop */
+    }
+    .pull-to-refresh-indicator{
+      position:absolute;
+      top:0;
+      left:50%;
+      transform:translateX(-50%) translateY(-100%);
+      padding:10px 20px;
+      background:rgba(250,204,21,0.9);
+      color:#000;
+      border-radius:0 0 12px 12px;
+      font-size:12px;
+      font-weight:600;
+      text-align:center;
+      z-index:10000;
+      transition:transform 0.3s ease;
+      pointer-events:none;
+    }
+    .pull-to-refresh-indicator.visible{
+      transform:translateX(-50%) translateY(0);
+    }
     .theme-chip{
       width:30px;
       height:30px;
@@ -362,6 +388,8 @@
       display:flex;
       flex-direction:column;
       overflow:auto;
+      padding-bottom:70px; /* Space for footer */
+      min-height:0; /* Allow flex child to shrink */
     }
     .slot-layout{
       display:flex;
@@ -501,6 +529,9 @@
         margin:0;
         border-radius:0;
         min-height:100vh;
+        min-height:100dvh;
+        height:100vh;
+        height:100dvh;
       }
       header{
         padding:8px 12px;
@@ -526,6 +557,37 @@
       .theme-chip{
         width:26px;
         height:26px;
+      }
+      /* Adaptive category system for mobile */
+      @media(max-width:640px) and (orientation:portrait){
+        .theme-toggle{
+          position:relative;
+          max-width:fit-content;
+          overflow:hidden;
+        }
+        .theme-toggle:not(.expanded) .theme-chip:nth-child(n+3){
+          display:none;
+        }
+        .theme-settings-cog{
+          display:inline-flex;
+          width:26px;
+          height:26px;
+          align-items:center;
+          justify-content:center;
+          cursor:pointer;
+          color:var(--gold);
+          font-size:18px;
+          opacity:0.7;
+          transition:opacity 0.2s;
+        }
+        .theme-settings-cog:hover{
+          opacity:1;
+        }
+      }
+      @media(max-width:640px) and (orientation:landscape){
+        .theme-settings-cog{
+          display:none;
+        }
       }
       .header-top{
         flex-direction:column;
@@ -660,12 +722,18 @@
         overflow-wrap:break-word;
       }
       .footer-bar{
-        position:sticky;
+        position:fixed;
         bottom:0;
+        left:0;
+        right:0;
         z-index:9999;
         padding:10px 8px;
+        padding-bottom:calc(10px + env(safe-area-inset-bottom));
         max-width:100vw;
+        width:100%;
         box-sizing:border-box;
+        background:rgba(10,9,8,0.98);
+        backdrop-filter:blur(8px);
       }
       .footer-buttons{
         gap:8px;
@@ -2293,6 +2361,7 @@
   </style>
 </head>
 <body class="theme-white">
+<div class="pull-to-refresh-indicator" id="pullToRefreshIndicator">↓ Pull to refresh</div>
 <div id="app">
   <header>
     <div class="header-top">
@@ -2302,12 +2371,13 @@
       <div class="title-block">
         <div class="title">Viewer Roulette</div>
         <div class="subtitle">Pick A Theme</div>
-        <div class="theme-toggle">
+        <div class="theme-toggle" id="themeToggle">
           <div class="theme-chip" data-color="W">W</div>
           <div class="theme-chip" data-color="U">U</div>
           <div class="theme-chip" data-color="B">B</div>
           <div class="theme-chip" data-color="R">R</div>
           <div class="theme-chip" data-color="G">G</div>
+          <div class="theme-settings-cog" id="themeSettingsCog">⚙️</div>
         </div>
       </div>
       <div class="header-spin-controls">
@@ -2539,12 +2609,12 @@
           <tbody id="deckTableBody"></tbody>
         </table>
       </div>
-      <div class="help-section-title">Reel Probabilities</div>
-      <div class="reel-charts-wrapper">
+      <div class="help-section-title" id="reelProbSectionHeader" style="cursor:pointer;user-select:none;">Reel Probabilities <span id="reelProbExpandIcon" style="font-size:10px;">▼</span></div>
+      <div class="reel-charts-wrapper" id="reelChartsWrapper">
         <div class="reel-charts" id="reelCharts"></div>
       </div>
-      <div class="help-section-title">Spark Progression (<span id="playerSparkCount">0</span>/12)</div>
-      <div class="spark-progression">
+      <div class="help-section-title" id="sparkSectionHeader" style="cursor:pointer;user-select:none;">Spark Progression (<span id="playerSparkCount">0</span>/12) <span id="sparkExpandIcon" style="font-size:10px;">▼</span></div>
+      <div class="spark-progression" id="sparkProgressionWrapper">
         <div class="spark-bulbs-row">
           <div class="spark-bulb" data-spark="1"></div>
           <div class="spark-bulb" data-spark="2"></div>
@@ -2793,6 +2863,212 @@
     return 6;                                   // Maximum capacity - maintain pace
   }
 
+  // KRARK'S QUIPS LIBRARY
+  // Slot outcome quips - 3 rotating quips per scenario
+  const SLOT_QUIPS = {
+    deadspinNoThumb: [
+      "Nothing?! That spin was emptier than my savings!",
+      "Machine, you call THAT entertainment? TRY AGAIN!",
+      "Deadspin. DEADspin. I hate that word."
+    ],
+    deadspinThumbAppears: [
+      "HEY! My thumb showed up and NOTHING happened?! Rude!",
+      "Thumb appears, no win? That's emotional damage!",
+      "What's the point of my thumb showing up if it doesn't DO anything?!"
+    ],
+    smallWinNoThumb: [
+      "A tiny win! Like a goblin snack!",
+      "Look, a baby victory. Adorable.",
+      "Not big, but not nothing. Acceptable!"
+    ],
+    smallWinThumbNotAdjacent: [
+      "Oh c'mon! Win happened AND my thumb was over THERE?!",
+      "Thumb didn't help at all! Lazy thumb!",
+      "Two separate events! One win and one useless thumb!"
+    ],
+    fake3Oak: [
+      "HEY! That looks like THREE to me!! Pay up!!",
+      "Two names AND my thumb touching! That SHOULD count!",
+      "Goblin math says that's a win. Machine math LIES."
+    ],
+    fake4Oak: [
+      "FOUR! I SEE FOUR THINGS. Don't argue with me!",
+      "Three names and my thumb? That's basically FOUR!",
+      "Award it! Award the FOUR I clearly see!"
+    ],
+    fake5Oak: [
+      "FIVE! That's FIVE! …Okay fine, four and a thumb.",
+      "Four names plus my thumb is ULTRA-FIVE!",
+      "That should be legendary! Machine says no. Machine wrong."
+    ],
+    true4Oak: [
+      "FOUR OF A KIND! Ooooh that's tasty chaos!",
+      "FOUR! The universe trembles at that number!",
+      "Yes! FOUR! I love the way that looks!"
+    ],
+    true5Oak: [
+      "FIVE OF A KIND! THAT'S A REAL MONSTER OF A WIN!",
+      "YOU BROKE REALITY! And I'm proud of you!",
+      "FIVE! FIVE! The magic number of destruction!"
+    ],
+    trueCoastJackpot: [
+      "THE JACKPOT! This is history! THIS IS CHAOS!",
+      "COAST! COAST! WE HIT THE BIG ONE!",
+      "That spin should be framed on a wall!"
+    ],
+    fakeJackpot1Letter: [
+      "That's COA—HEY?! That's my thumb where a letter should be!",
+      "We ALMOST had COAST! Thumb RUINED IT!",
+      "Thumb, why would you replace the important part?!"
+    ],
+    fakeJackpot2Letters: [
+      "SO CLOSE! My thumb ruined EVERYTHING!",
+      "It LOOKS like a jackpot! Smells like one! BUT NO!",
+      "Two letters missing and my thumb mocking me. Pain."
+    ],
+    thumbAlone: [
+      "JUST my thumb?! No friends? No combo? SAD.",
+      "Thumb showed up for moral support only. Useless!",
+      "My thumb tries. It fails. Story of its life."
+    ]
+  };
+
+  // COLOR IDENTITY QUIPS - Organized by color identity, then context
+  const COLOR_QUIPS = {
+    W: { added: ["Ah, a White deck. Rules incoming. Boo.", "Mr. Morality joins the chaos circus!", "White mana? Don't smite anything important."], drawn: ["White got picked! Angels watching you now.", "Order taking a turn. Gross.", "Perfect! Go preach about fairness somewhere else!"], match: ["White fought them? Probably politely.", "I bet they asked permission before attacking.", "Lawbooks were definitely involved."] },
+    U: { added: ["Blue deck?! They're gonna start THINKING!", "Hide your ideas—Blue is here.", "Oh joy, another nerd wizard."], drawn: ["Blue got picked! Counter everything!", "Look out! Logic incoming!", "Perfect! Let's all get outsmarted now."], match: ["Blue fought them? Longest match ever.", "Counterspell noises intensify.", "They probably paused the game a hundred times."] },
+    B: { added: ["Black deck joins! Check your soul!", "Lovely—someone who likes winning AND misery.", "Black mana? Expect regrets."], drawn: ["Black got picked! Evil pays off again!", "The villain takes the stage!", "They totally bribed the machine."], match: ["Black fought 'em? Someone suffered.", "Even losing gives Black something.", "Ambition ALWAYS collects a fee."] },
+    R: { added: ["RED!! YES! My people!", "Chaos arrives in style!", "FIRE! PASSION! EXPLOSIONS!"], drawn: ["Red got picked! Something's about to burst!", "Punch first, think never!", "Red takes the wheel! Hide!"], match: ["Red fought them? Bet it was LOUD.", "Probably won by accident!", "If nothing caught fire, disappointing."] },
+    G: { added: ["Green deck joins! Hide the furniture!", "Nature lovers incoming.", "Huge beast energy detected."], drawn: ["Green got picked! Big things stomping soon!", "Animals, trees, and fists incoming.", "Green's turn! Something huge approaches."], match: ["Green fought them? Flattened.", "Strength wins again!", "Green doesn't duel. Green collides."] },
+    WU: { added: ["Ah, the law nerds AND the logic nerds. Great.", "Order plus control? My nightmare.", "Azorius joined. Everyone act boring!"], drawn: ["Azorius picked! Prepare for paperwork.", "They'll stall. Trust me.", "Hope you like rules!"], match: ["Azorius fought them? Probably detained them.", "Countering AND judging? Gross.", "Victory by bureaucracy!"] },
+    UB: { added: ["A Dimir deck? No they didn't. You saw nothing.", "Secrets! Lies! Nerds in cloaks!", "Dimir joins… allegedly."], drawn: ["Dimir got picked! Or did they?", "Something sneaky's happening!", "They'll pretend they lost even when they won."], match: ["Dimir fought them? Or maybe someone else.", "Spies everywhere!", "They stole something important. Guaranteed."] },
+    BR: { added: ["YES! Rakdos! My kind of party!", "Chaos PLUS cruelty?! DELICIOUS.", "Rakdos enters—everyone panic."], drawn: ["Rakdos picked! Screaming soon!", "A performance of PAIN!", "Perfect chaos energy!"], match: ["Rakdos fought them? Loudest duel ever.", "Someone got hurt for fun!", "Rakdos NEVER plays safely."] },
+    RG: { added: ["Smash AND burn? I LOVE this deck!", "Gruul enters! Nature with ANGER!", "Get ready for fists and fire!"], drawn: ["Gruul picked! Things get broken now.", "RAWR AND BOOM energy!", "Gruul doesn't think. Gruul DOES."], match: ["Gruul fought them? Total destruction!", "If something survived, surprise!", "Battle ended in a crater."] },
+    GW: { added: ["Selesnya? Friendship magic? Yuck.", "Oh great, plant-hugging community service.", "Harmony is suspicious!"], drawn: ["Selesnya picked! Prepare for tokens!", "Nature AND unity? Gross.", "Too much zen energy!"], match: ["Selesnya fought them? Group hug violence.", "So many creatures chanting…", "Victorious through teamwork. Cheaters!"] },
+    WB: { added: ["Orzhov joins! Hide your wallet!", "Taxes and ghosts. Ew.", "Debt collectors ARRIVE!"], drawn: ["Orzhov picked! Fees apply!", "They win by legal haunting.", "Prepare to owe them something."], match: ["Orzhov fought them? Someone's in debt now.", "Win or lose, they PROFIT.", "Shady divine paperwork everywhere!"] },
+    UR: { added: ["IZZET! MY PEOPLE! SCIENCE AND FIRE!", "Explosions guaranteed!", "YES! LET'S BREAK PHYSICS!"], drawn: ["IZZET PICKED! HOLD ON TO SOMETHING!", "Science time! Dangerous science!", "Something volatile is coming!"], match: ["Izzet fought them? Lab fire.", "Experimentation = casualties.", "Results inconclusive but entertaining!"] },
+    BG: { added: ["Golgari? Smells like compost and murder!", "Graveyard lovers incoming…", "Rot AND ambition!"], drawn: ["Golgari picked! Something undead rises!", "Gross but effective.", "Expect fungus!"], match: ["Golgari fought them? Ew, slimes everywhere.", "Someone came back from the dead.", "Victory fueled by decay!"] },
+    RW: { added: ["Boros! Punching plus authority!", "Soldiers AND fireballs? YEAH!", "Discipline meets explosions!"], drawn: ["Boros picked! HONOR AND CHAOS!", "Military mayhem incoming!", "Glorious battle time!"], match: ["Boros fought them? Shouting involved.", "Orderly violence!", "Someone marched aggressively."] },
+    GU: { added: ["Simic? Mutants and homework? NO THANKS!", "They'll graft something weird.", "Science but slimy."], drawn: ["Simic picked! Weird creature incoming.", "Mutations ahead!", "Expect something with too many limbs."], match: ["Simic fought them? A creature evolved mid-punch.", "So many fins… and claws…", "Nature with extra steps!"] },
+    WUB: { added: ["Esper joins! Rules, secrets, and greed!", "Brainy AND sneaky AND bossy!", "Tri-color nonsense!"], drawn: ["Esper picked! Mind games incoming!", "Three-color complexity!", "Hope you like strategy. I don't."], match: ["Esper fought them? Probably manipulated fate.", "Layers of control!", "Confusing but effective!"] },
+    UBR: { added: ["Grixis! Evil squared!", "Necromancy AND fire? Yes.", "Grixis joins—look terrified!"], drawn: ["Grixis picked! Pain buffet begins!", "Cruelty multicolored!", "Expect fire AND agony."], match: ["Grixis fought them? Someone melted.", "A three-color nightmare.", "Delicious villain energy!"] },
+    BRG: { added: ["Jund! Eat, smash, burn!", "Pure chaos ecosystem!", "Love this energy!"], drawn: ["Jund picked! Something dies AND something eats!", "Three-color violence!", "Raw instinct unleashed!"], match: ["Jund fought them? Food chain rearranged!", "Someone got eaten.", "Beasts everywhere!"] },
+    RGW: { added: ["Naya! Big beasts AND moral speeches.", "Strength with sunshine!", "They love giant things!"], drawn: ["Naya picked! Expect something huge!", "Three-color wilderness!", "Giant creature incoming!"], match: ["Naya fought them? Splat!", "Huge beast won the day.", "Nature plus honor equals crushed bones!"] },
+    GWU: { added: ["Bant? Knights, angels, and manners?", "Too much politeness!", "Magic but fancy."], drawn: ["Bant picked! Dignified punching incoming.", "Elegant battle stance!", "Someone will die gracefully."], match: ["Bant fought them? Smelled like perfume and justice.", "Knight parade!", "Victory with good posture!"] },
+    RWB: { added: ["Mardu! War, passion, and cruelty!", "Aggression squared!", "Mardu enters—brace yourselves!"], drawn: ["Mardu picked! CHARGE!", "Warband gets the spotlight!", "Three-color aggression!"], match: ["Mardu fought them? Fast and deadly!", "Reckless AND violent!", "Glorious carnage!"] },
+    GUR: { added: ["Temur! Nature PLUS spell nerds PLUS rage!", "A weird but effective stew!", "Elemental chaos detected!"], drawn: ["Temur picked! Animal brain with wizard hands!", "Energy storm incoming!", "Wild AND clever!"], match: ["Temur fought them? Fur and lightning!", "Epic wilderness duel!", "Victory by instinct AND intellect."] },
+    WBG: { added: ["Abzan! Tough, moral, and muddy.", "Family values… but deadly!", "Stubborn mana!"], drawn: ["Abzan picked! Expect endurance!", "Slow and crushing!", "Three-color fortress!"], match: ["Abzan fought them? Took forever.", "Sturdy AND ruthless!", "They out-lasted everything."] },
+    WUR: { added: ["Jeskai! Wisdom, tricks, and fire kicks!", "Spell monks incoming!", "A very punchy philosophy!"], drawn: ["Jeskai picked! Expect fancy spells!", "Magic martial arts!", "Three-color elegance!"], match: ["Jeskai fought them? Spells everywhere!", "Fast, clever, and flashy!", "Wisdom punched someone!"] },
+    BUG: { added: ["Sultai! Snakes, ambition, and grave slime.", "Slimy power!", "Evil with a swampy scent."], drawn: ["Sultai picked! Something creepy crawls!", "Three-color greed!", "Expect ooze!"], match: ["Sultai fought them? Someone got poisoned.", "Ambition AND rot!", "Gross victory achieved."] },
+    WUBR: { added: ["Four colors?! That's too much thinking!", "Complicated AND scary.", "This deck's got everything!"], drawn: ["Four-color madness picked! HOLD ON!", "So many spells!", "Chaos with structure!"], match: ["They fought with ALL the colors but green!", "Powerful but confused!", "Victory through sheer complexity."] },
+    WUBG: { added: ["Four colors but NO red? Cowards.", "Who builds THAT?!", "So much control. Ew."], drawn: ["Four-color weirdness picked!", "This deck has too many plans.", "Expect everything at once!"], match: ["They fought? Strategy overkill.", "Four colors = four headaches.", "Longest duel ever!"] },
+    WURG: { added: ["Four colors, zero evil? LAME!", "Too wholesome!", "I don't trust it."], drawn: ["Rainbow minus doom! Picked!", "Nature and storms incoming!", "This deck glows too much."], match: ["They fought with pure positivity. Gross.", "Colorful… but soft.", "They won through teamwork and sunshine."] },
+    WRBG: { added: ["No Blue? FINALLY someone who hates thinking!", "Four colors of violence!", "This deck wants to FIGHT."], drawn: ["No-Blue deck picked! CHAOS WITHOUT RESTRAINT!", "Direct damage guaranteed!", "Good old brute force!"], match: ["They fought them? Fast and furious!", "No hesitation!", "Victory by fists!"] },
+    UBRG: { added: ["Four colors, zero rules. PERFECT!", "Chaos stew!", "Deliciously evil."], drawn: ["No-White four-color deck picked! Disaster incoming!", "The most unsupervised deck possible!", "I LIKE this one!"], match: ["They fought? No morals detected!", "Pure anarchy power!", "Victory forged in villainy!"] },
+    WUBRG: { added: ["ALL THE COLORS?! Someone likes attention!", "Five-color deck! EXPENSIVE AND DANGEROUS!", "Everything at once! Chaos buffet!"], drawn: ["Five-color deck picked!! RAINBOW VIOLENCE!", "Infinite options! I'm scared!", "This is gonna get wild!"], match: ["They fought them with ALL magic! Showoff!", "Five colors = unstoppable!", "Victory by overwhelming flavor!"] }
+  };
+
+  // Quip rotation counters
+  const quipCounters = {};
+  function getNextQuip(category){
+    if(!quipCounters[category]) quipCounters[category] = 0;
+    const quips = SLOT_QUIPS[category];
+    if(!quips || quips.length === 0) return null;
+    const quip = quips[quipCounters[category] % quips.length];
+    quipCounters[category]++;
+    return quip;
+  }
+
+  function getColorQuip(colorIdentity, context){
+    if(!quipCounters[colorIdentity]) quipCounters[colorIdentity] = {added: 0, drawn: 0, match: 0};
+    const colorData = COLOR_QUIPS[colorIdentity];
+    if(!colorData || !colorData[context]) return null;
+    const quips = colorData[context];
+    const quip = quips[quipCounters[colorIdentity][context] % quips.length];
+    quipCounters[colorIdentity][context]++;
+    return quip;
+  }
+
+  // Analyze spin symbols to determine appropriate Krark quip
+  function getSpinOutcomeQuip(symbols, isWin, hits){
+    const lunaCount = symbols.filter(s => s.type === 'luna').length;
+    const lunaPositions = symbols.map((s,i) => s.type === 'luna' ? i : -1).filter(i => i >= 0);
+    const letters = ['C','o','A','S','T'];
+    const letterSymbols = symbols.filter(s => s.type === 'letter');
+    const playerSymbols = symbols.filter(s => s.type === 'player');
+
+    // Check for COAST jackpot scenarios
+    const isCoastJackpot = symbols.every((s,i) => s.type === 'letter' && s.letter === letters[i]);
+    if(isCoastJackpot){
+      return getNextQuip('trueCoastJackpot');
+    }
+
+    // Fake jackpot - count COAST letters present
+    const coastLetterCount = symbols.filter((s,i) => s.type === 'letter' && s.letter === letters[i]).length;
+    if(coastLetterCount >= 3 && lunaCount > 0){
+      // Check if thumb is replacing COAST letters
+      if(coastLetterCount === 4) return getNextQuip('fakeJackpot1Letter');
+      if(coastLetterCount === 3) return getNextQuip('fakeJackpot2Letters');
+    }
+
+    // True N-of-a-kind (no thumb involved)
+    if(isWin && lunaCount === 0){
+      if(hits === 5) return getNextQuip('true5Oak');
+      if(hits === 4) return getNextQuip('true4Oak');
+      if(hits === 3) return getNextQuip('smallWinNoThumb');
+    }
+
+    // Fake N-of-a-kind (thumb adjacent to matching names)
+    if(lunaCount > 0 && playerSymbols.length >= 2){
+      // Count matching adjacent player names
+      const matchingPairs = [];
+      for(let i = 0; i < symbols.length - 1; i++){
+        if(symbols[i].type === 'player' && symbols[i+1].type === 'player' &&
+           symbols[i].playerId === symbols[i+1].playerId){
+          matchingPairs.push(i);
+        }
+      }
+
+      // Check if thumb is next to matching names
+      for(const thumbPos of lunaPositions){
+        const nextToMatch = matchingPairs.some(pos =>
+          thumbPos === pos - 1 || thumbPos === pos + 2
+        );
+        if(nextToMatch){
+          const uniquePlayers = new Set(playerSymbols.map(s => s.playerId));
+          if(uniquePlayers.size === 1){
+            // All players are same person
+            const matchCount = playerSymbols.length;
+            if(matchCount === 4) return getNextQuip('fake5Oak');
+            if(matchCount === 3) return getNextQuip('fake4Oak');
+            if(matchCount === 2) return getNextQuip('fake3Oak');
+          }
+        }
+      }
+    }
+
+    // Small win with thumb not adjacent
+    if(isWin && lunaCount > 0){
+      return getNextQuip('smallWinThumbNotAdjacent');
+    }
+
+    // Dead spin scenarios
+    if(!isWin){
+      if(lunaCount > 0){
+        // Thumb appeared but no win
+        return getNextQuip('deadspinThumbAppears');
+      }
+      if(lunaCount === symbols.length){
+        // Only thumb(s), nothing else
+        return getNextQuip('thumbAlone');
+      }
+      // Regular dead spin
+      return getNextQuip('deadspinNoThumb');
+    }
+
+    return null;
+  }
+
   const reelsEl = document.getElementById('reels');
   const spinBtn = document.getElementById('spinBtn');
   const leverEl = document.getElementById('lever');
@@ -2800,6 +3076,8 @@
   const logoContainer = document.getElementById('logoContainer');
   const krarkLogo = document.getElementById('krarkLogo');
   const statusText = document.getElementById('statusText');
+  const themeToggle = document.getElementById('themeToggle');
+  const themeSettingsCog = document.getElementById('themeSettingsCog');
   const spinCountEl = document.getElementById('spinCount');
   const deadStreakEl = document.getElementById('deadStreak');
   const playerCountEl = document.getElementById('playerCount');
@@ -2865,6 +3143,12 @@
   const deckTableWrapper = document.getElementById('deckTableWrapper');
   const deckSectionHeader = document.getElementById('deckSectionHeader');
   const deckExpandIcon = document.getElementById('deckExpandIcon');
+  const reelProbSectionHeader = document.getElementById('reelProbSectionHeader');
+  const reelProbExpandIcon = document.getElementById('reelProbExpandIcon');
+  const reelChartsWrapper = document.getElementById('reelChartsWrapper');
+  const sparkSectionHeader = document.getElementById('sparkSectionHeader');
+  const sparkExpandIcon = document.getElementById('sparkExpandIcon');
+  const sparkProgressionWrapper = document.getElementById('sparkProgressionWrapper');
   const deckEditorOverlay = document.getElementById('deckEditorOverlay');
   const deckEditorColorChips = document.getElementById('deckEditorColorChips');
   const deckEditorWins = document.getElementById('deckEditorWins');
@@ -5169,6 +5453,24 @@
     leaderboardExpandIcon.textContent = isCurrentlyCollapsed ? '▼' : '▲';
   });
 
+  // Player card section collapse/expand - Reel Probabilities
+  if(reelProbSectionHeader && reelProbExpandIcon && reelChartsWrapper){
+    reelProbSectionHeader.addEventListener('click', () => {
+      const isCurrentlyCollapsed = reelChartsWrapper.style.display === 'none';
+      reelChartsWrapper.style.display = isCurrentlyCollapsed ? '' : 'none';
+      reelProbExpandIcon.textContent = isCurrentlyCollapsed ? '▼' : '▲';
+    });
+  }
+
+  // Player card section collapse/expand - Spark Progression
+  if(sparkSectionHeader && sparkExpandIcon && sparkProgressionWrapper){
+    sparkSectionHeader.addEventListener('click', () => {
+      const isCurrentlyCollapsed = sparkProgressionWrapper.style.display === 'none';
+      sparkProgressionWrapper.style.display = isCurrentlyCollapsed ? '' : 'none';
+      sparkExpandIcon.textContent = isCurrentlyCollapsed ? '▼' : '▲';
+    });
+  }
+
   // Leaderboard column sorting
   document.querySelectorAll('.sortable-header[data-sort]').forEach(th => {
     th.addEventListener('click', () => {
@@ -5443,7 +5745,10 @@
     });
 
     const colorIcons = colorToIcons(colors.join(''));
-    log(`Imported ${colorIcons} deck for ${player.baseName}`);
+    const colorKey = colors.join('');
+    const colorQuip = getColorQuip(colorKey, 'added');
+    const quipText = colorQuip ? `<br><span style="color:#f973fa;font-style:italic;font-size:11px;">Krark: "${colorQuip}"</span>` : '';
+    log(`Imported ${colorIcons} deck for ${player.baseName}${quipText}`);
 
     deckImportOverlay.classList.remove('show');
     pendingImportPlayer = null;
@@ -6198,7 +6503,11 @@
     const playerDisplay = (player.baseName || player.name) + (colorDisplay !== 'none' ? ':' + colorDisplay : '');
     const winsDisplay = `<span style="color:#00FF00;font-weight:600;">${wins}W</span>`;
     const lossesDisplay = `<span style="color:#FF0000;font-weight:600;">${losses}L</span>`;
-    log(`Reported run for ${playerDisplay}: ${winsDisplay}/${lossesDisplay} (${matchesPlayed} matches)${themeDisplay}${opponentDisplay}, type=${matchType}`);
+    // Get Krark's match quip
+    const colorKey = player.colorIdentity ? player.colorIdentity.join('') : null;
+    const matchQuip = colorKey ? getColorQuip(colorKey, 'match') : null;
+    const quipText = matchQuip ? `<br><span style="color:#f973fa;font-style:italic;font-size:11px;">Krark: "${matchQuip}"</span>` : '';
+    log(`Reported run for ${playerDisplay}: ${winsDisplay}/${lossesDisplay} (${matchesPlayed} matches)${themeDisplay}${opponentDisplay}, type=${matchType}${quipText}`);
 
     // Store player info for requeue and bonus overlays
     evt.currentRun.player = player;
@@ -6597,7 +6906,15 @@
         }
         const playerDisplay = (winner.baseName || winner.name) + (deckIdentityDisplay ? ' ' + deckIdentityDisplay : '');
 
-        log(`<span style="color:${winColor};font-weight:600;">${playerDisplay} wins the slot (${reason}, hits=${hits}).</span>`);
+        // Get Krark's quips for this outcome
+        const slotQuip = getSpinOutcomeQuip(symbols, true, hits);
+        const colorKey = winner.colorIdentity ? winner.colorIdentity.join('') : null;
+        const colorQuip = colorKey ? getColorQuip(colorKey, 'drawn') : null;
+        let quipText = '';
+        if(slotQuip) quipText += `<br><span style="color:#f973fa;font-style:italic;font-size:11px;">Krark: "${slotQuip}"</span>`;
+        if(colorQuip) quipText += `<br><span style="color:#f973fa;font-style:italic;font-size:11px;">Krark: "${colorQuip}"</span>`;
+
+        log(`<span style="color:${winColor};font-weight:600;">${playerDisplay} wins the slot (${reason}, hits=${hits}).</span>${quipText}`);
         // Short delay after last reel stops before showing winner banner
         setTimeout(()=>{
           stopBulbsAnimation();
@@ -6609,7 +6926,10 @@
         // Dead spin: No bulb celebration
         evt.deadSpinStreak++;
         evt.lastSpinWasWinner = false;
-        log(`<span style="color:var(--red);">Dead spin (#${evt.deadSpinStreak}).</span>`);
+        // Get Krark's quip for dead spin
+        const krarkQuip = getSpinOutcomeQuip(symbols, false, 0);
+        const quipText = krarkQuip ? `<br><span style="color:#f973fa;font-style:italic;font-size:11px;">Krark: "${krarkQuip}"</span>` : '';
+        log(`<span style="color:var(--red);">Dead spin (#${evt.deadSpinStreak}).</span>${quipText}`);
         handleDeadSpinTickets(evt,symbols,reelPlayers);
         spinBtn.disabled=false;
         smallStatus.textContent="Ready.";
@@ -6688,6 +7008,66 @@
       isFlipping = false;
     }, 3000);
   });
+
+  // Theme settings cog toggle for mobile portrait
+  if(themeSettingsCog){
+    themeSettingsCog.addEventListener('click', () => {
+      if(themeToggle){
+        themeToggle.classList.toggle('expanded');
+      }
+    });
+  }
+
+  // Pull-to-refresh functionality for mobile
+  const pullToRefreshIndicator = document.getElementById('pullToRefreshIndicator');
+  let touchStartY = 0;
+  let touchCurrentY = 0;
+  let isPulling = false;
+
+  document.addEventListener('touchstart', (e) => {
+    // Only trigger if scrolled to top
+    if(document.documentElement.scrollTop === 0 && document.body.scrollTop === 0){
+      touchStartY = e.touches[0].clientY;
+      isPulling = true;
+    }
+  }, {passive: true});
+
+  document.addEventListener('touchmove', (e) => {
+    if(!isPulling) return;
+    touchCurrentY = e.touches[0].clientY;
+    const pullDistance = touchCurrentY - touchStartY;
+
+    // Show indicator if pulled down at least 80px
+    if(pullDistance > 80){
+      pullToRefreshIndicator.classList.add('visible');
+      pullToRefreshIndicator.textContent = '↻ Release to refresh';
+    } else if(pullDistance > 0){
+      pullToRefreshIndicator.classList.remove('visible');
+      pullToRefreshIndicator.textContent = '↓ Pull to refresh';
+    }
+  }, {passive: true});
+
+  document.addEventListener('touchend', () => {
+    if(!isPulling) return;
+    const pullDistance = touchCurrentY - touchStartY;
+
+    // Trigger refresh if pulled down at least 80px
+    if(pullDistance > 80){
+      pullToRefreshIndicator.textContent = '↻ Refreshing...';
+      setTimeout(() => {
+        // Refresh action - re-render leaderboard and log
+        renderLeaderboard();
+        pullToRefreshIndicator.classList.remove('visible');
+        pullToRefreshIndicator.textContent = '↓ Pull to refresh';
+      }, 500);
+    } else {
+      pullToRefreshIndicator.classList.remove('visible');
+    }
+
+    isPulling = false;
+    touchStartY = 0;
+    touchCurrentY = 0;
+  }, {passive: true});
 
   addPlayerForm.addEventListener('submit',e=>{
     e.preventDefault();
