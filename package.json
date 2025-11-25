@@ -1,0 +1,36 @@
+{
+  "name": "coast-viewer-roulette",
+  "version": "1.0.0",
+  "description": "A streamer-style probability-based slot machine for community game selection with player queue management, meta-tracking, and comprehensive diagnostics",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8000 -o",
+    "dev": "npx http-server -p 8000 -o",
+    "simulate": "node tests/run-simulation.js",
+    "simulate:comprehensive": "node tests/comprehensive-simulation.js",
+    "stress-test": "node tests/stress-test.js",
+    "test": "node tests/comprehensive-simulation.js && node tests/stress-test.js"
+  },
+  "keywords": [
+    "slot-machine",
+    "probability",
+    "queue-management",
+    "streamer-tools",
+    "mtg",
+    "gaming",
+    "diagnostics",
+    "simulation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/<USERNAME>/coast-viewer-roulette.git"
+  },
+  "bugs": {
+    "url": "https://github.com/<USERNAME>/coast-viewer-roulette/issues"
+  },
+  "homepage": "https://github.com/<USERNAME>/coast-viewer-roulette#readme",
+  "devDependencies": {},
+  "dependencies": {}
+}
