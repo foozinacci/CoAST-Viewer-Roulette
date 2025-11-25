@@ -1192,7 +1192,7 @@
     .overlay{
       position:fixed;
       inset:0;
-      background:rgba(15,23,42,.88);
+      background:rgba(15,23,42,.5);
       display:none;
       align-items:center;
       justify-content:center;
@@ -5361,6 +5361,23 @@
     const activeMatchType = matchTypeChoice.querySelector('.queue-chip.active');
     const matchType = activeMatchType ? activeMatchType.dataset.matchType : 'BO3';
 
+    // PRESERVE EXISTING SELECTIONS before clearing
+    const savedSelections = [];
+    const opponentChipGroups = opponentColorsContainer.querySelectorAll('.opponent-color-chips');
+    opponentChipGroups.forEach((group, index) => {
+      const activeChips = Array.from(group.querySelectorAll('.color-chip.active'));
+      const selectedColors = activeChips.map(chip => chip.dataset.color);
+
+      // Get the result for this game/match
+      const resultChip = opponentColorsContainer.querySelector(`.result-chip.active[data-game-index="${index}"]`);
+      const selectedResult = resultChip ? resultChip.dataset.result : null;
+
+      savedSelections.push({
+        colors: selectedColors,
+        result: selectedResult
+      });
+    });
+
     // Clear existing content
     opponentColorsContainer.innerHTML = '';
 
@@ -5461,6 +5478,27 @@
       }
 
       opponentColorsContainer.appendChild(scrollContainer);
+
+      // RESTORE SAVED SELECTIONS for BO1
+      savedSelections.forEach((saved, index) => {
+        if(index < matchesPlayed){
+          const group = opponentColorsContainer.querySelector(`.opponent-color-chips[data-game-index="${index}"]`);
+          if(group && saved.colors && saved.colors.length > 0){
+            saved.colors.forEach(color => {
+              const chip = group.querySelector(`.color-chip[data-color="${color}"]`);
+              if(chip) chip.classList.add('active');
+            });
+          }
+          if(saved.result){
+            const resultChip = opponentColorsContainer.querySelector(`.result-chip[data-result="${saved.result}"][data-game-index="${index}"]`);
+            if(resultChip){
+              resultChip.classList.add('active');
+              resultChip.style.fontWeight = 'bold';
+              resultChip.style.opacity = '1';
+            }
+          }
+        }
+      });
     } else {
       // BO3/BO5: One opponent color selector per match
       const labelDiv = document.createElement('div');
@@ -5546,6 +5584,27 @@
       }
 
       opponentColorsContainer.appendChild(scrollContainer);
+
+      // RESTORE SAVED SELECTIONS for BO3/BO5
+      savedSelections.forEach((saved, index) => {
+        if(index < matchesPlayed){
+          const group = opponentColorsContainer.querySelector(`.opponent-color-chips[data-game-index="${index}"]`);
+          if(group && saved.colors && saved.colors.length > 0){
+            saved.colors.forEach(color => {
+              const chip = group.querySelector(`.color-chip[data-color="${color}"]`);
+              if(chip) chip.classList.add('active');
+            });
+          }
+          if(saved.result){
+            const resultChip = opponentColorsContainer.querySelector(`.result-chip[data-result="${saved.result}"][data-game-index="${index}"]`);
+            if(resultChip){
+              resultChip.classList.add('active');
+              resultChip.style.fontWeight = 'bold';
+              resultChip.style.opacity = '1';
+            }
+          }
+        }
+      });
     }
   }
 
