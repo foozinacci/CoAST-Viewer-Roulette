@@ -14,17 +14,20 @@
 
 ---
 
-## 2. Report Deck Results Dialog - Opponent Color Selection
+## 2. Report Deck Results Dialog - Opponent Color Selection - ✅ FIXED
 
-### Problem
-- In "Report Deck Results" dialog, when Match Format = "Best of 3" and matches played = 1
-- "Match 1" color selection for opponent cannot be clicked or interacted with
-- No visual indication of how to select opponent colors
+### Status: RESOLVED
+Color chips in the "Report Deck Results" dialog now have proper click handlers and interactivity.
 
-### Expected Behavior
-- Each match row should display clickable color identity buttons/chips for opponent selection
-- Selected opponent colors should visually indicate selection state (highlighted/checked)
-- User must be able to click and toggle opponent colors before saving
+### Fix Applied
+- Added explicit inline styles (`cursor:pointer;pointer-events:auto;`) to color chips
+- Added onclick handlers to toggle active state when chips are clicked
+- Applied fix to both BO1 and BO3/BO5 match formats
+
+### Previous Problem
+- In "Report Deck Results" dialog, color chips could not be clicked or interacted with
+- Color chips were missing onclick handlers and explicit pointer-events styling
+- This prevented users from selecting opponent colors before saving results
 
 ---
 
