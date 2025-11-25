@@ -2366,7 +2366,7 @@
   <header>
     <div class="header-top">
       <div class="logo" id="logoContainer" style="cursor:pointer;">
-        <img id="krarkLogo" src="https://i.ibb.co/217nYbnD/ei-1764070131751-removebg-preview.png" alt="CoAST" style="transition:transform 0.6s ease;"/>
+        <img id="krarkLogo" src="https://i.ibb.co/prx7fLPp/ei-1764070131751-removebg-preview-ezgif-com-resize-removebg-preview.png" alt="CoAST" style="transition:transform 0.6s ease;"/>
       </div>
       <div class="title-block">
         <div class="title">Viewer Roulette</div>
@@ -6944,9 +6944,9 @@
   leverEl.addEventListener('click',performSpin);
 
   // Krark logo flip - 50/50 chance heads or tails
-  const KRARK_ORIGINAL = 'https://i.ibb.co/217nYbnD/ei-1764070131751-removebg-preview.png';
-  const KRARK_HEADS = 'https://i.ibb.co/zW2p2fSy/ei-1764090573462-removebg-preview.png';
-  const KRARK_TAILS = 'https://i.ibb.co/1YSpJ0SQ/ei-1764090558119-removebg-preview.png';
+  const KRARK_ORIGINAL = 'https://i.ibb.co/prx7fLPp/ei-1764070131751-removebg-preview-ezgif-com-resize-removebg-preview.png';
+  const KRARK_HEADS = 'https://i.ibb.co/hFJzL926/ei-1764090573462-removebg-preview-ezgif-com-resize-removebg-preview.png';
+  const KRARK_TAILS = 'https://i.ibb.co/TB08YLMF/ei-1764090558119-removebg-preview-ezgif-com-resize-1-removebg-preview.png';
   let isFlipping = false;
   let lastFlipTime = 0;
   const FLIP_COOLDOWN = 3000; // 3 seconds
@@ -6965,9 +6965,6 @@
     if(isFlipping) return; // Prevent multiple clicks during animation
     isFlipping = true;
     lastFlipTime = now;
-
-    // Pause the rotation animation during flip
-    krarkLogo.style.animationPlayState = 'paused';
 
     // 50/50 coin flip
     const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
@@ -7003,8 +7000,6 @@
     setTimeout(() => {
       krarkLogo.style.transform = 'rotateY(0deg)';
       krarkLogo.style.transition = 'transform 0.6s ease';
-      // Resume rotation animation
-      krarkLogo.style.animationPlayState = 'running';
       isFlipping = false;
     }, 3000);
   });
