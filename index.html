@@ -96,6 +96,24 @@
       --theme-glow:rgba(34,197,94,0.6);
       --border:#22c55e;
     }
+    body.theme-colorless{
+      --bg:#18181b;
+      --panel:#27272a;
+      --accent:#e4e4e7;
+      --gold:#a1a1aa;
+      --blue:#9ca3af;
+      --red:#a8a29e;
+      --green:#a1a1aa;
+      --text:#f4f4f5;
+      --muted:#d4d4d8;
+      --theme-color:#d4d4d8;
+      --theme-glow:rgba(212,212,216,0.6);
+      --border:#d4d4d8;
+    }
+    /* Apply greyscale filter to logo and coin flip images in artifact theme */
+    body.theme-colorless .logo img{
+      filter:grayscale(100%) !important;
+    }
     /* Global scrollbar elimination */
     *{
       scrollbar-width:none; /* Firefox */
@@ -379,6 +397,7 @@
     .theme-chip[data-color="B"]{background-image:url('https://i.ibb.co/nM1ZZz3z/B.png');}
     .theme-chip[data-color="R"]{background-image:url('https://i.ibb.co/NnjxnmZv/R.png');}
     .theme-chip[data-color="G"]{background-image:url('https://i.ibb.co/tM5Mb1Q0/G.png');}
+    .theme-chip[data-color="C"]{background-image:url('https://i.ibb.co/xt4Lpn0X/C.png');}
 
     main{
       flex:1;
@@ -2350,6 +2369,7 @@
           <div class="theme-chip" data-color="B">B</div>
           <div class="theme-chip" data-color="R">R</div>
           <div class="theme-chip" data-color="G">G</div>
+          <div class="theme-chip" data-color="C">C</div>
         </div>
       </div>
       <div class="header-spin-controls">
@@ -7321,15 +7341,19 @@
 
   function applyMultiTheme(){
     // Remove old theme classes
-    const classes = ['theme-white','theme-blue','theme-black','theme-red','theme-green','theme-gold'];
+    const classes = ['theme-white','theme-blue','theme-black','theme-red','theme-green','theme-gold','theme-colorless'];
     document.body.classList.remove(...classes);
 
     // If no colors selected, Krark mode (no theme class needed, gradient handles it)
     if(selectedColors.size === 0){
       // Krark mode - no theme class, gradients applied in applyGradientGlow()
     }
-    // If all 5 colors selected, use gold
-    else if(selectedColors.size === 5){
+    // If all 6 colors selected, use colorless (silver)
+    else if(selectedColors.size === 6){
+      document.body.classList.add('theme-colorless');
+    }
+    // If all 5 WUBRG colors selected (no C), use gold
+    else if(selectedColors.size === 5 && !selectedColors.has('C')){
       document.body.classList.add('theme-gold');
     }else{
       // Use the first selected color as primary theme
@@ -7340,6 +7364,7 @@
       else if(primary==='B') cls='theme-black';
       else if(primary==='R') cls='theme-red';
       else if(primary==='G') cls='theme-green';
+      else if(primary==='C') cls='theme-colorless';
       if(cls) document.body.classList.add(cls);
     }
 
@@ -7363,7 +7388,8 @@
     'U': '#38bdf8',  // Blue
     'B': '#c084fc',  // Purple (B theme color)
     'R': '#fb4b4b',  // Red
-    'G': '#22c55e'   // Green
+    'G': '#22c55e',  // Green
+    'C': '#d4d4d8'   // Colorless/Silver
   };
 
   // Shadow colors for independent moving shadow animation layer
@@ -7372,7 +7398,8 @@
     'U': '#0ea5e9',  // Blue shadow (darker)
     'B': '#000000',  // Black shadow
     'R': '#dc2626',  // Red shadow (darker)
-    'G': '#16a34a'   // Green shadow (darker)
+    'G': '#16a34a',  // Green shadow (darker)
+    'C': '#a1a1aa'   // Colorless/Silver shadow (darker)
   };
 
   const MTG_COLOR_ORDERS = {
