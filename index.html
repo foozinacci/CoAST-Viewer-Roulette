@@ -2370,14 +2370,13 @@
       </div>
       <div class="title-block">
         <div class="title">Viewer Roulette</div>
-        <div class="subtitle">Pick A Theme</div>
+        <div class="subtitle">Pick any combination</div>
         <div class="theme-toggle" id="themeToggle">
           <div class="theme-chip" data-color="W">W</div>
           <div class="theme-chip" data-color="U">U</div>
           <div class="theme-chip" data-color="B">B</div>
           <div class="theme-chip" data-color="R">R</div>
           <div class="theme-chip" data-color="G">G</div>
-          <div class="theme-settings-cog" id="themeSettingsCog">⚙️</div>
         </div>
       </div>
       <div class="header-spin-controls">
@@ -4084,7 +4083,7 @@
   }
 
   function buildSpinResult(evt, guaranteeWin = false, forceDead = false){
-    const letters = ['C','A','R','L','O'];
+    const letters = ['C','o','A','S','T'];
     const activePlayerCount = evt.players.filter(p => p.status === 'active').length;
     const lunaOdds = getLunaBaseOdds(activePlayerCount);
     const carloLetterOdds = getCarloLetterOdds(activePlayerCount);
@@ -6338,9 +6337,9 @@
       }
     }
 
-    // Calculate total wins and losses from result chips
-    const wins = resultsByGame.filter(r => r === 'win').length;
-    const losses = resultsByGame.filter(r => r === 'loss').length;
+    // Use the Overall Run Win/Loss input values
+    const wins = parseInt(runWinsInput.value, 10) || 0;
+    const losses = parseInt(runLossesInput.value, 10) || 0;
 
     player.overallWins += wins;
     player.overallLosses += losses;
