@@ -323,9 +323,6 @@
       gap:6px;
       margin-top:4px;
     }
-    .theme-settings-cog{
-      display:none; /* Hidden by default on desktop */
-    }
     .pull-to-refresh-indicator{
       position:absolute;
       top:0;
@@ -563,30 +560,6 @@
         .theme-toggle{
           position:relative;
           max-width:fit-content;
-          overflow:hidden;
-        }
-        .theme-toggle:not(.expanded) .theme-chip:nth-child(n+3){
-          display:none;
-        }
-        .theme-settings-cog{
-          display:inline-flex;
-          width:26px;
-          height:26px;
-          align-items:center;
-          justify-content:center;
-          cursor:pointer;
-          color:var(--gold);
-          font-size:18px;
-          opacity:0.7;
-          transition:opacity 0.2s;
-        }
-        .theme-settings-cog:hover{
-          opacity:1;
-        }
-      }
-      @media(max-width:640px) and (orientation:landscape){
-        .theme-settings-cog{
-          display:none;
         }
       }
       .header-top{
@@ -3076,7 +3049,6 @@
   const krarkLogo = document.getElementById('krarkLogo');
   const statusText = document.getElementById('statusText');
   const themeToggle = document.getElementById('themeToggle');
-  const themeSettingsCog = document.getElementById('themeSettingsCog');
   const spinCountEl = document.getElementById('spinCount');
   const deadStreakEl = document.getElementById('deadStreak');
   const playerCountEl = document.getElementById('playerCount');
@@ -7002,15 +6974,6 @@
       isFlipping = false;
     }, 3000);
   });
-
-  // Theme settings cog toggle for mobile portrait
-  if(themeSettingsCog){
-    themeSettingsCog.addEventListener('click', () => {
-      if(themeToggle){
-        themeToggle.classList.toggle('expanded');
-      }
-    });
-  }
 
   // Pull-to-refresh functionality for mobile
   const pullToRefreshIndicator = document.getElementById('pullToRefreshIndicator');
