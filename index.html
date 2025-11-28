@@ -2889,8 +2889,8 @@
     }
   }
 
-  // Coin result sound - higher pitched ding
-  function playCoinResultSound(){
+  // Coin result sound - heads (winning, higher pitched)
+  function playCoinHeadsSound(){
     try{
       const ctx = initAudioContext();
       const oscillator = ctx.createOscillator();
@@ -2899,15 +2899,66 @@
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
 
-      oscillator.frequency.setValueAtTime(1800, ctx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.1);
+      // Bright, triumphant tone for heads
+      oscillator.frequency.setValueAtTime(2000, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(1600, ctx.currentTime + 0.15);
       oscillator.type = 'sine';
 
-      gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
 
       oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.2);
+      oscillator.stop(ctx.currentTime + 0.25);
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
+  // Coin result sound - tails (different tone)
+  function playCoinTailsSound(){
+    try{
+      const ctx = initAudioContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      // Lower, mellower tone for tails
+      oscillator.frequency.setValueAtTime(1400, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.15);
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.25);
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
+  // Coin flip back sound - return to default
+  function playCoinFlipBackSound(){
+    try{
+      const ctx = initAudioContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      // Soft descending tone for flip back
+      oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.12);
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.15);
     }catch(e){
       console.log('Audio playback failed:', e);
     }
@@ -7105,7 +7156,12 @@
 
     // After 1s flip completes, display result for 1s
     setTimeout(() => {
-      playCoinResultSound();
+      // Play unique sound based on result
+      if(result === 'Heads'){
+        playCoinHeadsSound();
+      } else {
+        playCoinTailsSound();
+      }
       krarkLogo.style.transform = 'rotateY(0deg)';
       log(`Krark flipped <span style="color:${resultColor};font-weight:700;">${result}</span>!`);
     }, 1000);
@@ -7116,6 +7172,7 @@
     }, 2000);
 
     setTimeout(() => {
+      playCoinFlipBackSound();
       krarkLogo.src = KRARK_ORIGINAL;
       krarkLogo.style.transform = 'rotateY(360deg)';
     }, 2500);
