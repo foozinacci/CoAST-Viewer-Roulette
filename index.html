@@ -3037,6 +3037,165 @@
     }
   }
 
+  // Dead spin loser sound - descending sad trombone
+  function playDeadSpinSound(){
+    try{
+      const ctx = initAudioContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      // Descending sad tone
+      oscillator.frequency.setValueAtTime(400, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.5);
+      oscillator.type = 'sawtooth';
+
+      gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.6);
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
+  // Winner celebration - layered audience cheers and applause
+  let currentCelebrationGain = null;
+  function playWinnerCelebration(){
+    try{
+      const ctx = initAudioContext();
+
+      // Create master gain for fade out control
+      const masterGain = ctx.createGain();
+      masterGain.connect(ctx.destination);
+      masterGain.gain.setValueAtTime(1, ctx.currentTime);
+      currentCelebrationGain = masterGain;
+
+      // Layer 1: Crowd cheer (mid-range noise)
+      const cheer = ctx.createOscillator();
+      const cheerGain = ctx.createGain();
+      cheer.type = 'brown';
+      cheer.frequency.setValueAtTime(300, ctx.currentTime);
+      cheer.connect(cheerGain);
+      cheerGain.connect(masterGain);
+      cheerGain.gain.setValueAtTime(0.15, ctx.currentTime);
+      cheerGain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.3);
+      cheer.start(ctx.currentTime);
+      cheer.stop(ctx.currentTime + 3);
+
+      // Layer 2: Applause (high-frequency burst)
+      const applause = ctx.createOscillator();
+      const applauseGain = ctx.createGain();
+      applause.type = 'white';
+      applause.frequency.setValueAtTime(2000, ctx.currentTime);
+      applause.connect(applauseGain);
+      applauseGain.connect(masterGain);
+      applauseGain.gain.setValueAtTime(0.08, ctx.currentTime);
+      applauseGain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.2);
+      applause.start(ctx.currentTime);
+      applause.stop(ctx.currentTime + 3);
+
+      // Layer 3: Victory fanfare (ascending tones)
+      const fanfare1 = ctx.createOscillator();
+      const fanfare1Gain = ctx.createGain();
+      fanfare1.type = 'sine';
+      fanfare1.frequency.setValueAtTime(523, ctx.currentTime); // C5
+      fanfare1.connect(fanfare1Gain);
+      fanfare1Gain.connect(masterGain);
+      fanfare1Gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      fanfare1Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      fanfare1.start(ctx.currentTime);
+      fanfare1.stop(ctx.currentTime + 0.3);
+
+      const fanfare2 = ctx.createOscillator();
+      const fanfare2Gain = ctx.createGain();
+      fanfare2.type = 'sine';
+      fanfare2.frequency.setValueAtTime(659, ctx.currentTime + 0.15); // E5
+      fanfare2.connect(fanfare2Gain);
+      fanfare2Gain.connect(masterGain);
+      fanfare2Gain.gain.setValueAtTime(0.2, ctx.currentTime + 0.15);
+      fanfare2Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+      fanfare2.start(ctx.currentTime + 0.15);
+      fanfare2.stop(ctx.currentTime + 0.45);
+
+      const fanfare3 = ctx.createOscillator();
+      const fanfare3Gain = ctx.createGain();
+      fanfare3.type = 'sine';
+      fanfare3.frequency.setValueAtTime(784, ctx.currentTime + 0.3); // G5
+      fanfare3.connect(fanfare3Gain);
+      fanfare3Gain.connect(masterGain);
+      fanfare3Gain.gain.setValueAtTime(0.25, ctx.currentTime + 0.3);
+      fanfare3Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+      fanfare3.start(ctx.currentTime + 0.3);
+      fanfare3.stop(ctx.currentTime + 0.8);
+
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
+  // Fade out celebration when transitioning
+  function fadeOutCelebration(){
+    if(currentCelebrationGain){
+      try{
+        const ctx = initAudioContext();
+        currentCelebrationGain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        setTimeout(() => { currentCelebrationGain = null; }, 500);
+      }catch(e){
+        console.log('Audio fade failed:', e);
+      }
+    }
+  }
+
+  // Player added - cash register cha-ching
+  function playPlayerAddedSound(){
+    try{
+      const ctx = initAudioContext();
+
+      // First ding
+      const ding1 = ctx.createOscillator();
+      const ding1Gain = ctx.createGain();
+      ding1.type = 'sine';
+      ding1.frequency.setValueAtTime(1200, ctx.currentTime);
+      ding1.connect(ding1Gain);
+      ding1Gain.connect(ctx.destination);
+      ding1Gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      ding1Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      ding1.start(ctx.currentTime);
+      ding1.stop(ctx.currentTime + 0.1);
+
+      // Second ding (higher)
+      const ding2 = ctx.createOscillator();
+      const ding2Gain = ctx.createGain();
+      ding2.type = 'sine';
+      ding2.frequency.setValueAtTime(1600, ctx.currentTime + 0.1);
+      ding2.connect(ding2Gain);
+      ding2Gain.connect(ctx.destination);
+      ding2Gain.gain.setValueAtTime(0.35, ctx.currentTime + 0.1);
+      ding2Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      ding2.start(ctx.currentTime + 0.1);
+      ding2.stop(ctx.currentTime + 0.3);
+
+      // Bell ring (sustained)
+      const bell = ctx.createOscillator();
+      const bellGain = ctx.createGain();
+      bell.type = 'sine';
+      bell.frequency.setValueAtTime(2000, ctx.currentTime + 0.15);
+      bell.connect(bellGain);
+      bellGain.connect(ctx.destination);
+      bellGain.gain.setValueAtTime(0.2, ctx.currentTime + 0.15);
+      bellGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      bell.start(ctx.currentTime + 0.15);
+      bell.stop(ctx.currentTime + 0.6);
+
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
   // KRARK'S QUIPS LIBRARY
   // Slot outcome quips - 3 rotating quips per scenario
   const SLOT_QUIPS = {
@@ -4048,6 +4207,7 @@
     };
     evt.players.push(p);
     log(`Added player ${name} to the session.`);
+    playPlayerAddedSound();
     renderLeaderboard();
     const lbWrap = document.querySelector('.leaderboard-wrapper');
     if(lbWrap) lbWrap.scrollTop = lbWrap.scrollHeight;
@@ -5968,6 +6128,9 @@
     currentWinnerMeta = {reason,hits};
     winnerLunaSticker.style.display = isLuna ? 'block' : 'none';
 
+    // Play winner celebration sound
+    playWinnerCelebration();
+
     const displayName = player.baseName || player.name;
     const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
       ? colorToIcons(player.colorIdentity.join(''))
@@ -6359,6 +6522,8 @@
   winnerExportPlayBtn.addEventListener('click',()=>{
     if(!pendingWinner) return;
     const p = pendingWinner;
+    // Fade out celebration sound
+    fadeOutCelebration();
     // Export deck to clipboard if available
     if(hasValidDeckList(p)){
       exportDeckToClipboard(p, winnerExportPlayBtn);
@@ -6374,6 +6539,9 @@
   winnerSkipBtn.addEventListener('click',()=>{
     const evt = currentEvent();
     if(!pendingWinner) return;
+
+    // Fade out celebration sound
+    fadeOutCelebration();
 
     // Show prompt: Remove or Mark AFK
     const displayName = pendingWinner.baseName || pendingWinner.name;
@@ -7127,6 +7295,7 @@
         const krarkQuip = getSpinOutcomeQuip(symbols, false, 0);
         const quipText = krarkQuip ? `<br><span style="color:#f973fa;font-style:italic;font-size:11px;">Krark: "${krarkQuip}"</span>` : '';
         log(`<span style="color:var(--red);">Dead spin (#${evt.deadSpinStreak}).</span>${quipText}`);
+        playDeadSpinSound();
         handleDeadSpinTickets(evt,symbols,reelPlayers);
         spinBtn.disabled=false;
         smallStatus.textContent="Ready.";
