@@ -2865,7 +2865,7 @@
     return audioContext;
   }
 
-  // Coin flip sound - metallic clink
+  // Coin flip sound - metallic clink (synthesized)
   function playCoinFlipSound(){
     try{
       const ctx = initAudioContext();
@@ -2884,6 +2884,17 @@
 
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.15);
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
+  // Real coin flip sound (layered with synthesized)
+  function playRealCoinFlipSound(){
+    try{
+      const audio = new Audio('https://cdn.pixabay.com/audio/2024/06/12/audio_b700b29e0f.mp3');
+      audio.volume = 0.6;
+      audio.play().catch(e => console.log('Audio playback failed:', e));
     }catch(e){
       console.log('Audio playback failed:', e);
     }
@@ -7319,6 +7330,7 @@
 
     // 1-second flip animation (rotateY 180deg)
     playCoinFlipSound();
+    playRealCoinFlipSound(); // Layer real coin flip sound
     krarkLogo.style.transition = 'transform 1s ease-in-out';
     krarkLogo.style.transform = 'rotateY(180deg)';
 
