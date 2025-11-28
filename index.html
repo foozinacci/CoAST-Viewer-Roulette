@@ -6825,10 +6825,6 @@
       player.sparks = 0;
       player.createdAt = Date.now();
       clampPlayer(player);
-      const displayName = player.baseName || player.name;
-      const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
-        ? ' ' + colorToIcons(player.colorIdentity.join(''))
-        : '';
       log(`${displayName}${colorIcons} re-added to queue with 1 ticket per reel.`);
 
       // Double other players' tickets
