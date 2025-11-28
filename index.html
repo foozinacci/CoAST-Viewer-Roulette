@@ -3073,7 +3073,7 @@
     }
   }
 
-  // Winner celebration - layered audience cheers and applause
+  // Winner celebration - victory fanfare only
   let currentCelebrationGain = null;
   function playWinnerCelebration(){
     try{
@@ -3085,38 +3085,14 @@
       masterGain.gain.setValueAtTime(1, ctx.currentTime);
       currentCelebrationGain = masterGain;
 
-      // Layer 1: Crowd cheer (mid-range noise)
-      const cheer = ctx.createOscillator();
-      const cheerGain = ctx.createGain();
-      cheer.type = 'brown';
-      cheer.frequency.setValueAtTime(300, ctx.currentTime);
-      cheer.connect(cheerGain);
-      cheerGain.connect(masterGain);
-      cheerGain.gain.setValueAtTime(0.15, ctx.currentTime);
-      cheerGain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.3);
-      cheer.start(ctx.currentTime);
-      cheer.stop(ctx.currentTime + 3);
-
-      // Layer 2: Applause (high-frequency burst)
-      const applause = ctx.createOscillator();
-      const applauseGain = ctx.createGain();
-      applause.type = 'white';
-      applause.frequency.setValueAtTime(2000, ctx.currentTime);
-      applause.connect(applauseGain);
-      applauseGain.connect(masterGain);
-      applauseGain.gain.setValueAtTime(0.08, ctx.currentTime);
-      applauseGain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.2);
-      applause.start(ctx.currentTime);
-      applause.stop(ctx.currentTime + 3);
-
-      // Layer 3: Victory fanfare (ascending tones)
+      // Victory fanfare (ascending tones C5 → E5 → G5)
       const fanfare1 = ctx.createOscillator();
       const fanfare1Gain = ctx.createGain();
       fanfare1.type = 'sine';
       fanfare1.frequency.setValueAtTime(523, ctx.currentTime); // C5
       fanfare1.connect(fanfare1Gain);
       fanfare1Gain.connect(masterGain);
-      fanfare1Gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      fanfare1Gain.gain.setValueAtTime(0.3, ctx.currentTime);
       fanfare1Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
       fanfare1.start(ctx.currentTime);
       fanfare1.stop(ctx.currentTime + 0.3);
@@ -3127,7 +3103,7 @@
       fanfare2.frequency.setValueAtTime(659, ctx.currentTime + 0.15); // E5
       fanfare2.connect(fanfare2Gain);
       fanfare2Gain.connect(masterGain);
-      fanfare2Gain.gain.setValueAtTime(0.2, ctx.currentTime + 0.15);
+      fanfare2Gain.gain.setValueAtTime(0.3, ctx.currentTime + 0.15);
       fanfare2Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
       fanfare2.start(ctx.currentTime + 0.15);
       fanfare2.stop(ctx.currentTime + 0.45);
@@ -3138,7 +3114,7 @@
       fanfare3.frequency.setValueAtTime(784, ctx.currentTime + 0.3); // G5
       fanfare3.connect(fanfare3Gain);
       fanfare3Gain.connect(masterGain);
-      fanfare3Gain.gain.setValueAtTime(0.25, ctx.currentTime + 0.3);
+      fanfare3Gain.gain.setValueAtTime(0.35, ctx.currentTime + 0.3);
       fanfare3Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
       fanfare3.start(ctx.currentTime + 0.3);
       fanfare3.stop(ctx.currentTime + 0.8);
