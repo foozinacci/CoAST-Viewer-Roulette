@@ -3579,6 +3579,11 @@
   const closeHelpBtn = document.getElementById('closeHelpBtn');
   const closeDiagBtn = document.getElementById('closeDiagBtn');
   const runDiagNowBtn = document.getElementById('runDiagNowBtn');
+  const matchupDetailOverlay = document.getElementById('matchupDetailOverlay');
+  const closeMatchupDetailBtn = document.getElementById('closeMatchupDetailBtn');
+  const matchupDetailTitle = document.getElementById('matchupDetailTitle');
+  const matchupDetailSubtitle = document.getElementById('matchupDetailSubtitle');
+  const matchupDetailContent = document.getElementById('matchupDetailContent');
   const diagResult = document.getElementById('diagResult');
   const sessionResumeOverlay = document.getElementById('sessionResumeOverlay');
   const sessionResumeBtn = document.getElementById('sessionResumeBtn');
@@ -5751,7 +5756,7 @@
       const stats = deck.matchups[oppColors];
 
       // Skip if no stats available for this opponent
-      if(!stats || !oppColors) continue;
+      if(!stats || !oppColors) return;
 
       // Opponent group header
       const groupHeader = document.createElement('div');
@@ -6136,13 +6141,6 @@
       currentEditingDeck = null;
     }
   });
-
-  // Matchup Detail Modal
-  const matchupDetailOverlay = document.getElementById('matchupDetailOverlay');
-  const closeMatchupDetailBtn = document.getElementById('closeMatchupDetailBtn');
-  const matchupDetailTitle = document.getElementById('matchupDetailTitle');
-  const matchupDetailSubtitle = document.getElementById('matchupDetailSubtitle');
-  const matchupDetailContent = document.getElementById('matchupDetailContent');
 
   // Close matchup detail modal
   closeMatchupDetailBtn.addEventListener('click', () => {
