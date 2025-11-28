@@ -6671,7 +6671,11 @@
       player.sparks = 0;
       player.createdAt = Date.now();
       clampPlayer(player);
-      log(`${player.name} re-added to queue with 1 ticket per reel.`);
+      const displayName = player.baseName || player.name;
+      const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+        ? ' ' + colorToIcons(player.colorIdentity.join(''))
+        : '';
+      log(`${displayName}${colorIcons} re-added to queue with 1 ticket per reel.`);
 
       // When winner re-enters, double all other active players' tickets (patience reward)
       const isIgnitedWin = currentWinnerMeta && currentWinnerMeta.reason === 'ignited';
@@ -6728,7 +6732,8 @@
       player.deckCode = deckCode;
     }
 
-    log(`${player.name}'s deck changed to ${colorToIcons(selectedColors.join(''))}`);
+    const displayName = player.baseName || player.name;
+    log(`${displayName}'s deck changed to ${colorToIcons(selectedColors.join(''))}`);
 
     // Proceed with requeue (same logic as "Same Deck")
     const bonusHits = evt.currentRun.bonusHits || 3;
@@ -6747,7 +6752,11 @@
       player.sparks = 0;
       player.createdAt = Date.now();
       clampPlayer(player);
-      log(`${player.name} re-added to queue with 1 ticket per reel.`);
+      const displayName = player.baseName || player.name;
+      const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+        ? ' ' + colorToIcons(player.colorIdentity.join(''))
+        : '';
+      log(`${displayName}${colorIcons} re-added to queue with 1 ticket per reel.`);
 
       // When winner re-enters, double all other active players' tickets (patience reward)
       const isIgnitedWin = currentWinnerMeta && currentWinnerMeta.reason === 'ignited';
@@ -6774,7 +6783,11 @@
     requeueOverlay.classList.remove('show');
 
     player.status = 'removed';
-    log(`${player.name} removed from queue.`);
+    const displayName = player.baseName || player.name;
+    const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+      ? ' ' + colorToIcons(player.colorIdentity.join(''))
+      : '';
+    log(`${displayName}${colorIcons} removed from queue.`);
 
     evt.currentRun = null;
     renderLeaderboard();
@@ -6799,7 +6812,11 @@
     if(choice === 'games'){
       // Extra games
       player.extraGamesRemaining = bonus;
-      log(`${player.name} chose extra games bonus: ${bonus} additional game(s)`);
+      const displayName = player.baseName || player.name;
+      const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+        ? ' ' + colorToIcons(player.colorIdentity.join(''))
+        : '';
+      log(`${displayName}${colorIcons} chose extra games bonus: ${bonus} additional game(s)`);
 
       // Still need to requeue them for now
       for(let i=0;i<5;i++){
@@ -6808,7 +6825,11 @@
       player.sparks = 0;
       player.createdAt = Date.now();
       clampPlayer(player);
-      log(`${player.name} re-added to queue with 1 ticket per reel.`);
+      const displayName = player.baseName || player.name;
+      const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+        ? ' ' + colorToIcons(player.colorIdentity.join(''))
+        : '';
+      log(`${displayName}${colorIcons} re-added to queue with 1 ticket per reel.`);
 
       // Double other players' tickets
       const isIgnitedWin = currentWinnerMeta && currentWinnerMeta.reason === 'ignited';
@@ -6835,7 +6856,11 @@
       player.sparks = 0;
       player.createdAt = Date.now();
       clampPlayer(player);
-      log(`${player.name} re-added to queue with ${baseTickets} ticket(s) per reel (bonus included).`);
+      const displayName = player.baseName || player.name;
+      const colorIcons = Array.isArray(player.colorIdentity) && player.colorIdentity.length > 0
+        ? ' ' + colorToIcons(player.colorIdentity.join(''))
+        : '';
+      log(`${displayName}${colorIcons} re-added to queue with ${baseTickets} ticket(s) per reel (bonus included).`);
 
       // Double other players' tickets
       const isIgnitedWin = currentWinnerMeta && currentWinnerMeta.reason === 'ignited';
