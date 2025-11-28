@@ -3150,47 +3150,12 @@
     }
   }
 
-  // Player added - cash register cha-ching
-  function playPlayerAddedSound(){
+  // Deck imported - cash register cha-ching (real audio file)
+  function playDeckImportSound(){
     try{
-      const ctx = initAudioContext();
-
-      // First ding
-      const ding1 = ctx.createOscillator();
-      const ding1Gain = ctx.createGain();
-      ding1.type = 'sine';
-      ding1.frequency.setValueAtTime(1200, ctx.currentTime);
-      ding1.connect(ding1Gain);
-      ding1Gain.connect(ctx.destination);
-      ding1Gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      ding1Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-      ding1.start(ctx.currentTime);
-      ding1.stop(ctx.currentTime + 0.1);
-
-      // Second ding (higher)
-      const ding2 = ctx.createOscillator();
-      const ding2Gain = ctx.createGain();
-      ding2.type = 'sine';
-      ding2.frequency.setValueAtTime(1600, ctx.currentTime + 0.1);
-      ding2.connect(ding2Gain);
-      ding2Gain.connect(ctx.destination);
-      ding2Gain.gain.setValueAtTime(0.35, ctx.currentTime + 0.1);
-      ding2Gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-      ding2.start(ctx.currentTime + 0.1);
-      ding2.stop(ctx.currentTime + 0.3);
-
-      // Bell ring (sustained)
-      const bell = ctx.createOscillator();
-      const bellGain = ctx.createGain();
-      bell.type = 'sine';
-      bell.frequency.setValueAtTime(2000, ctx.currentTime + 0.15);
-      bell.connect(bellGain);
-      bellGain.connect(ctx.destination);
-      bellGain.gain.setValueAtTime(0.2, ctx.currentTime + 0.15);
-      bellGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
-      bell.start(ctx.currentTime + 0.15);
-      bell.stop(ctx.currentTime + 0.6);
-
+      const audio = new Audio('https://www.free-stock-music.com/music/sound-effects-library/mp3/sound-effects-library-cash-register-sound.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(e => console.log('Audio playback failed:', e));
     }catch(e){
       console.log('Audio playback failed:', e);
     }
@@ -4207,7 +4172,6 @@
     };
     evt.players.push(p);
     log(`Added player ${name} to the session.`);
-    playPlayerAddedSound();
     renderLeaderboard();
     const lbWrap = document.querySelector('.leaderboard-wrapper');
     if(lbWrap) lbWrap.scrollTop = lbWrap.scrollHeight;
@@ -6085,6 +6049,7 @@
     const colorQuip = getColorQuip(colorKey, 'added');
     const quipText = colorQuip ? `<br><span style="color:#f973fa;font-style:italic;font-size:11px;">Krark: "${colorQuip}"</span>` : '';
     log(`Imported ${colorIcons} deck for ${player.baseName}${quipText}`);
+    playDeckImportSound();
 
     deckImportOverlay.classList.remove('show');
     pendingImportPlayer = null;
