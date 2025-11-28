@@ -2733,7 +2733,7 @@
       </div>
       <div class="player-card-actions" style="margin-top:12px;">
         <button id="exportPlayerDeckBtn" style="display:none;">📋 Export Deck</button>
-        <button id="toggleAfkBtn">Toggle AFK</button>
+        <button id="toggleAfkBtn">Toggle Status</button>
         <button id="removePlayerBtn">Remove Player</button>
         <button id="closePlayerCardBtn">Close</button>
       </div>
@@ -2856,8 +2856,8 @@
           <div class="help-box-text">Wild card that helps complete wins. Max 1 per spin.</div>
         </div>
         <div class="help-box">
-          <div class="help-box-title">Jackpot</div>
-          <div class="help-box-text">Heads-side coin flip! All 5 reels align. Streamer plays their deck.</div>
+          <div class="help-box-title">Coin Flip</div>
+          <div class="help-box-text">Heads result! All 5 reels align. Streamer plays their deck.</div>
         </div>
         <div class="help-box">
           <div class="help-box-title">Meta-Tracking</div>
@@ -5686,7 +5686,8 @@
     // Set title and subtitle
     matchupDetailTitle.textContent = 'Match History';
     const colorStr = deck.color || 'Colorless';
-    matchupDetailSubtitle.textContent = `${player.name} - ${colorStr} Deck`;
+    const displayName = player.baseName || player.name;
+    matchupDetailSubtitle.textContent = `${displayName} - ${colorStr} Deck`;
 
     // Clear previous content
     matchupDetailContent.innerHTML = '';
@@ -5739,16 +5740,21 @@
       const oppMatches = groupedByOpponent[oppColors];
       const stats = deck.matchups[oppColors];
 
+      // Skip if no stats available for this opponent
+      if(!stats || !oppColors) continue;
+
       // Opponent group header
       const groupHeader = document.createElement('div');
       groupHeader.style.cssText = 'font-weight:600;margin-bottom:4px;color:var(--text);margin-top:10px;';
       let colorPips = '';
-      for(const letter of oppColors){
-        if(pipUrls[letter]){
-          colorPips += `<img src="${pipUrls[letter]}" style="width:12px;height:12px;vertical-align:middle;margin:0 1px;" alt="${letter}"/>`;
+      if(oppColors && typeof oppColors === 'string'){
+        for(const letter of oppColors){
+          if(pipUrls[letter]){
+            colorPips += `<img src="${pipUrls[letter]}" style="width:12px;height:12px;vertical-align:middle;margin:0 1px;" alt="${letter}"/>`;
+          }
         }
       }
-      const matchupTotal = stats.wins + stats.losses;
+      const matchupTotal = (stats.wins || 0) + (stats.losses || 0);
       const matchupWinRate = matchupTotal > 0 ? ((stats.wins / matchupTotal) * 100).toFixed(0) : 0;
       groupHeader.innerHTML = `vs. ${colorPips}`;
       matchupDetailContent.appendChild(groupHeader);
@@ -5804,14 +5810,22 @@
         e.stopPropagation();
         if(stats.wins > 0) {
           stats.wins--;
-          openMatchupDetail(player, deck);
+          winsSpan.textContent = stats.wins;
+          const newTotal = (stats.wins || 0) + (stats.losses || 0);
+          const newWinRate = newTotal > 0 ? ((stats.wins / newTotal) * 100).toFixed(0) : 0;
+          winRateSpan.textContent = newWinRate + '%';
+          totalSpan.textContent = newTotal;
           saveAll();
         }
       };
       winsPlusBtn.onclick = (e) => {
         e.stopPropagation();
         stats.wins++;
-        openMatchupDetail(player, deck);
+        winsSpan.textContent = stats.wins;
+        const newTotal = (stats.wins || 0) + (stats.losses || 0);
+        const newWinRate = newTotal > 0 ? ((stats.wins / newTotal) * 100).toFixed(0) : 0;
+        winRateSpan.textContent = newWinRate + '%';
+        totalSpan.textContent = newTotal;
         saveAll();
       };
 
@@ -5836,14 +5850,22 @@
         e.stopPropagation();
         if(stats.losses > 0) {
           stats.losses--;
-          openMatchupDetail(player, deck);
+          lossesSpan.textContent = stats.losses;
+          const newTotal = (stats.wins || 0) + (stats.losses || 0);
+          const newWinRate = newTotal > 0 ? ((stats.wins / newTotal) * 100).toFixed(0) : 0;
+          winRateSpan.textContent = newWinRate + '%';
+          totalSpan.textContent = newTotal;
           saveAll();
         }
       };
       lossesPlusBtn.onclick = (e) => {
         e.stopPropagation();
         stats.losses++;
-        openMatchupDetail(player, deck);
+        lossesSpan.textContent = stats.losses;
+        const newTotal = (stats.wins || 0) + (stats.losses || 0);
+        const newWinRate = newTotal > 0 ? ((stats.wins / newTotal) * 100).toFixed(0) : 0;
+        winRateSpan.textContent = newWinRate + '%';
+        totalSpan.textContent = newTotal;
         saveAll();
       };
 
@@ -5862,7 +5884,7 @@
       editOppBtn.style.cssText = 'font-size:9px;padding:2px 6px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;white-space:nowrap;';
       editOppBtn.onclick = (e) => {
         e.stopPropagation();
-        matchupDetailOverlay.classList.remove('show');
+        // Don't close matchup detail overlay - keep it open while editing
         openOpponentColorEditDialog(player, deck, oppColors, stats);
       };
 
@@ -6191,6 +6213,9 @@
             });
           }
         }
+        // Reset tickets to default when re-activating removed player
+        duplicate.tickets = [1,1,1,1,1];
+        duplicate.sparks = 0;
         duplicate.status = 'active';
         duplicate.createdAt = Date.now();
         const colorIcons = colorToIcons(colors.join(''));
@@ -6302,8 +6327,8 @@
       winnerHeading.textContent = 'IGNITED!';
       winnerMetaEl.textContent = `${displayName} has ${MAX_SPARKS} sparks & has been Ignited.`;
     }else if(reason==='carlo'){
-      winnerHeading.textContent = 'JACKPOT!';
-      winnerMetaEl.textContent = `Heads-side coin flip – streamer plays their own deck this round.`;
+      winnerHeading.textContent = 'HEADS - COIN FLIP!';
+      winnerMetaEl.textContent = `Coin landed heads – streamer plays their own deck this round.`;
     }else{
       winnerHeading.textContent = 'WINNER';
       if(hits>=5){
@@ -7389,14 +7414,14 @@
       let reason='normal';
       let hits=3;
       if(isCarlo){
-        // Jackpot: Bulbs already running, wait a bit more then show banner
+        // Coin flip result: Bulbs already running, wait a bit more then show banner
         setTimeout(()=>{
           stopBulbsAnimation();
           evt.carloHits++;
           winnerOverlay.classList.add('show');
-          winnerHeading.textContent='JACKPOT!';
-          winnerNameEl.innerHTML='JACKPOT';
-          winnerMetaEl.textContent='Heads-side coin flip – Streamer plays their own deck this round.';
+          winnerHeading.textContent='HEADS - COIN FLIP!';
+          winnerNameEl.innerHTML='HEADS';
+          winnerMetaEl.textContent='Coin landed heads – Streamer plays their own deck this round.';
           winnerLunaSticker.style.display='none';
           pendingWinner=null;
           currentWinnerMeta={reason:'carlo',hits:0};
