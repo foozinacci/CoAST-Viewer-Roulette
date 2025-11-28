@@ -100,12 +100,12 @@
       --bg:#1e293b;
       --panel:#0f172a;
       --accent:#cbd5e1;
-      --gold:#71717a;
-      --blue:#94a3b8;
-      --red:#a8a29e;
-      --green:#71717a;
-      --text:#cbd5e1;
-      --muted:#94a3b8;
+      --gold:#a8a8b8;
+      --blue:#b4bac8;
+      --red:#b8b4b1;
+      --green:#a8a8b8;
+      --text:#e2e8f0;
+      --muted:#b4bac8;
       --theme-color:#cbd5e1;
       --theme-glow:rgba(203,213,225,0.7);
       --border:#cbd5e1;
@@ -1476,7 +1476,7 @@
       filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
     }
     .finish-title{
-      font-size:14px;
+      font-size:16px;
       font-weight:700;
       margin-bottom:4px;
       position:relative;
@@ -1498,7 +1498,8 @@
       z-index:10;
     }
     .finish-label{
-      font-size:11px;
+      font-size:12px;
+      font-weight:700;
       text-transform:uppercase;
       letter-spacing:.12em;
       color:var(--muted);
@@ -2129,7 +2130,7 @@
       text-align:center;
     }
     .help-section-title{
-      font-size:11px;
+      font-size:12px;
       font-weight:700;
       text-transform:uppercase;
       letter-spacing:.12em;
@@ -2853,6 +2854,111 @@
     if(activePlayerCount <= 25) return 7;      // Medium-large - quick engagement
     if(activePlayerCount <= 40) return 6;      // Large groups - very tight
     return 6;                                   // Maximum capacity - maintain pace
+  }
+
+  // Sound Effects System using Web Audio API
+  let audioContext = null;
+  function initAudioContext(){
+    if(!audioContext){
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioContext;
+  }
+
+  // Coin flip sound - metallic clink
+  function playCoinFlipSound(){
+    try{
+      const ctx = initAudioContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.frequency.setValueAtTime(1200, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.15);
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
+  // Coin result sound - higher pitched ding
+  function playCoinResultSound(){
+    try{
+      const ctx = initAudioContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.frequency.setValueAtTime(1800, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.1);
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.2);
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
+  // Reel spin start sound - mechanical whir
+  function playSpinStartSound(){
+    try{
+      const ctx = initAudioContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.frequency.setValueAtTime(200, ctx.currentTime);
+      oscillator.frequency.linearRampToValueAtTime(400, ctx.currentTime + 0.3);
+      oscillator.type = 'sawtooth';
+
+      gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.3);
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
+  // Reel stop sound - mechanical click
+  function playReelStopSound(){
+    try{
+      const ctx = initAudioContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.frequency.setValueAtTime(300, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.08);
+      oscillator.type = 'square';
+
+      gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.08);
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
   }
 
   // KRARK'S QUIPS LIBRARY
@@ -3588,6 +3694,8 @@
     reelCycleIntervals.forEach(iv => clearInterval(iv));
     reelCycleIntervals = [];
 
+    playSpinStartSound();
+
     reelEls.forEach((r, idx)=>{
       r.classList.add('spinning');
       r.classList.remove('glow-win','glow-carlo','glow-luna','glow-idle');
@@ -3656,6 +3764,7 @@
     let stoppedCount = 0;
     delays.forEach((delay, index) => {
       setTimeout(() => {
+        playReelStopSound();
         reelEls[index].classList.remove('spinning');
         // Clear the interval for this specific reel
         if(reelCycleIntervals[index]){
@@ -6963,6 +7072,7 @@
     const resultColor = result === 'Heads' ? '#FF6B35' : '#7FFF00'; // Ember (orange-red) or Chartreuse (yellow-green)
 
     // 1-second flip animation (rotateY 180deg)
+    playCoinFlipSound();
     krarkLogo.style.transition = 'transform 1s ease-in-out';
     krarkLogo.style.transform = 'rotateY(180deg)';
 
@@ -6974,6 +7084,7 @@
 
     // After 1s flip completes, display result for 1s
     setTimeout(() => {
+      playCoinResultSound();
       krarkLogo.style.transform = 'rotateY(0deg)';
       log(`Krark flipped <span style="color:${resultColor};font-weight:700;">${result}</span>!`);
     }, 1000);
