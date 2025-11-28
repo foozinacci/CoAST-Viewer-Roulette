@@ -1770,7 +1770,7 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:blackLayerShift 6s ease-in-out infinite;
-      z-index:99;
+      z-index:-2;
       opacity:0.4;
     }
     .player-card::after{
@@ -1789,7 +1789,7 @@
       mask-composite:exclude;
       pointer-events:none;
       animation:gradientShift 4s ease infinite;
-      z-index:100;
+      z-index:-1;
       filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
     }
     .player-card-header{
@@ -2959,6 +2959,31 @@
 
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.15);
+    }catch(e){
+      console.log('Audio playback failed:', e);
+    }
+  }
+
+  // Button click sound - satisfying UI feedback
+  function playButtonClickSound(){
+    try{
+      const ctx = initAudioContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      // Quick, sharp click sound
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.08);
     }catch(e){
       console.log('Audio playback failed:', e);
     }
@@ -7114,6 +7139,21 @@
 
   spinBtn.addEventListener('click',performSpin);
   leverEl.addEventListener('click',performSpin);
+
+  // Global button click sound (exclude reels)
+  document.addEventListener('click', (e) => {
+    const target = e.target;
+    // Check if the clicked element is a button
+    const button = target.closest('button');
+    if(button){
+      // Exclude reel-related elements and disabled buttons
+      const isReel = button.closest('.reel') || button.closest('.reel-inner') || button.closest('.reel-symbol');
+      const isDisabled = button.disabled;
+      if(!isReel && !isDisabled){
+        playButtonClickSound();
+      }
+    }
+  }, true); // Use capture phase to ensure it fires early
 
   // Krark logo flip - 50/50 chance heads or tails
   const KRARK_ORIGINAL = 'https://i.ibb.co/prx7fLPp/ei-1764070131751-removebg-preview-ezgif-com-resize-removebg-preview.png';
