@@ -1475,6 +1475,95 @@
       z-index:100;
       filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
     }
+    .matchup-detail-card{
+      width:calc(100% - 20px);
+      max-width:700px;
+      max-height:calc(100vh - 40px);
+      margin:0 auto;
+      border-radius:18px;
+      border:3px solid transparent;
+      background:var(--panel);
+      background-clip:padding-box;
+      padding:14px 16px 18px;
+      box-shadow:0 0 30px rgba(0,0,0,.9);
+      font-size:12px;
+      position:relative;
+      overflow-y:auto;
+      overflow-x:hidden;
+    }
+    .matchup-detail-card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      padding:3px;
+      background:var(--gradient-shadow);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:blackLayerShift 6s ease-in-out infinite;
+      z-index:99;
+      opacity:0.4;
+    }
+    .matchup-detail-card::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      padding:3px;
+      background:var(--gradient-border);
+      background-size:var(--gradient-border-size) var(--gradient-border-size);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      animation:gradientShift 4s ease infinite;
+      z-index:100;
+      filter:drop-shadow(0 0 16px var(--theme-glow)) drop-shadow(0 0 8px var(--theme-glow));
+    }
+    .matchup-detail-header{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      margin-bottom:10px;
+      gap:4px;
+      position:relative;
+      z-index:101;
+    }
+    .matchup-detail-title{
+      font-size:16px;
+      font-weight:700;
+      color:var(--gold);
+      text-align:center;
+      position:relative;
+      z-index:101;
+    }
+    .matchup-detail-subtitle{
+      font-size:12px;
+      color:var(--muted);
+      text-align:center;
+      position:relative;
+      z-index:101;
+    }
+    .matchup-detail-content{
+      position:relative;
+      z-index:101;
+      max-height:calc(100vh - 200px);
+      overflow-y:auto;
+      padding:10px;
+      background:rgba(0,0,0,0.2);
+      border-radius:8px;
+      margin-bottom:10px;
+    }
+    .matchup-detail-actions{
+      display:flex;
+      justify-content:center;
+      gap:8px;
+      position:relative;
+      z-index:101;
+    }
     .finish-title{
       font-size:16px;
       font-weight:700;
@@ -2727,6 +2816,21 @@
       <div class="finish-actions">
         <button id="deckImportSaveBtn" class="finish-save-btn">Import Deck</button>
         <button id="deckImportSkipBtn" class="finish-cancel-btn">Skip (No Deck)</button>
+      </div>
+    </div>
+  </div>
+  <!-- MATCHUP DETAIL OVERLAY -->
+  <div class="overlay" id="matchupDetailOverlay">
+    <div class="matchup-detail-card">
+      <div class="matchup-detail-header">
+        <div class="matchup-detail-title" id="matchupDetailTitle">Match History</div>
+        <div class="matchup-detail-subtitle" id="matchupDetailSubtitle"></div>
+      </div>
+      <div class="matchup-detail-content" id="matchupDetailContent">
+        <!-- Content will be populated dynamically -->
+      </div>
+      <div class="matchup-detail-actions">
+        <button id="closeMatchupDetailBtn" class="finish-cancel-btn">Close</button>
       </div>
     </div>
   </div>
@@ -5018,312 +5122,13 @@
 
         const summaryDiv = document.createElement('div');
         summaryDiv.className = 'matchup-summary';
-        summaryDiv.innerHTML = matchupLines.join('<br/>') + ' <span style="color:var(--theme-color);font-size:9px;">▼</span>';
+        summaryDiv.innerHTML = matchupLines.join('<br/>') + ' <span style="color:var(--theme-color);font-size:9px;">🔍</span>';
         tdMatchups.appendChild(summaryDiv);
 
-        // Create expanded detail view (initially hidden)
-        const detailDiv = document.createElement('div');
-        detailDiv.className = 'matchup-detail';
-        detailDiv.style.display = 'none';
-        detailDiv.style.marginTop = '8px';
-        detailDiv.style.paddingTop = '8px';
-        detailDiv.style.borderTop = '1px solid rgba(255,255,255,0.1)';
-        detailDiv.style.background = 'rgba(0,0,0,0.3)';
-        detailDiv.style.padding = '12px';
-        detailDiv.style.borderRadius = '6px';
-        detailDiv.style.maxHeight = '400px';
-        detailDiv.style.overflowY = 'auto';
-        detailDiv.style.position = 'relative';
-
-        // Add close button at the top
-        const closeBtn = document.createElement('button');
-        closeBtn.innerHTML = '✕ Close Match History';
-        closeBtn.style.cssText = 'position:sticky;top:0;width:100%;background:var(--theme-color);color:var(--bg);border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;margin-bottom:8px;z-index:10;';
-        closeBtn.onclick = (e) => {
-          e.stopPropagation();
-          detailDiv.style.display = 'none';
-          summaryDiv.querySelector('span').textContent = '▼';
-        };
-        detailDiv.appendChild(closeBtn);
-
-        // Collect all match history across all opponents
-        const allMatches = [];
-        const seenMatchIds = new Set(); // Prevent duplicate matches
-        for(const [oppColors, stats] of Object.entries(d.matchups)){
-          if(!stats || typeof stats !== 'object') continue; // Skip invalid stats
-          if(stats.history && Array.isArray(stats.history) && stats.history.length > 0){
-            stats.history.forEach(match => {
-              // Validate match data and check for duplicates
-              if(!match || !match.id || !match.timestamp) return;
-              if(seenMatchIds.has(match.id)) return; // Skip duplicates
-              seenMatchIds.add(match.id);
-              if(!match.opponentColors) match.opponentColors = oppColors; // Fallback
-              allMatches.push({...match, oppColors: oppColors});
-            });
-          }
-        }
-
-        // Sort by timestamp descending (most recent first)
-        allMatches.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-        // Group by opponent color and render
-        const groupedByOpponent = {};
-        allMatches.forEach(match => {
-          if(!groupedByOpponent[match.opponentColors]){
-            groupedByOpponent[match.opponentColors] = [];
-          }
-          groupedByOpponent[match.opponentColors].push(match);
-        });
-
-        // Render each opponent group (in order of first appearance in sorted list)
-        const processedOpponents = new Set();
-        allMatches.forEach(match => {
-          if(processedOpponents.has(match.opponentColors)) return;
-          processedOpponents.add(match.opponentColors);
-
-          const oppColors = match.opponentColors;
-          const oppMatches = groupedByOpponent[oppColors];
-          const stats = d.matchups[oppColors];
-
-          // Opponent group header
-          const groupHeader = document.createElement('div');
-          groupHeader.style.cssText = 'font-weight:600;margin-bottom:4px;color:var(--text);';
-          let colorPips = '';
-          for(const letter of oppColors){
-            if(pipUrls[letter]){
-              colorPips += `<img src="${pipUrls[letter]}" style="width:12px;height:12px;vertical-align:middle;margin:0 1px;" alt="${letter}"/>`;
-            }
-          }
-          const matchupTotal = stats.wins + stats.losses;
-          const matchupWinRate = matchupTotal > 0 ? ((stats.wins / matchupTotal) * 100).toFixed(0) : 0;
-          groupHeader.innerHTML = `vs. ${colorPips}`;
-          detailDiv.appendChild(groupHeader);
-
-          // Calculate match type breakdown
-          const bo1Count = oppMatches.filter(m => m.matchType === 'BO1').length;
-          const bo3Count = oppMatches.filter(m => m.matchType === 'BO3').length;
-          const bo5Count = oppMatches.filter(m => m.matchType === 'BO5').length;
-
-          // Statistics table with column headers
-          const statsTable = document.createElement('div');
-          statsTable.style.cssText = 'margin:6px 0;font-size:9px;';
-
-          const statsHeader = document.createElement('div');
-          statsHeader.style.cssText = 'display:grid;grid-template-columns:45px 30px 30px 30px 70px 70px 50px auto;gap:4px;padding:3px 4px;background:rgba(255,255,255,0.05);border-radius:2px;font-weight:700;color:var(--muted);text-align:center;';
-          statsHeader.innerHTML = `<span>Total</span><span>BO1</span><span>BO3</span><span>BO5</span><span>Wins</span><span>Loss</span><span>W/L%</span><span></span>`;
-          statsTable.appendChild(statsHeader);
-
-          const statsRow = document.createElement('div');
-          statsRow.style.cssText = 'display:grid;grid-template-columns:45px 30px 30px 30px 70px 70px 50px auto;gap:4px;padding:3px 4px;align-items:center;';
-
-          // Total, BO1, BO3, BO5 (read-only)
-          const totalSpan = document.createElement('span');
-          totalSpan.style.cssText = 'text-align:center;';
-          totalSpan.textContent = matchupTotal;
-
-          const bo1Span = document.createElement('span');
-          bo1Span.style.cssText = 'text-align:center;';
-          bo1Span.textContent = bo1Count;
-
-          const bo3Span = document.createElement('span');
-          bo3Span.style.cssText = 'text-align:center;';
-          bo3Span.textContent = bo3Count;
-
-          const bo5Span = document.createElement('span');
-          bo5Span.style.cssText = 'text-align:center;';
-          bo5Span.textContent = bo5Count;
-
-          // Wins with +/- controls
-          const winsCell = document.createElement('div');
-          winsCell.style.cssText = 'display:flex;gap:2px;align-items:center;justify-content:center;';
-          const winsMinusBtn = document.createElement('button');
-          winsMinusBtn.textContent = '-';
-          winsMinusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
-          const winsSpan = document.createElement('span');
-          winsSpan.textContent = stats.wins;
-          winsSpan.style.cssText = 'min-width:20px;text-align:center;';
-          const winsPlusBtn = document.createElement('button');
-          winsPlusBtn.textContent = '+';
-          winsPlusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
-
-          winsMinusBtn.onclick = (e) => {
-            e.stopPropagation();
-            if(stats.wins > 0) {
-              stats.wins--;
-              openPlayerCard(p.id);
-              saveAll();
-            }
-          };
-          winsPlusBtn.onclick = (e) => {
-            e.stopPropagation();
-            stats.wins++;
-            openPlayerCard(p.id);
-            saveAll();
-          };
-
-          winsCell.appendChild(winsMinusBtn);
-          winsCell.appendChild(winsSpan);
-          winsCell.appendChild(winsPlusBtn);
-
-          // Losses with +/- controls
-          const lossesCell = document.createElement('div');
-          lossesCell.style.cssText = 'display:flex;gap:2px;align-items:center;justify-content:center;';
-          const lossesMinusBtn = document.createElement('button');
-          lossesMinusBtn.textContent = '-';
-          lossesMinusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
-          const lossesSpan = document.createElement('span');
-          lossesSpan.textContent = stats.losses;
-          lossesSpan.style.cssText = 'min-width:20px;text-align:center;';
-          const lossesPlusBtn = document.createElement('button');
-          lossesPlusBtn.textContent = '+';
-          lossesPlusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
-
-          lossesMinusBtn.onclick = (e) => {
-            e.stopPropagation();
-            if(stats.losses > 0) {
-              stats.losses--;
-              openPlayerCard(p.id);
-              saveAll();
-            }
-          };
-          lossesPlusBtn.onclick = (e) => {
-            e.stopPropagation();
-            stats.losses++;
-            openPlayerCard(p.id);
-            saveAll();
-          };
-
-          lossesCell.appendChild(lossesMinusBtn);
-          lossesCell.appendChild(lossesSpan);
-          lossesCell.appendChild(lossesPlusBtn);
-
-          // Win rate (read-only)
-          const winRateSpan = document.createElement('span');
-          winRateSpan.style.cssText = 'text-align:center;';
-          winRateSpan.textContent = matchupWinRate + '%';
-
-          // Edit opponent colors button
-          const editOppBtn = document.createElement('button');
-          editOppBtn.textContent = 'Edit Opp';
-          editOppBtn.style.cssText = 'font-size:9px;padding:2px 6px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;white-space:nowrap;';
-          editOppBtn.onclick = (e) => {
-            e.stopPropagation();
-            openOpponentColorEditDialog(p, d, oppColors, stats);
-          };
-
-          statsRow.appendChild(totalSpan);
-          statsRow.appendChild(bo1Span);
-          statsRow.appendChild(bo3Span);
-          statsRow.appendChild(bo5Span);
-          statsRow.appendChild(winsCell);
-          statsRow.appendChild(lossesCell);
-          statsRow.appendChild(winRateSpan);
-          statsRow.appendChild(editOppBtn);
-          statsTable.appendChild(statsRow);
-
-          detailDiv.appendChild(statsTable);
-
-          // Match history section title
-          const historyTitle = document.createElement('div');
-          historyTitle.style.cssText = 'font-size:9px;font-weight:600;color:var(--muted);margin:8px 0 4px 0;';
-          historyTitle.textContent = 'Match History';
-          detailDiv.appendChild(historyTitle);
-
-          // Match history column headers
-          const matchHistoryHeader = document.createElement('div');
-          matchHistoryHeader.style.cssText = 'display:grid;grid-template-columns:50px 35px 1fr;gap:8px;padding:3px 8px;background:rgba(255,255,255,0.05);border-radius:2px;font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px;';
-          matchHistoryHeader.innerHTML = `<span>Result</span><span>Type</span><span>Date/Time</span>`;
-          detailDiv.appendChild(matchHistoryHeader);
-
-          // Individual matches - limit initial render for performance
-          const INITIAL_MATCH_LIMIT = 10;
-          const matchContainer = document.createElement('div');
-          matchContainer.className = 'match-history-container';
-
-          const renderMatches = (matches, container, start = 0, limit = INITIAL_MATCH_LIMIT) => {
-            const end = Math.min(start + limit, matches.length);
-            for(let idx = start; idx < end; idx++){
-              const m = matches[idx];
-              const matchDiv = document.createElement('div');
-              matchDiv.style.cssText = 'padding:4px 8px;margin:2px 0;background:rgba(255,255,255,0.02);border-radius:3px;font-size:9px;display:grid;grid-template-columns:50px 35px 1fr;gap:8px;align-items:center;';
-              matchDiv.dataset.matchId = m.id;
-              matchDiv.dataset.deckColor = d.color;
-
-              // Column 1: Result/Score (fixed width)
-              const resultSpan = document.createElement('span');
-              resultSpan.style.cssText = 'font-weight:600;text-align:left;';
-              if(m.matchType === 'BO1'){
-                const result = m.result || 'unknown';
-                const resultColor = result === 'win' ? 'var(--theme-color)' : 'var(--muted)';
-                resultSpan.style.color = resultColor;
-                resultSpan.textContent = result.toUpperCase();
-              } else {
-                const wins = m.wins || 0;
-                const losses = m.losses || 0;
-                resultSpan.textContent = `${wins}W-${losses}L`;
-              }
-
-              // Column 2: Match Type (fixed width)
-              const typeSpan = document.createElement('span');
-              typeSpan.style.cssText = 'color:var(--muted);text-align:left;';
-              typeSpan.textContent = m.matchType || 'BO1';
-
-              // Column 3: Date/Time
-              const dateSpan = document.createElement('span');
-              dateSpan.style.cssText = 'color:var(--muted);';
-              const date = new Date(m.timestamp || Date.now());
-              const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
-              dateSpan.textContent = dateStr;
-
-              matchDiv.appendChild(resultSpan);
-              matchDiv.appendChild(typeSpan);
-              matchDiv.appendChild(dateSpan);
-              container.appendChild(matchDiv);
-            }
-            return end;
-          };
-
-          let currentRenderedCount = renderMatches(oppMatches, matchContainer);
-          detailDiv.appendChild(matchContainer);
-
-          // Show "Load More" button if there are more matches
-          if(currentRenderedCount < oppMatches.length){
-            const loadMoreBtn = document.createElement('button');
-            loadMoreBtn.textContent = `Show ${Math.min(10, oppMatches.length - currentRenderedCount)} More (${oppMatches.length - currentRenderedCount} remaining)`;
-            loadMoreBtn.style.cssText = 'font-size:9px;padding:4px 10px;background:rgba(255,255,255,0.1);border:1px solid var(--theme-color);border-radius:3px;color:var(--theme-color);cursor:pointer;margin:4px 0;width:100%;';
-            loadMoreBtn.onclick = (e) => {
-              e.stopPropagation();
-              currentRenderedCount = renderMatches(oppMatches, matchContainer, currentRenderedCount, 10);
-              if(currentRenderedCount >= oppMatches.length){
-                loadMoreBtn.remove();
-              } else {
-                loadMoreBtn.textContent = `Show ${Math.min(10, oppMatches.length - currentRenderedCount)} More (${oppMatches.length - currentRenderedCount} remaining)`;
-              }
-            };
-            detailDiv.appendChild(loadMoreBtn);
-          }
-
-          // Add spacing between groups
-          const spacer = document.createElement('div');
-          spacer.style.height = '8px';
-          detailDiv.appendChild(spacer);
-        });
-
-        tdMatchups.appendChild(detailDiv);
-
-        // Prevent clicks inside detail view from closing it
-        detailDiv.addEventListener('click', (e) => {
-          e.stopPropagation();
-        });
-
-        // Toggle expansion on click
+        // Click handler to open matchup detail modal
         tdMatchups.addEventListener('click', (e) => {
-          // Only toggle if clicking on summary (not buttons or detail div)
           if(e.target.tagName === 'BUTTON') return;
-          if(detailDiv.contains(e.target)) return;
-          const isExpanded = detailDiv.style.display !== 'none';
-          detailDiv.style.display = isExpanded ? 'none' : 'block';
-          summaryDiv.querySelector('span').textContent = isExpanded ? '▼' : '▲';
+          openMatchupDetail(p, d);
         });
       }else{
         tdMatchups.textContent = '-';
@@ -5876,6 +5681,293 @@
     deckEditorOverlay.classList.add('show');
   }
 
+  // Open matchup detail modal
+  function openMatchupDetail(player, deck){
+    // Set title and subtitle
+    matchupDetailTitle.textContent = 'Match History';
+    const colorStr = deck.color || 'Colorless';
+    matchupDetailSubtitle.textContent = `${player.name} - ${colorStr} Deck`;
+
+    // Clear previous content
+    matchupDetailContent.innerHTML = '';
+
+    // Color pip URLs
+    const pipUrls = {
+      'W': 'https://i.ibb.co/mT8kBzLn/W.png',
+      'U': 'https://i.ibb.co/5hVbg2Ly/U.png',
+      'B': 'https://i.ibb.co/nPzJn0D3/B.png',
+      'R': 'https://i.ibb.co/R71qYLV/R.png',
+      'G': 'https://i.ibb.co/tM5Mb1Q0/G.png',
+      'C': 'https://i.ibb.co/xt4Lpn0X/C.png'
+    };
+
+    // Collect all match history across all opponents
+    const allMatches = [];
+    const seenMatchIds = new Set();
+    for(const [oppColors, stats] of Object.entries(deck.matchups)){
+      if(!stats || typeof stats !== 'object') continue;
+      if(stats.history && Array.isArray(stats.history) && stats.history.length > 0){
+        stats.history.forEach(match => {
+          if(!match || !match.id || !match.timestamp) return;
+          if(seenMatchIds.has(match.id)) return;
+          seenMatchIds.add(match.id);
+          if(!match.opponentColors) match.opponentColors = oppColors;
+          allMatches.push({...match, oppColors: oppColors});
+        });
+      }
+    }
+
+    // Sort by timestamp descending
+    allMatches.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+    // Group by opponent color
+    const groupedByOpponent = {};
+    allMatches.forEach(match => {
+      if(!groupedByOpponent[match.opponentColors]){
+        groupedByOpponent[match.opponentColors] = [];
+      }
+      groupedByOpponent[match.opponentColors].push(match);
+    });
+
+    // Render each opponent group
+    const processedOpponents = new Set();
+    allMatches.forEach(match => {
+      if(processedOpponents.has(match.opponentColors)) return;
+      processedOpponents.add(match.opponentColors);
+
+      const oppColors = match.opponentColors;
+      const oppMatches = groupedByOpponent[oppColors];
+      const stats = deck.matchups[oppColors];
+
+      // Opponent group header
+      const groupHeader = document.createElement('div');
+      groupHeader.style.cssText = 'font-weight:600;margin-bottom:4px;color:var(--text);margin-top:10px;';
+      let colorPips = '';
+      for(const letter of oppColors){
+        if(pipUrls[letter]){
+          colorPips += `<img src="${pipUrls[letter]}" style="width:12px;height:12px;vertical-align:middle;margin:0 1px;" alt="${letter}"/>`;
+        }
+      }
+      const matchupTotal = stats.wins + stats.losses;
+      const matchupWinRate = matchupTotal > 0 ? ((stats.wins / matchupTotal) * 100).toFixed(0) : 0;
+      groupHeader.innerHTML = `vs. ${colorPips}`;
+      matchupDetailContent.appendChild(groupHeader);
+
+      // Calculate match type breakdown
+      const bo1Count = oppMatches.filter(m => m.matchType === 'BO1').length;
+      const bo3Count = oppMatches.filter(m => m.matchType === 'BO3').length;
+      const bo5Count = oppMatches.filter(m => m.matchType === 'BO5').length;
+
+      // Statistics table with column headers
+      const statsTable = document.createElement('div');
+      statsTable.style.cssText = 'margin:6px 0;font-size:9px;';
+
+      const statsHeader = document.createElement('div');
+      statsHeader.style.cssText = 'display:grid;grid-template-columns:45px 30px 30px 30px 70px 70px 50px auto;gap:4px;padding:3px 4px;background:rgba(255,255,255,0.05);border-radius:2px;font-weight:700;color:var(--muted);text-align:center;';
+      statsHeader.innerHTML = `<span>Total</span><span>BO1</span><span>BO3</span><span>BO5</span><span>Wins</span><span>Loss</span><span>W/L%</span><span></span>`;
+      statsTable.appendChild(statsHeader);
+
+      const statsRow = document.createElement('div');
+      statsRow.style.cssText = 'display:grid;grid-template-columns:45px 30px 30px 30px 70px 70px 50px auto;gap:4px;padding:3px 4px;align-items:center;';
+
+      // Total, BO1, BO3, BO5
+      const totalSpan = document.createElement('span');
+      totalSpan.style.cssText = 'text-align:center;';
+      totalSpan.textContent = matchupTotal;
+
+      const bo1Span = document.createElement('span');
+      bo1Span.style.cssText = 'text-align:center;';
+      bo1Span.textContent = bo1Count;
+
+      const bo3Span = document.createElement('span');
+      bo3Span.style.cssText = 'text-align:center;';
+      bo3Span.textContent = bo3Count;
+
+      const bo5Span = document.createElement('span');
+      bo5Span.style.cssText = 'text-align:center;';
+      bo5Span.textContent = bo5Count;
+
+      // Wins with +/- controls
+      const winsCell = document.createElement('div');
+      winsCell.style.cssText = 'display:flex;gap:2px;align-items:center;justify-content:center;';
+      const winsMinusBtn = document.createElement('button');
+      winsMinusBtn.textContent = '-';
+      winsMinusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+      const winsSpan = document.createElement('span');
+      winsSpan.textContent = stats.wins;
+      winsSpan.style.cssText = 'min-width:20px;text-align:center;';
+      const winsPlusBtn = document.createElement('button');
+      winsPlusBtn.textContent = '+';
+      winsPlusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+
+      winsMinusBtn.onclick = (e) => {
+        e.stopPropagation();
+        if(stats.wins > 0) {
+          stats.wins--;
+          openMatchupDetail(player, deck);
+          saveAll();
+        }
+      };
+      winsPlusBtn.onclick = (e) => {
+        e.stopPropagation();
+        stats.wins++;
+        openMatchupDetail(player, deck);
+        saveAll();
+      };
+
+      winsCell.appendChild(winsMinusBtn);
+      winsCell.appendChild(winsSpan);
+      winsCell.appendChild(winsPlusBtn);
+
+      // Losses with +/- controls
+      const lossesCell = document.createElement('div');
+      lossesCell.style.cssText = 'display:flex;gap:2px;align-items:center;justify-content:center;';
+      const lossesMinusBtn = document.createElement('button');
+      lossesMinusBtn.textContent = '-';
+      lossesMinusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+      const lossesSpan = document.createElement('span');
+      lossesSpan.textContent = stats.losses;
+      lossesSpan.style.cssText = 'min-width:20px;text-align:center;';
+      const lossesPlusBtn = document.createElement('button');
+      lossesPlusBtn.textContent = '+';
+      lossesPlusBtn.style.cssText = 'font-size:9px;width:16px;height:16px;padding:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:2px;cursor:pointer;color:var(--text);';
+
+      lossesMinusBtn.onclick = (e) => {
+        e.stopPropagation();
+        if(stats.losses > 0) {
+          stats.losses--;
+          openMatchupDetail(player, deck);
+          saveAll();
+        }
+      };
+      lossesPlusBtn.onclick = (e) => {
+        e.stopPropagation();
+        stats.losses++;
+        openMatchupDetail(player, deck);
+        saveAll();
+      };
+
+      lossesCell.appendChild(lossesMinusBtn);
+      lossesCell.appendChild(lossesSpan);
+      lossesCell.appendChild(lossesPlusBtn);
+
+      // Win rate
+      const winRateSpan = document.createElement('span');
+      winRateSpan.style.cssText = 'text-align:center;';
+      winRateSpan.textContent = matchupWinRate + '%';
+
+      // Edit opponent colors button
+      const editOppBtn = document.createElement('button');
+      editOppBtn.textContent = 'Edit Opp';
+      editOppBtn.style.cssText = 'font-size:9px;padding:2px 6px;background:var(--theme-color);border:none;border-radius:3px;color:#000;cursor:pointer;font-weight:600;white-space:nowrap;';
+      editOppBtn.onclick = (e) => {
+        e.stopPropagation();
+        matchupDetailOverlay.classList.remove('show');
+        openOpponentColorEditDialog(player, deck, oppColors, stats);
+      };
+
+      statsRow.appendChild(totalSpan);
+      statsRow.appendChild(bo1Span);
+      statsRow.appendChild(bo3Span);
+      statsRow.appendChild(bo5Span);
+      statsRow.appendChild(winsCell);
+      statsRow.appendChild(lossesCell);
+      statsRow.appendChild(winRateSpan);
+      statsRow.appendChild(editOppBtn);
+      statsTable.appendChild(statsRow);
+
+      matchupDetailContent.appendChild(statsTable);
+
+      // Match history section title
+      const historyTitle = document.createElement('div');
+      historyTitle.style.cssText = 'font-size:9px;font-weight:600;color:var(--muted);margin:8px 0 4px 0;';
+      historyTitle.textContent = 'Match History';
+      matchupDetailContent.appendChild(historyTitle);
+
+      // Match history column headers
+      const matchHistoryHeader = document.createElement('div');
+      matchHistoryHeader.style.cssText = 'display:grid;grid-template-columns:50px 35px 1fr;gap:8px;padding:3px 8px;background:rgba(255,255,255,0.05);border-radius:2px;font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px;';
+      matchHistoryHeader.innerHTML = `<span>Result</span><span>Type</span><span>Date/Time</span>`;
+      matchupDetailContent.appendChild(matchHistoryHeader);
+
+      // Individual matches
+      const INITIAL_MATCH_LIMIT = 10;
+      const matchContainer = document.createElement('div');
+      matchContainer.className = 'match-history-container';
+
+      const renderMatches = (matches, container, start = 0, limit = INITIAL_MATCH_LIMIT) => {
+        const end = Math.min(start + limit, matches.length);
+        for(let idx = start; idx < end; idx++){
+          const m = matches[idx];
+          const matchDiv = document.createElement('div');
+          matchDiv.style.cssText = 'padding:4px 8px;margin:2px 0;background:rgba(255,255,255,0.02);border-radius:3px;font-size:9px;display:grid;grid-template-columns:50px 35px 1fr;gap:8px;align-items:center;';
+          matchDiv.dataset.matchId = m.id;
+          matchDiv.dataset.deckColor = deck.color;
+
+          // Result/Score
+          const resultSpan = document.createElement('span');
+          resultSpan.style.cssText = 'font-weight:600;text-align:left;';
+          if(m.matchType === 'BO1'){
+            const result = m.result || 'unknown';
+            const resultColor = result === 'win' ? 'var(--theme-color)' : 'var(--muted)';
+            resultSpan.style.color = resultColor;
+            resultSpan.textContent = result.toUpperCase();
+          } else {
+            const wins = m.wins || 0;
+            const losses = m.losses || 0;
+            resultSpan.textContent = `${wins}W-${losses}L`;
+          }
+
+          // Match Type
+          const typeSpan = document.createElement('span');
+          typeSpan.style.cssText = 'color:var(--muted);text-align:left;';
+          typeSpan.textContent = m.matchType || 'BO1';
+
+          // Date/Time
+          const dateSpan = document.createElement('span');
+          dateSpan.style.cssText = 'color:var(--muted);';
+          const date = new Date(m.timestamp || Date.now());
+          const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+          dateSpan.textContent = dateStr;
+
+          matchDiv.appendChild(resultSpan);
+          matchDiv.appendChild(typeSpan);
+          matchDiv.appendChild(dateSpan);
+          container.appendChild(matchDiv);
+        }
+        return end;
+      };
+
+      let currentRenderedCount = renderMatches(oppMatches, matchContainer);
+      matchupDetailContent.appendChild(matchContainer);
+
+      // Show "Load More" button if there are more matches
+      if(currentRenderedCount < oppMatches.length){
+        const loadMoreBtn = document.createElement('button');
+        loadMoreBtn.textContent = `Show ${Math.min(10, oppMatches.length - currentRenderedCount)} More (${oppMatches.length - currentRenderedCount} remaining)`;
+        loadMoreBtn.style.cssText = 'font-size:9px;padding:4px 10px;background:rgba(255,255,255,0.1);border:1px solid var(--theme-color);border-radius:3px;color:var(--theme-color);cursor:pointer;margin:4px 0;width:100%;';
+        loadMoreBtn.onclick = (e) => {
+          e.stopPropagation();
+          currentRenderedCount = renderMatches(oppMatches, matchContainer, currentRenderedCount, 10);
+          if(currentRenderedCount >= oppMatches.length){
+            loadMoreBtn.remove();
+          } else {
+            loadMoreBtn.textContent = `Show ${Math.min(10, oppMatches.length - currentRenderedCount)} More (${oppMatches.length - currentRenderedCount} remaining)`;
+          }
+        };
+        matchupDetailContent.appendChild(loadMoreBtn);
+      }
+
+      // Add spacing between groups
+      const spacer = document.createElement('div');
+      spacer.style.height = '8px';
+      matchupDetailContent.appendChild(spacer);
+    });
+
+    // Show the modal
+    matchupDetailOverlay.classList.add('show');
+  }
+
   // Deck editor color chip toggling
   deckEditorColorChips.addEventListener('click', e => {
     const chip = e.target.closest('.color-chip');
@@ -6010,6 +6102,25 @@
       deckEditorOverlay.classList.remove('show');
       currentEditingPlayer = null;
       currentEditingDeck = null;
+    }
+  });
+
+  // Matchup Detail Modal
+  const matchupDetailOverlay = document.getElementById('matchupDetailOverlay');
+  const closeMatchupDetailBtn = document.getElementById('closeMatchupDetailBtn');
+  const matchupDetailTitle = document.getElementById('matchupDetailTitle');
+  const matchupDetailSubtitle = document.getElementById('matchupDetailSubtitle');
+  const matchupDetailContent = document.getElementById('matchupDetailContent');
+
+  // Close matchup detail modal
+  closeMatchupDetailBtn.addEventListener('click', () => {
+    matchupDetailOverlay.classList.remove('show');
+  });
+
+  // Close matchup detail when clicking outside
+  matchupDetailOverlay.addEventListener('click', (e) => {
+    if(e.target === matchupDetailOverlay){
+      matchupDetailOverlay.classList.remove('show');
     }
   });
 
