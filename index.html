@@ -2524,6 +2524,19 @@
       </div>
     </div>
   </div>
+  <!-- PLAYER ACTION OVERLAY (Skip and Remove) -->
+  <div class="overlay" id="playerActionOverlay">
+    <div class="finish-card" style="max-width:450px;">
+      <div class="finish-title">Player Action</div>
+      <div class="finish-sub">
+        What would you like to do with <span id="playerActionName"></span> <span id="playerActionDeckIdentity"></span>?
+      </div>
+      <div class="finish-actions" style="margin-top:16px;">
+        <button type="button" id="playerActionAfkBtn" class="primary">Mark as AFK</button>
+        <button type="button" id="playerActionRemoveBtn">Remove from Queue</button>
+      </div>
+    </div>
+  </div>
   <!-- RE-ADD TO QUEUE OVERLAY -->
   <div class="overlay" id="requeueOverlay">
     <div class="finish-card" style="max-width:450px;">
@@ -2735,12 +2748,12 @@
           <div class="help-box-text">Earned when tickets exceed 500. Get 12 sparks and you're IGNITED – guaranteed win!</div>
         </div>
         <div class="help-box">
-          <div class="help-box-title">Krark</div>
+          <div class="help-box-title">Krark's Thumb</div>
           <div class="help-box-text">Wild card that helps complete wins. Max 1 per spin.</div>
         </div>
         <div class="help-box">
-          <div class="help-box-title">CoAST</div>
-          <div class="help-box-text">Jackpot! All 5 reels show C-o-A-S-T letters. Streamer plays their deck.</div>
+          <div class="help-box-title">Jackpot</div>
+          <div class="help-box-text">Heads-side coin flip! All 5 reels align. Streamer plays their deck.</div>
         </div>
         <div class="help-box">
           <div class="help-box-title">Meta-Tracking</div>
@@ -6107,8 +6120,8 @@
       winnerHeading.textContent = 'IGNITED!';
       winnerMetaEl.textContent = `${displayName} has ${MAX_SPARKS} sparks & has been Ignited.`;
     }else if(reason==='carlo'){
-      winnerHeading.textContent = 'CoAST PICK';
-      winnerMetaEl.textContent = `CoAST hit – streamer plays their own deck this round.`;
+      winnerHeading.textContent = 'JACKPOT!';
+      winnerMetaEl.textContent = `Heads-side coin flip – streamer plays their own deck this round.`;
     }else{
       winnerHeading.textContent = 'WINNER';
       if(hits>=5){
@@ -6495,27 +6508,52 @@
     // Fade out celebration sound
     fadeOutCelebration();
 
-    // Show prompt: Remove or Mark AFK
+    // Show custom player action overlay
     const displayName = pendingWinner.baseName || pendingWinner.name;
-    const choice = confirm(`What would you like to do with ${displayName}?\n\nOK = Remove from queue\nCancel = Mark as AFK`);
+    const colorIcons = Array.isArray(pendingWinner.colorIdentity) && pendingWinner.colorIdentity.length > 0
+      ? colorToIcons(pendingWinner.colorIdentity.join(''))
+      : '';
 
-    if(choice){
-      // Remove player
-      const colorIcons = Array.isArray(pendingWinner.colorIdentity) && pendingWinner.colorIdentity.length > 0
-        ? ' ' + colorToIcons(pendingWinner.colorIdentity.join(''))
-        : '';
-      log(`Winner ${displayName}${colorIcons} removed from queue.`);
-      const idx = evt.players.findIndex(x=>x.id===pendingWinner.id);
-      if(idx>=0) evt.players.splice(idx,1);
-    } else {
-      // Mark as AFK
-      pendingWinner.status = 'afk';
-      const colorIcons = Array.isArray(pendingWinner.colorIdentity) && pendingWinner.colorIdentity.length > 0
-        ? ' ' + colorToIcons(pendingWinner.colorIdentity.join(''))
-        : '';
-      log(`Winner ${displayName}${colorIcons} marked as AFK.`);
-    }
+    document.getElementById('playerActionName').textContent = displayName;
+    document.getElementById('playerActionDeckIdentity').innerHTML = colorIcons;
+    document.getElementById('playerActionOverlay').classList.add('show');
+  });
 
+  // Handle player action: Mark as AFK
+  document.getElementById('playerActionAfkBtn').addEventListener('click',()=>{
+    const evt = currentEvent();
+    if(!pendingWinner) return;
+
+    pendingWinner.status = 'afk';
+    const displayName = pendingWinner.baseName || pendingWinner.name;
+    const colorIcons = Array.isArray(pendingWinner.colorIdentity) && pendingWinner.colorIdentity.length > 0
+      ? ' ' + colorToIcons(pendingWinner.colorIdentity.join(''))
+      : '';
+    log(`Winner ${displayName}${colorIcons} marked as AFK.`);
+
+    document.getElementById('playerActionOverlay').classList.remove('show');
+    pendingWinner=null;
+    hasUnreportedGame = false;
+    unreportedGamePlayer = null;
+    winnerOverlay.classList.remove('show');
+    renderLeaderboard();
+    saveAll();
+  });
+
+  // Handle player action: Remove from queue
+  document.getElementById('playerActionRemoveBtn').addEventListener('click',()=>{
+    const evt = currentEvent();
+    if(!pendingWinner) return;
+
+    // Mark as removed instead of deleting - preserves data for potential rejoin
+    pendingWinner.status = 'removed';
+    const displayName = pendingWinner.baseName || pendingWinner.name;
+    const colorIcons = Array.isArray(pendingWinner.colorIdentity) && pendingWinner.colorIdentity.length > 0
+      ? ' ' + colorToIcons(pendingWinner.colorIdentity.join(''))
+      : '';
+    log(`Winner ${displayName}${colorIcons} removed from queue (can rejoin).`);
+
+    document.getElementById('playerActionOverlay').classList.remove('show');
     pendingWinner=null;
     hasUnreportedGame = false;
     unreportedGamePlayer = null;
@@ -6865,6 +6903,7 @@
         player.tickets[i] = 1;
       }
       player.sparks = 0;
+      player.status = 'active'; // Restore to active when rejoining
       player.createdAt = Date.now();
       clampPlayer(player);
       const displayName = player.baseName || player.name;
@@ -6946,6 +6985,7 @@
         player.tickets[i] = 1;
       }
       player.sparks = 0;
+      player.status = 'active'; // Restore to active when rejoining
       player.createdAt = Date.now();
       clampPlayer(player);
       const displayName = player.baseName || player.name;
@@ -7019,6 +7059,7 @@
         player.tickets[i] = 1;
       }
       player.sparks = 0;
+      player.status = 'active'; // Restore to active when rejoining
       player.createdAt = Date.now();
       clampPlayer(player);
       log(`${displayName}${colorIcons} re-added to queue with 1 ticket per reel.`);
@@ -7046,6 +7087,7 @@
         player.tickets[i] = newTickets;
       }
       player.sparks = 0;
+      player.status = 'active'; // Restore to active when rejoining
       player.createdAt = Date.now();
       clampPlayer(player);
       const displayName = player.baseName || player.name;
@@ -7165,14 +7207,14 @@
       let reason='normal';
       let hits=3;
       if(isCarlo){
-        // CoAST: Bulbs already running, wait a bit more then show banner
+        // Jackpot: Bulbs already running, wait a bit more then show banner
         setTimeout(()=>{
           stopBulbsAnimation();
           evt.carloHits++;
           winnerOverlay.classList.add('show');
-          winnerHeading.textContent='CoAST!';
-          winnerNameEl.innerHTML='CoAST';
-          winnerMetaEl.textContent='Streamer plays their own deck this round.';
+          winnerHeading.textContent='JACKPOT!';
+          winnerNameEl.innerHTML='JACKPOT';
+          winnerMetaEl.textContent='Heads-side coin flip – Streamer plays their own deck this round.';
           winnerLunaSticker.style.display='none';
           pendingWinner=null;
           currentWinnerMeta={reason:'carlo',hits:0};
